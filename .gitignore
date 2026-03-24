@@ -1,0 +1,4 @@
+# --- seihou:claude-gitignore ---
+.claude/
+CLAUDE.local.md
+# --- /seihou:claude-gitignore ---
