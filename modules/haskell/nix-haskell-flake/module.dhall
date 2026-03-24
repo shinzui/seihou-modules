@@ -33,28 +33,28 @@ in  S.Module::{
         , type = "bool"
         , default = Some "false"
         , description = Some "Include process-compose in devShell and generate process-compose.yaml"
-        , required = False
+        , required = True
         }
       , S.VarDecl::{
         , name = "nix.postgresql"
         , type = "bool"
         , default = Some "false"
         , description = Some "Include postgresql in devShell with local DB setup in shellHook"
-        , required = False
+        , required = True
         }
       , S.VarDecl::{
         , name = "nix.treefmt"
         , type = "bool"
         , default = Some "true"
         , description = Some "Include treefmt-nix input and generate treefmt.nix"
-        , required = False
+        , required = True
         }
       , S.VarDecl::{
         , name = "nix.pre-commit"
         , type = "bool"
         , default = Some "true"
         , description = Some "Include pre-commit-hooks (git-hooks.nix) input and checks"
-        , required = False
+        , required = True
         }
       ]
     , exports =
@@ -99,16 +99,21 @@ in  S.Module::{
         , dest = "flake.nix"
         }
       , S.Step::{
+        , strategy = "copy"
+        , src = "flake.lock"
+        , dest = "flake.lock"
+        }
+      , S.Step::{
         , strategy = "template"
         , src = "treefmt.nix.tpl"
         , dest = "treefmt.nix"
-        , when = Some "Eq nix.treefmt true"
+        , when = Some "Eq nix.treefmt true || Eq nix.treefmt \"true\""
         }
       , S.Step::{
         , strategy = "template"
         , src = "process-compose.yaml.tpl"
         , dest = "process-compose.yaml"
-        , when = Some "Eq nix.process-compose true"
+        , when = Some "Eq nix.process-compose true || Eq nix.process-compose \"true\""
         }
       , S.Step::{
         , strategy = "template"
