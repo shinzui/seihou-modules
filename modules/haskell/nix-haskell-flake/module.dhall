@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "nix-haskell-flake"
-    , version = Some "0.2.0"
+    , version = Some "0.3.0"
     , description = Some "Nix flake for Haskell projects with optional process-compose and PostgreSQL support"
     , vars =
       [ S.VarDecl::{
@@ -119,6 +119,12 @@ in  S.Module::{
         , strategy = "template"
         , src = "envrc.tpl"
         , dest = ".envrc"
+        }
+      , S.Step::{
+        , strategy = "template"
+        , src = "gitignore-envrc.tpl"
+        , dest = ".gitignore"
+        , patch = Some "append-line-if-absent"
         }
       , S.Step::{
         , strategy = "template"
