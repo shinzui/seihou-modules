@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "nix-haskell-flake"
-    , version = Some "0.3.0"
+    , version = Some "0.4.0"
     , description = Some "Nix flake for Haskell projects with optional process-compose and PostgreSQL support"
     , vars =
       [ S.VarDecl::{
@@ -31,14 +31,12 @@ in  S.Module::{
       , S.VarDecl::{
         , name = "nix.process-compose"
         , type = "bool"
-        , default = Some "false"
         , description = Some "Include process-compose in devShell and generate process-compose.yaml"
         , required = True
         }
       , S.VarDecl::{
         , name = "nix.postgresql"
         , type = "bool"
-        , default = Some "false"
         , description = Some "Include postgresql in devShell with local DB setup in shellHook"
         , required = True
         }
@@ -97,6 +95,13 @@ in  S.Module::{
         , strategy = "template"
         , src = "flake.nix.tpl"
         , dest = "flake.nix"
+        , when = Some "Eq nix.postgresql false || Eq nix.postgresql \"false\""
+        }
+      , S.Step::{
+        , strategy = "template"
+        , src = "flake-with-postgres.nix.tpl"
+        , dest = "flake.nix"
+        , when = Some "Eq nix.postgresql true || Eq nix.postgresql \"true\""
         }
       , S.Step::{
         , strategy = "copy"
