@@ -3,34 +3,34 @@
 
   inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
   inputs.flake-utils.url = "github:numtide/flake-utils";
-  inputs.treefmt-nix.url = "github:numtide/treefmt-nix";
-  inputs.pre-commit-hooks.url = "github:cachix/git-hooks.nix";
-
-  outputs = { self, nixpkgs, flake-utils, treefmt-nix, pre-commit-hooks }:
+{{#if Eq nix.treefmt true}}  inputs.treefmt-nix.url = "github:numtide/treefmt-nix";
+{{/if}}{{#if Eq nix.pre-commit true}}  inputs.pre-commit-hooks.url = "github:cachix/git-hooks.nix";
+{{/if}}
+  outputs = { self, nixpkgs, flake-utils{{#if Eq nix.treefmt true}}, treefmt-nix{{/if}}{{#if Eq nix.pre-commit true}}, pre-commit-hooks{{/if}} }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
         haskellPackages = pkgs.haskell.packages."{{ghc.version}}";
-        treefmtEval = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
+{{#if Eq nix.treefmt true}}        treefmtEval = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
         formatter = treefmtEval.config.build.wrapper;
-      in
+{{/if}}      in
       {
-        formatter = formatter;
+{{#if Eq nix.treefmt true}}        formatter = formatter;
 
-        packages = {
+{{/if}}        packages = {
           default = haskellPackages.{{project.name}};
         };
 
         checks = {
-          formatting = treefmtEval.config.build.check self;
-          pre-commit-check = pre-commit-hooks.lib.${system}.run {
+{{#if Eq nix.treefmt true}}          formatting = treefmtEval.config.build.check self;
+{{/if}}{{#if Eq nix.pre-commit true}}          pre-commit-check = pre-commit-hooks.lib.${system}.run {
             src = ./.;
             hooks = {
-              treefmt.package = formatter;
+{{#if Eq nix.treefmt true}}              treefmt.package = formatter;
               treefmt.enable = true;
-            };
+{{/if}}            };
           };
-        };
+{{/if}}        };
 
         devShells.default = pkgs.mkShell {
           nativeBuildInputs = [
@@ -46,8 +46,8 @@
           ++ pkgs.lib.optional {{nix.process-compose}} pkgs.process-compose;
 
           shellHook = ''
-            ${self.checks.${system}.pre-commit-check.shellHook}
-            export LANG=en_US.UTF-8
+{{#if Eq nix.pre-commit true}}            ${self.checks.${system}.pre-commit-check.shellHook}
+{{/if}}            export LANG=en_US.UTF-8
 {{#if Eq nix.postgresql true}}
             export PGHOST="$PWD/db"
             export PGDATA="$PGHOST/db"
