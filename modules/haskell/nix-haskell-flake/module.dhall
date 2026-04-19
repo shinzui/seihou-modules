@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "nix-haskell-flake"
-    , version = Some "0.6.0"
+    , version = Some "0.7.0"
     , description = Some "Nix flake for Haskell projects with toggleable process-compose, PostgreSQL, treefmt-nix, and pre-commit-hooks"
     , vars =
       [ S.VarDecl::{
