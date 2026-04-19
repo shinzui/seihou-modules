@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "nix-haskell-flake"
-    , version = Some "0.4.0"
+    , version = Some "0.5.0"
     , description = Some "Nix flake for Haskell projects with optional process-compose and PostgreSQL support"
     , vars =
       [ S.VarDecl::{
@@ -95,13 +95,6 @@ in  S.Module::{
         , strategy = "template"
         , src = "flake.nix.tpl"
         , dest = "flake.nix"
-        , when = Some "Eq nix.postgresql false || Eq nix.postgresql \"false\""
-        }
-      , S.Step::{
-        , strategy = "template"
-        , src = "flake-with-postgres.nix.tpl"
-        , dest = "flake.nix"
-        , when = Some "Eq nix.postgresql true || Eq nix.postgresql \"true\""
         }
       , S.Step::{
         , strategy = "copy"
