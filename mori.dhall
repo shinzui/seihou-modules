@@ -42,7 +42,6 @@ in  Schema.Project::{
         , requiredVars =
           [ "project.name"
           , "project.description"
-          , "project.description-long"
           , "project.namespace"
           ]
         }

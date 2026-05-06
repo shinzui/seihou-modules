@@ -27,8 +27,8 @@ in  S.Module::{
         , name = "project.description-long"
         , type = "text"
         , description = Some
-            "Longer prose description used as the `description:` paragraph in both .cabal files. Distinct from `project.description`, which is the one-line synopsis (declared by nix-haskell-flake)."
-        , required = True
+            "Optional longer prose description used as the `description:` paragraph in both .cabal files. When not set, the templates fall back to `project.description` (the one-line synopsis declared by nix-haskell-flake)."
+        , required = False
         }
       , S.VarDecl::{
         , name = "project.namespace"
@@ -76,7 +76,7 @@ in  S.Module::{
         }
       , S.Prompt::{
         , var = "project.description-long"
-        , text = "Longer project description (paragraph form, used in cabal `description:`):"
+        , text = "Longer project description (optional; press Enter to reuse the one-line synopsis):"
         }
       , S.Prompt::{
         , var = "project.namespace"

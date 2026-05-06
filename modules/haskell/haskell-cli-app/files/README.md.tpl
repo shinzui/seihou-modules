@@ -1,8 +1,10 @@
 # {{project.name}}
 
 > {{project.description}}
+{{#if IsSet project.description-long}}
 
 {{project.description-long}}
+{{/if}}
 
 ## Layout
 

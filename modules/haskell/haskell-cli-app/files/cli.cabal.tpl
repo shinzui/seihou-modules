@@ -3,7 +3,7 @@ name: {{project.name}}-cli
 version: 0.1.0.0
 synopsis: Command-line interface for {{project.name}}
 description:
-  {{project.description-long}}
+  {{#if IsSet project.description-long}}{{project.description-long}}{{#else}}{{project.description}}{{/if}}
 
 license: BSD-3-Clause
 license-file: ../LICENSE

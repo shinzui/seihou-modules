@@ -22,7 +22,7 @@ and the standard formatter / pre-commit toggles already wired up.
 |------|------|---------|----------|------------|-------------|
 | `project.name` | `text` | — | yes | `[a-z][a-z0-9-]*` | Project base name; cabal packages are named `<name>-core` and `<name>-cli`, the executable is named `<name>`. Re-declared here so step `dest` paths validate; the value is shared with `nix-haskell-flake` via the dependency graph. |
 | `project.description` | `text` | — | yes | — | One-line synopsis. Re-declared here so this module's templates can interpolate it; the value is shared with `nix-haskell-flake` (which uses it as the flake description) via the dependency graph. |
-| `project.description-long` | `text` | — | yes | — | Longer prose description used as the `description:` paragraph in both `.cabal` files. Distinct from `project.description`, which is the one-line synopsis. |
+| `project.description-long` | `text` | — | no | — | Optional longer prose description used as the `description:` paragraph in both `.cabal` files. When not set, the templates fall back to `project.description` (the one-line synopsis). |
 | `project.namespace` | `text` | — | yes | `[A-Z][A-Za-z0-9]*` | Top-level Haskell module namespace (single segment, e.g. `Rei`). Used both as the source-tree directory and as the module prefix in generated `.hs` files. |
 | `project.author` | `text` | `Nadeem Bitar` | yes | — | Author name written into `LICENSE` and `.cabal` files. |
 | `project.maintainer` | `text` | `nadeem@gmail.com` | yes | — | Maintainer email written into `.cabal` files. |
@@ -34,7 +34,7 @@ The following values are asked interactively (unless supplied via `--var`):
 
 - **`project.name`** — What is your project name? (lowercase, hyphenated; cabal packages will be `<name>-core` and `<name>-cli`)
 - **`project.description`** — One-line project synopsis (used as cabal `synopsis:` and the flake description):
-- **`project.description-long`** — Longer project description (paragraph form, used in cabal `description:`):
+- **`project.description-long`** — Longer project description (optional; press Enter to reuse the one-line synopsis):
 - **`project.namespace`** — Top-level Haskell module namespace? (single PascalCase segment, e.g. `Rei`)
 - **`project.author`** — Author name?
 - **`project.maintainer`** — Maintainer email?
@@ -92,7 +92,6 @@ With variable overrides (note that `nix-haskell-flake` variables apply too):
 seihou run haskell-cli-app \
   --var project.name=foo \
   --var project.description="A foo CLI" \
-  --var project.description-long="The longer story about foo." \
   --var project.namespace=Foo \
   --var nix.process-compose=false \
   --var nix.postgresql=false \

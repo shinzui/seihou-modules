@@ -3,7 +3,7 @@ name: {{project.name}}-core
 version: 0.1.0.0
 synopsis: {{project.description}}
 description:
-  {{project.description-long}}
+  {{#if IsSet project.description-long}}{{project.description-long}}{{#else}}{{project.description}}{{/if}}
 
 license: BSD-3-Clause
 license-file: ../LICENSE
