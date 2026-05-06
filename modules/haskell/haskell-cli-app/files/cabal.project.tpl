@@ -1,0 +1,13 @@
+packages:
+  {{project.name}}-core
+  {{project.name}}-cli
+
+-- GHC is provided by the Nix devShell from `nix-haskell-flake` (currently
+-- pinned to {{ghc.version}}). Add a `with-compiler:` line here if you want
+-- cabal to fail loudly when the version drifts from the flake.
+
+test-show-details: direct
+tests: True
+
+-- Parallel module compilation
+jobs: $ncpus

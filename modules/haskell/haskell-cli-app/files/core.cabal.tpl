@@ -1,0 +1,46 @@
+cabal-version: 3.4
+name: {{project.name}}-core
+version: 0.1.0.0
+synopsis: {{project.description}}
+description:
+  {{project.description-long}}
+
+license: BSD-3-Clause
+license-file: ../LICENSE
+author: {{project.author}}
+maintainer: {{project.maintainer}}
+copyright: (c) {{project.copyright-year}} {{project.author}}
+build-type: Simple
+extra-doc-files: ../CHANGELOG.md
+
+common common-options
+  ghc-options:
+    -Wall
+    -Wcompat
+    -Widentities
+    -Wincomplete-uni-patterns
+    -Wincomplete-record-updates
+    -Wredundant-constraints
+    -fhide-source-paths
+    -Wmissing-export-lists
+    -Wpartial-fields
+    -Wmissing-deriving-strategies
+
+  default-language: GHC2024
+  default-extensions:
+    DeriveAnyClass
+    DuplicateRecordFields
+    OverloadedLabels
+    OverloadedStrings
+
+library
+  import: common-options
+  hs-source-dirs: src
+  exposed-modules:
+    {{project.namespace}}.Prelude
+
+  build-depends:
+    base >=4.20 && <5,
+    generic-lens,
+    lens ^>=5.3,
+    text ^>=2.1,
