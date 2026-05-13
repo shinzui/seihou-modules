@@ -13,6 +13,12 @@
     , description = Some "Haskell CLI app bootstrap: two cabal packages (core library + CLI exe) on GHC 9.12 / GHC2024, with lens + generic-lens, BSD-3 license, and a nix-haskell-flake dev shell"
     , tags = [ "haskell", "cli", "bootstrap", "ghc2024" ]
     }
+  , { name = "haskell-library"
+    , version = Some "0.1.0"
+    , path = "modules/haskell/haskell-library"
+    , description = Some "Haskell library bootstrap: a single cabal package on GHC 9.12 / GHC2024, with lens + generic-lens, BSD-3 license, an optional tasty test-suite, and a nix-haskell-flake dev shell"
+    , tags = [ "haskell", "library", "bootstrap", "ghc2024" ]
+    }
   , { name = "git-init"
     , version = Some "0.1.0"
     , path = "modules/git/git-init"
