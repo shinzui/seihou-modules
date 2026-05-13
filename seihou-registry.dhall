@@ -33,5 +33,11 @@
     , description = Some "Bootstrap a single-package Haskell library in a fresh git repo: applies haskell-library (which pulls in nix-haskell-flake) and then git-init last so the initial commit captures the full scaffold"
     , tags = [ "haskell", "library", "git", "bootstrap" ]
     }
+  , { name = "haskell-cli-app-repo"
+    , version = Some "0.1.0"
+    , path = "recipes/haskell-cli-app-repo"
+    , description = Some "Bootstrap a two-package Haskell CLI app (core library + CLI exe) in a fresh git repo: applies haskell-cli-app (which pulls in nix-haskell-flake) and then git-init last so the initial commit captures the full scaffold"
+    , tags = [ "haskell", "cli", "git", "bootstrap" ]
+    }
   ]
 }
