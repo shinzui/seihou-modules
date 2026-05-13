@@ -27,5 +27,11 @@
     }
   ]
 , recipes =
-  [] : List { name : Text, version : Optional Text, path : Text, description : Optional Text, tags : List Text }
+  [ { name = "haskell-library-repo"
+    , version = Some "0.1.0"
+    , path = "recipes/haskell-library-repo"
+    , description = Some "Bootstrap a single-package Haskell library in a fresh git repo: applies haskell-library (which pulls in nix-haskell-flake) and then git-init last so the initial commit captures the full scaffold"
+    , tags = [ "haskell", "library", "git", "bootstrap" ]
+    }
+  ]
 }
