@@ -17,17 +17,20 @@ data Command
   = Hello (Maybe T.Text)
   deriving stock (Show, Eq)
 
--- | Top-level CLI options, parsed from argv.
+-- | Top-level CLI options, parsed from argv. The field is named `cmd`
+--   rather than `command` so the auto-generated field selector does not
+--   clash with `Options.Applicative.command` (the subparser builder used
+--   in `commandParser` below).
 data Options = Options
-  { command :: Command
+  { cmd :: Command
   }
   deriving stock (Show, Eq)
 
 -- | Parse argv and dispatch to the chosen subcommand.
 runCli :: IO ()
 runCli = do
-  opts <- execParser parserInfo
-  runCommand opts.command
+  Options{cmd} <- execParser parserInfo
+  runCommand cmd
 
 parserInfo :: ParserInfo Options
 parserInfo =
