@@ -11,7 +11,7 @@ generation logic, just a named bundle. `haskell-library-repo` is the one-name ha
 "new Haskell library project in a fresh repo." After running it you end up with:
 
 - A `<project>/<project>.cabal` library scaffolded by `haskell-library` (lens +
-  generic-lens prelude, GHC 9.12 / GHC2024, optional tasty test-suite).
+  generic-lens prelude, GHC 9.12.4 / GHC2024, optional tasty test-suite).
 - A Nix dev shell (`flake.nix`, `flake.lock`, `.envrc`, optional `treefmt.nix` and
   pre-commit-hooks) supplied by `haskell-library`'s dependency on `nix-haskell-flake`.
 - An initialized git repo (`git init -b master`) with a single `Initial commit`

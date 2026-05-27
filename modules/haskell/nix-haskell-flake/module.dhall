@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "nix-haskell-flake"
-    , version = Some "0.8.0"
+    , version = Some "0.9.0"
     , description = Some "Nix flake for Haskell projects with toggleable process-compose, PostgreSQL, treefmt-nix, and pre-commit-hooks"
     , vars =
       [ S.VarDecl::{
@@ -23,8 +23,8 @@ in  S.Module::{
       , S.VarDecl::{
         , name = "ghc.version"
         , type = "text"
-        , default = Some "ghc912"
-        , description = Some "GHC version identifier for haskell.packages.<version>"
+        , default = Some "ghc9124"
+        , description = Some "GHC version identifier for haskell.packages.<version> (e.g. ghc9124 pins GHC 9.12.4 exactly; ghc912 tracks the latest 9.12.x in the locked nixpkgs)"
         , required = True
         , validation = Some "ghc[0-9]+"
         }
@@ -71,7 +71,7 @@ in  S.Module::{
       , S.Prompt::{
         , var = "ghc.version"
         , text = "Which GHC version?"
-        , choices = Some [ "ghc912", "ghc984", "ghc966" ]
+        , choices = Some [ "ghc9124", "ghc984", "ghc966" ]
         }
       , S.Prompt::{
         , var = "nix.process-compose"

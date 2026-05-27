@@ -6,7 +6,7 @@ in  S.Module::{
     , name = "haskell-library"
     , version = Some "0.1.0"
     , description = Some
-        "Bootstrap a single-package Haskell library under GHC 9.12 / GHC2024, with lens + generic-lens, a BSD-3 license, the project author's standard warning set, and an optional tasty test-suite. Depends on nix-haskell-flake for the dev shell."
+        "Bootstrap a single-package Haskell library under GHC 9.12.4 / GHC2024, with lens + generic-lens, a BSD-3 license, the project author's standard warning set, and an optional tasty test-suite. Depends on nix-haskell-flake for the dev shell."
     , vars =
       [ S.VarDecl::{
         , name = "project.name"

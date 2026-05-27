@@ -20,7 +20,7 @@ in  Schema.Project::{
     , templates =
       [ Schema.SeihouTemplate::{
         , name = "nix-haskell-flake"
-        , version = Some "0.8.0"
+        , version = Some "0.9.0"
         , description = Some
             "Nix flake for Haskell projects with toggleable process-compose, PostgreSQL, treefmt-nix, and pre-commit-hooks"
         , modulePath = "modules/haskell/nix-haskell-flake"
@@ -36,7 +36,7 @@ in  Schema.Project::{
         , name = "haskell-cli-app"
         , version = Some "0.1.0"
         , description = Some
-            "Haskell CLI app bootstrap: two cabal packages (core library + CLI exe) on GHC 9.12 / GHC2024, with lens + generic-lens, BSD-3 license, and a nix-haskell-flake dev shell"
+            "Haskell CLI app bootstrap: two cabal packages (core library + CLI exe) on GHC 9.12.4 / GHC2024, with lens + generic-lens, BSD-3 license, and a nix-haskell-flake dev shell"
         , modulePath = "modules/haskell/haskell-cli-app"
         , tags = [ "haskell", "cli", "bootstrap", "ghc2024" ]
         , requiredVars =

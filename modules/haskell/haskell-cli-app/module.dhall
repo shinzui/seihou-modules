@@ -6,7 +6,7 @@ in  S.Module::{
     , name = "haskell-cli-app"
     , version = Some "0.1.0"
     , description = Some
-        "Bootstrap a Haskell CLI app as two packages (core library + CLI exe) under GHC 9.12 / GHC2024, with lens + generic-lens, a BSD-3 license, and the project author's standard warning set. Depends on nix-haskell-flake for the dev shell."
+        "Bootstrap a Haskell CLI app as two packages (core library + CLI exe) under GHC 9.12.4 / GHC2024, with lens + generic-lens, a BSD-3 license, and the project author's standard warning set. Depends on nix-haskell-flake for the dev shell."
     , vars =
       [ S.VarDecl::{
         , name = "project.name"
