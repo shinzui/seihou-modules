@@ -19,6 +19,15 @@ in  Schema.Project::{
       ]
     , templates =
       [ Schema.SeihouTemplate::{
+        , name = "git-init"
+        , version = Some "0.1.0"
+        , description = Some
+            "Initialize a local git repository (default branch master), append .claude/, .agents/, and .seihou/manifest.json.tmp to .gitignore, and optionally create a GitHub repo via `gh repo create` (defaults to private) under a configured org or username"
+        , modulePath = "modules/git/git-init"
+        , tags = [ "git", "github", "bootstrap" ]
+        , requiredVars = [ "git.defaultBranch" ]
+        }
+      , Schema.SeihouTemplate::{
         , name = "nix-haskell-flake"
         , version = Some "0.9.0"
         , description = Some
@@ -33,12 +42,27 @@ in  Schema.Project::{
           ]
         }
       , Schema.SeihouTemplate::{
+        , name = "haskell-library"
+        , version = Some "0.1.0"
+        , description = Some
+            "Haskell library bootstrap: single cabal package on GHC 9.12 / GHC2024, with lens + generic-lens, BSD-3 license, the project author's standard warning set, and an optional tasty test-suite; pulls in nix-haskell-flake for the dev shell"
+        , modulePath = "modules/haskell/haskell-library"
+        , tags = [ "haskell", "library", "bootstrap", "ghc2024" ]
+        , dependencies = [ "nix-haskell-flake" ]
+        , requiredVars =
+          [ "project.name"
+          , "project.description"
+          , "project.namespace"
+          ]
+        }
+      , Schema.SeihouTemplate::{
         , name = "haskell-cli-app"
         , version = Some "0.1.0"
         , description = Some
             "Haskell CLI app bootstrap: two cabal packages (core library + CLI exe) on GHC 9.12.4 / GHC2024, with lens + generic-lens, BSD-3 license, and a nix-haskell-flake dev shell"
         , modulePath = "modules/haskell/haskell-cli-app"
         , tags = [ "haskell", "cli", "bootstrap", "ghc2024" ]
+        , dependencies = [ "nix-haskell-flake" ]
         , requiredVars =
           [ "project.name"
           , "project.description"
