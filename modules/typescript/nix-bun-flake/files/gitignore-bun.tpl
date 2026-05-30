@@ -1,0 +1,11 @@
+node_modules
+dist
+build
+.direnv
+result
+result-*
+*.log
+.env
+.env.local
+bun.lock.bak
+.DS_Store

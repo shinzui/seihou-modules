@@ -25,6 +25,12 @@
     , description = Some "Initialize a local git repo (default branch master), seed .gitignore with .claude/, .agents/, and .seihou/manifest.json.tmp, and optionally create a private GitHub repo via `gh` under a configured org or username"
     , tags = [ "git", "github", "bootstrap", "gitignore" ]
     }
+  , { name = "nix-bun-flake"
+    , version = Some "0.1.0"
+    , path = "modules/typescript/nix-bun-flake"
+    , description = Some "Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, and optional git-hooks.nix pre-commit checks"
+    , tags = [ "typescript", "bun", "nix", "flake", "oxc", "devshell" ]
+    }
   ]
 , recipes =
   [ { name = "haskell-library-repo"
