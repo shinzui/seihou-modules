@@ -15,8 +15,9 @@ for "new Haskell CLI project in a fresh repo." After running it you end up with:
     re-exports `lens` and `generic-lens`.
   - `<project>-cli/` — a library exposing `<Namespace>.Cli.runCli` plus an executable
     named `<project>` whose `Main` just delegates to it.
-- A Nix dev shell (`flake.nix`, `flake.lock`, `.envrc`, optional `treefmt.nix` and
-  pre-commit-hooks) supplied by `haskell-cli-app`'s dependency on `nix-haskell-flake`.
+- A flake-parts Nix dev shell (`flake.nix` stub + `nix/*.nix` modules, `flake.lock`,
+  `flake.module.nix.example`, `.envrc`, optional treefmt-nix and pre-commit-hooks)
+  supplied by `haskell-cli-app`'s dependency on `nix-haskell-flake`.
 - An initialized git repo (`git init -b master`) with a single `Initial commit`
   containing everything above, plus an optional GitHub remote created via
   `gh repo create` when `git.createGithub=true`.
@@ -57,10 +58,11 @@ Optional with sensible defaults:
 
 ## Generated Files
 
-The full plan (with both `nix.treefmt` and `nix.pre-commit` enabled) produces 15
+The full plan (with both `nix.treefmt` and `nix.pre-commit` enabled) produces 18
 files:
 
-- From `nix-haskell-flake`: `flake.nix`, `flake.lock`, `treefmt.nix`, `.envrc`, plus
+- From `nix-haskell-flake`: `flake.nix`, `flake.lock`, `nix/haskell.nix`,
+  `nix/treefmt.nix`, `nix/pre-commit.nix`, `flake.module.nix.example`, `.envrc`, plus
   `.gitignore` patches.
 - From `haskell-cli-app`: `cabal.project`, `<project>-core/<project>-core.cabal`,
   `<project>-core/src/<Namespace>/Prelude.hs`,

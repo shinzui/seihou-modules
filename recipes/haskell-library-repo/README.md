@@ -12,8 +12,9 @@ generation logic, just a named bundle. `haskell-library-repo` is the one-name ha
 
 - A `<project>/<project>.cabal` library scaffolded by `haskell-library` (lens +
   generic-lens prelude, GHC 9.12.4 / GHC2024, optional tasty test-suite).
-- A Nix dev shell (`flake.nix`, `flake.lock`, `.envrc`, optional `treefmt.nix` and
-  pre-commit-hooks) supplied by `haskell-library`'s dependency on `nix-haskell-flake`.
+- A flake-parts Nix dev shell (`flake.nix` stub + `nix/*.nix` modules, `flake.lock`,
+  `flake.module.nix.example`, `.envrc`, optional treefmt-nix and pre-commit-hooks)
+  supplied by `haskell-library`'s dependency on `nix-haskell-flake`.
 - An initialized git repo (`git init -b master`) with a single `Initial commit`
   containing everything above, plus an optional GitHub remote created via
   `gh repo create` when `git.createGithub=true`.
@@ -55,9 +56,10 @@ Optional with sensible defaults:
 ## Generated Files
 
 The full plan (with `project.tests=true`, both `nix.treefmt` and `nix.pre-commit`
-enabled) produces 14 files:
+enabled) produces 17 files:
 
-- From `nix-haskell-flake`: `flake.nix`, `flake.lock`, `treefmt.nix`, `.envrc`, plus
+- From `nix-haskell-flake`: `flake.nix`, `flake.lock`, `nix/haskell.nix`,
+  `nix/treefmt.nix`, `nix/pre-commit.nix`, `flake.module.nix.example`, `.envrc`, plus
   `.gitignore` patches.
 - From `haskell-library`: `cabal.project`, `<project>/<project>.cabal`,
   `<project>/src/<Namespace>.hs`, `<project>/src/<Namespace>/Prelude.hs`,

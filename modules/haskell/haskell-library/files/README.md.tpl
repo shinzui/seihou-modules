@@ -36,6 +36,10 @@ the dev shell. Enter the shell with:
 nix develop      # or: direnv allow, if you use direnv
 ```
 
+To add dev-shell tools or extra flake outputs, copy `flake.module.nix.example` to
+`flake.module.nix` and edit it. It is imported automatically and is never overwritten
+by template upgrades, so your customizations there survive `nix-haskell-flake` updates.
+
 Then build{{#if Eq project.tests true}} and test{{/if}}:
 
 ```bash
