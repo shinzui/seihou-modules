@@ -63,8 +63,17 @@ This section must always reflect the actual current state of the work.
   commit f9ca9c6).
 - [x] Inventory and classify all shinzui Haskell flakes (see Context and Orientation for the
   full classification; recorded 2026-06-03).
-- [ ] Milestone 1: Author the `upgrade-haskell-flake-parts` blueprint in this repo and pass
-  `seihou validate-blueprint`.
+- [x] Milestone 1 (2026-06-03): Authored the `upgrade-haskell-flake-parts` blueprint at
+  `blueprints/upgrade-haskell-flake-parts/` (blueprint.dhall, prompt.md, README.md, and a
+  `files/` tree mirroring the target: `flake.nix`, `nix/{haskell,treefmt,pre-commit}.nix`,
+  `flake.module.nix`). Registered it in `seihou-registry.dhall` under a new `blueprints` field
+  and ran `seihou registry sync-versions` (which also corrected pre-existing module version
+  drift). `seihou validate-blueprint blueprints/upgrade-haskell-flake-parts` exits 0
+  ("Blueprint 'upgrade-haskell-flake-parts' is valid."), `seihou registry validate` is clean,
+  and `seihou agent --debug run upgrade-haskell-flake-parts` renders a coherent 256-line system
+  prompt embedding the full recipe and all five reference-file descriptions. The blueprint is
+  made resolvable-by-name from any project directory via a symlink into the XDG modules search
+  path (see Decision Log).
 - [ ] Milestone 2: Prove the blueprint end-to-end on one Tier A project; refine the prompt
   from what the run reveals.
 - [ ] Milestone 3: Sweep the remaining Tier A projects (already on `haskell-nix-dev`, old
@@ -91,6 +100,32 @@ implementation. Provide concise evidence.
   for `servant` built against ghc9124 returns "don't know how to build these paths". Once
   built, those derivations are shared across all projects that pin the same nixpkgs, so the
   cost is paid once for the fleet, not once per project.
+
+- A blueprint's `allowedTools` field is currently **inert** for `seihou agent run`. Evidence:
+  `seihou-cli/src-exe/Seihou/CLI/AgentRun.hs:206` launches the claude-cli/codex-cli provider
+  with the hard-coded `setupAllowedTools` list (`AgentLaunch.hs:93`), and `renderSystemPrompt`
+  (`AgentRun.hs:408`) never references `bp.allowedTools`. So the field is validated (entries
+  must be non-empty) but neither enforced as CLI permissions nor surfaced to the agent. The
+  blueprint still declares a restrictive `allowedTools` as documented intent, but the
+  **"never commit / never push" guarantee rests on the prompt instruction, not the tool
+  allowlist** — and note `setupAllowedTools` actually grants `Bash(git *)`, which would permit
+  a commit if the prompt did not forbid it.
+
+- Blueprints are resolved **by directory name** under the three `defaultSearchPaths`
+  (`Seihou/Core/Module.hs:123`): `<cwd>/.seihou/modules`, `~/.config/seihou/modules`,
+  `~/.config/seihou/installed`. They are *not* discovered from a repo's local
+  `seihou-registry.dhall`. Consequence: `seihou agent run <name>` and `seihou list` do not see
+  a freshly authored local blueprint until it is installed (`seihou install`, which snapshots
+  into `installed/`) or otherwise placed on a search path. For the authoring/sweep loop a
+  symlink into `~/.config/seihou/modules/` is used instead of `install`, so prompt refinements
+  in the repo are immediately live (see Decision Log). `seihou list` still does not print the
+  blueprint (it lists project modules/recipes and *installed* blueprints), but `seihou agent
+  run` resolves it via the symlink and `seihou validate-blueprint` validates it directly.
+
+- The repo's `seihou-registry.dhall` had pre-existing version drift from earlier milestones:
+  `nix-haskell-flake` was on disk at 0.11.0 but recorded as 0.10.0, and `haskell-cli-app` /
+  `haskell-library` were at 0.2.0 on disk but 0.1.0 in the registry. `seihou registry
+  sync-versions` reconciled all three (the modules genuinely are at the on-disk versions).
 
 
 ## Decision Log
@@ -133,6 +168,33 @@ Record every decision made while working on the plan.
   commits each project.
   Rationale: Matches the validated reference workflow and keeps the human in the loop for a
   build-behavior-changing edit.
+  Date: 2026-06-03
+
+- Decision: Make the blueprint resolvable-by-name during authoring/sweep via a symlink
+  (`~/.config/seihou/modules/upgrade-haskell-flake-parts` ->
+  `…/seihou-modules/blueprints/upgrade-haskell-flake-parts`) rather than `seihou install`.
+  Rationale: `seihou install` snapshots the blueprint into `~/.config/seihou/installed/`, which
+  would go stale every time Milestone 2 refines `prompt.md`; the symlink keeps the repo as the
+  single source of truth and makes edits immediately live for re-runs. The XDG `modules/`
+  directory is exactly the search path intended for locally authored artifacts. The repo is not
+  yet pushed, so a remote git install is not possible anyway. When the repo is published, a
+  normal `seihou install <url> --module upgrade-haskell-flake-parts` is the durable mechanism.
+  Date: 2026-06-03
+
+- Decision: Set the blueprint's `allowedTools` to a restrictive list (Read/Write/Edit/Glob/Grep,
+  `Bash(nix *)`, read-only git and shell helpers) even though the field is currently inert at
+  launch, and rely on the prompt's explicit "never commit/never push" and "never edit Haskell
+  source" rules for the actual guardrails.
+  Rationale: Records the intended permission surface for when seihou wires blueprint
+  `allowedTools` into the launch, while the prompt enforces the invariants today. See Surprises
+  for the evidence that the field is not yet enforced.
+  Date: 2026-06-03
+
+- Decision: Run `seihou registry sync-versions` while registering the blueprint, correcting
+  pre-existing module version drift (nix-haskell-flake 0.10.0->0.11.0, haskell-cli-app and
+  haskell-library 0.1.0->0.2.0) so `seihou registry validate` is clean.
+  Rationale: The registry should reflect the on-disk module versions; the drift predates this
+  plan but blocks a clean `registry validate`, and `sync-versions` is the documented fix.
   Date: 2026-06-03
 
 
