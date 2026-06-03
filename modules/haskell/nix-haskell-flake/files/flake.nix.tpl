@@ -1,20 +1,67 @@
 {
   description = "{{project.description}}";
 
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-  inputs.flake-utils.url = "github:numtide/flake-utils";
+  inputs.haskell-nix-dev.url = "github:shinzui/haskell-nix-dev";
+  inputs.nixpkgs.follows = "haskell-nix-dev/nixpkgs";
+  inputs.flake-utils.follows = "haskell-nix-dev/flake-utils";
   {{#if Eq nix.treefmt true}}
-  inputs.treefmt-nix.url = "github:numtide/treefmt-nix";
+  inputs.treefmt-nix.follows = "haskell-nix-dev/treefmt-nix";
   {{/if}}
   {{#if Eq nix.pre-commit true}}
   inputs.pre-commit-hooks.url = "github:cachix/git-hooks.nix";
   {{/if}}
 
-  outputs = { self, nixpkgs, flake-utils{{#if Eq nix.treefmt true}}, treefmt-nix{{/if}}{{#if Eq nix.pre-commit true}}, pre-commit-hooks{{/if}} }:
+  # TODO(haskell-nix-dev EP-2): fill in the Cachix substituter URL and public key once the
+  # base flake's binary cache is published, so the first `nix develop` downloads prebuilt
+  # GHC/HLS/cabal instead of compiling HLS from source. Left empty (inert) until then.
+  nixConfig = {
+    extra-substituters = [ ];
+    extra-trusted-public-keys = [ ];
+  };
+
+  outputs = { self, nixpkgs, haskell-nix-dev, flake-utils{{#if Eq nix.treefmt true}}, treefmt-nix{{/if}}{{#if Eq nix.pre-commit true}}, pre-commit-hooks{{/if}} }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs { inherit system; };
+        hsdev = haskell-nix-dev.lib.${system};
         haskellPackages = pkgs.haskell.packages."{{ghc.version}}";
+
+        commonNativeBuildInputs = [
+          pkgs.zlib
+          pkgs.just
+          pkgs.pkg-config
+          {{#if Eq nix.postgresql true}}
+          pkgs.postgresql
+          {{/if}}
+        ] ++ pkgs.lib.optional {{nix.process-compose}} pkgs.process-compose;
+
+        commonShellHook = ''
+          {{#if Eq nix.pre-commit true}}
+          ${self.checks.${system}.pre-commit-check.shellHook}
+          {{/if}}
+          {{#if Eq nix.postgresql true}}
+
+          export PGHOST="$PWD/db"
+          export PGDATA="$PGHOST/db"
+          export PGLOG=$PGHOST/postgres.log
+          export PGDATABASE={{project.name}}
+          export PG_CONNECTION_STRING=postgresql://$(jq -rn --arg x $PGHOST '$x|@uri')/$PGDATABASE
+
+          mkdir -p $PGHOST
+          mkdir -p .dev
+
+          if [ ! -d $PGDATA ]; then
+            initdb --auth=trust --no-locale --encoding=UTF8
+          fi
+          {{/if}}
+        '';
+
+        mkProjectShell = ghc: hsdev.mkDevShell {
+          inherit ghc;
+          extraNativeBuildInputs = commonNativeBuildInputs;
+          withHls = true;
+          shellHook = commonShellHook;
+        };
         {{#if Eq nix.treefmt true}}
         treefmtEval = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
         formatter = treefmtEval.config.build.wrapper;
@@ -26,7 +73,7 @@
 
         {{/if}}
         packages = {
-          default = haskellPackages.{{project.name}};
+          default = haskellPackages.callCabal2nix "{{project.name}}" ./. { };
         };
 
         checks = {
@@ -46,43 +93,12 @@
           {{/if}}
         };
 
-        devShells.default = pkgs.mkShell {
-          nativeBuildInputs = [
-            pkgs.zlib
-            pkgs.just
-            pkgs.cabal-install
-            pkgs.pkg-config
-            {{#if Eq nix.postgresql true}}
-            pkgs.postgresql
-            {{/if}}
-            (haskellPackages.ghcWithPackages (ps: [
-              ps.haskell-language-server
-            ]))
-          ]
-          ++ pkgs.lib.optional {{nix.process-compose}} pkgs.process-compose;
-
-          shellHook = ''
-            {{#if Eq nix.pre-commit true}}
-            ${self.checks.${system}.pre-commit-check.shellHook}
-            {{/if}}
-            export LANG=en_US.UTF-8
-            {{#if Eq nix.postgresql true}}
-
-            export PGHOST="$PWD/db"
-            export PGDATA="$PGHOST/db"
-            export PGLOG=$PGHOST/postgres.log
-            export PGDATABASE={{project.name}}
-            export PG_CONNECTION_STRING=postgresql://$(jq -rn --arg x $PGHOST '$x|@uri')/$PGDATABASE
-
-            mkdir -p $PGHOST
-            mkdir -p .dev
-
-            if [ ! -d $PGDATA ]; then
-              initdb --auth=trust --no-locale --encoding=UTF8
-            fi
-            {{/if}}
-          '';
+        devShells = {
+          default = mkProjectShell "{{ghc.version}}";
+          "{{ghc.version}}" = mkProjectShell "{{ghc.version}}";
+          {{#if IsSet ghc.secondary}}
+          "{{ghc.secondary}}" = mkProjectShell "{{ghc.secondary}}";
+          {{/if}}
         };
-      }
-    );
+      });
 }

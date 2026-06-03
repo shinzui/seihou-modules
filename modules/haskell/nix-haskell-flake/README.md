@@ -1,8 +1,8 @@
 # nix-haskell-flake
 
-> Nix flake for Haskell projects with toggleable process-compose, PostgreSQL, treefmt-nix, and pre-commit-hooks.
+> Nix flake for Haskell projects that consumes the `haskell-nix-dev` base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal toolchains), with toggleable process-compose, PostgreSQL, treefmt-nix, and pre-commit-hooks.
 
-**Version:** `0.9.0`
+**Version:** `0.10.0`
 
 ## Overview
 
@@ -11,13 +11,30 @@ pinned via `flake.lock`, an `.envrc` for direnv, and opt-in integrations for ser
 orchestration (process-compose), a local PostgreSQL instance, code formatting
 (treefmt-nix), and Git pre-commit hooks.
 
+As of `0.10.0`, the generated `flake.nix` **consumes the base flake**
+`github:shinzui/haskell-nix-dev` instead of inlining its own toolchain:
+
+- It follows the base flake's `nixpkgs` (`inputs.nixpkgs.follows = "haskell-nix-dev/nixpkgs"`),
+  so every project inherits the **same pinned nixpkgs / GHC builds through a single shared
+  lock**. Upgrading the toolchain everywhere is `nix flake update haskell-nix-dev`, not editing
+  each project's pin.
+- Each devShell is built from the base flake's `lib.${system}.mkDevShell`, which provides the
+  GHC compiler, `cabal`, and HLS (HLS built once and — once the base flake's Cachix cache is
+  published — downloaded prebuilt rather than compiled from source).
+- The project's own package is built with `callCabal2nix` against the followed nixpkgs.
+
+The default GHC is `ghc.version` (a named devShell plus `default`); set `ghc.secondary` to add
+one more GHC as `nix develop .#<attr>` for cross-version testing. Both must be GHC attributes
+the base flake supports (`supportedGhcs` — currently `ghc9124`).
+
 ## Variables
 
 | Name | Type | Default | Required | Validation | Description |
 |------|------|---------|----------|------------|-------------|
 | `project.name` | `text` | — | yes | `[a-z][a-z0-9-]*` | Project name (used in flake description and database name) |
 | `project.description` | `text` | — | yes | — | One-line project description |
-| `ghc.version` | `text` | `ghc9124` | yes | `ghc[0-9]+` | GHC version identifier for `haskell.packages.<version>` (e.g. `ghc9124` pins GHC 9.12.4 exactly; `ghc912` tracks the latest 9.12.x in the locked nixpkgs) |
+| `ghc.version` | `text` | `ghc9124` | yes | `ghc[0-9]+` | Default/primary GHC for the project's `nix develop` shell. Must be a GHC attribute the `haskell-nix-dev` base flake supports (currently `ghc9124` = GHC 9.12.4). Exported for dependent modules. |
+| `ghc.secondary` | `text` | — | no | — | Optional second GHC attribute exposed as `nix develop .#<attr>` for cross-version testing. Must also be base-flake-supported. Leave unset for a single-version project. (Exactly one extra version is supported.) |
 | `nix.process-compose` | `bool` | — | yes | — | Include process-compose in devShell and generate `process-compose.yaml` |
 | `nix.postgresql` | `bool` | — | yes | — | Include postgresql in devShell with local DB setup in shellHook |
 | `nix.treefmt` | `bool` | `true` | yes | — | Include treefmt-nix input and generate `treefmt.nix` |
@@ -29,8 +46,8 @@ The following values are asked interactively (unless supplied via `--var`):
 
 - **`project.name`** — What is your project name?
 - **`project.description`** — Describe your project in one line:
-- **`ghc.version`** — Which GHC version?
-  - Choices: `ghc9124`, `ghc984`, `ghc966`
+- **`ghc.version`** — Which GHC version? (must be supported by the haskell-nix-dev base flake)
+  - Choices: `ghc9124`
 - **`nix.process-compose`** — Include process-compose for service orchestration?
 - **`nix.postgresql`** — Include PostgreSQL with local database setup?
 - **`nix.treefmt`** — Include treefmt-nix for code formatting (fourmolu, nixpkgs-fmt, cabal-fmt)?

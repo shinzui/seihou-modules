@@ -4,8 +4,8 @@ let S =
 
 in  S.Module::{
     , name = "nix-haskell-flake"
-    , version = Some "0.9.0"
-    , description = Some "Nix flake for Haskell projects with toggleable process-compose, PostgreSQL, treefmt-nix, and pre-commit-hooks"
+    , version = Some "0.10.0"
+    , description = Some "Nix flake for Haskell projects that consumes the haskell-nix-dev base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal toolchains), with toggleable process-compose, PostgreSQL, treefmt-nix, and pre-commit-hooks"
     , vars =
       [ S.VarDecl::{
         , name = "project.name"
@@ -24,9 +24,15 @@ in  S.Module::{
         , name = "ghc.version"
         , type = "text"
         , default = Some "ghc9124"
-        , description = Some "GHC version identifier for haskell.packages.<version> (e.g. ghc9124 pins GHC 9.12.4 exactly; ghc912 tracks the latest 9.12.x in the locked nixpkgs)"
+        , description = Some "Default/primary GHC for the generated project's `nix develop` shell. Must be a GHC attribute the haskell-nix-dev base flake supports (currently ghc9124 = GHC 9.12.4). Exported for dependent modules (e.g. haskell-library)."
         , required = True
         , validation = Some "ghc[0-9]+"
+        }
+      , S.VarDecl::{
+        , name = "ghc.secondary"
+        , type = "text"
+        , description = Some "Optional second GHC attribute to expose as a named devShell (`nix develop .#<attr>`) alongside ghc.version, for cross-version testing. Must also be supported by the haskell-nix-dev base flake. Leave unset for a single-version project. (The engine has no list iteration, so exactly one extra version is supported here; use the dhall-text strategy if you need more.)"
+        , required = False
         }
       , S.VarDecl::{
         , name = "nix.process-compose"
@@ -70,8 +76,8 @@ in  S.Module::{
         }
       , S.Prompt::{
         , var = "ghc.version"
-        , text = "Which GHC version?"
-        , choices = Some [ "ghc9124", "ghc984", "ghc966" ]
+        , text = "Which GHC version? (must be supported by the haskell-nix-dev base flake)"
+        , choices = Some [ "ghc9124" ]
         }
       , S.Prompt::{
         , var = "nix.process-compose"
