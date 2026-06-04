@@ -288,6 +288,19 @@ Record every decision made while working on the plan.
   Milestone 2) without requiring an interactive TTY, and keeps the review/commit gate.
   Date: 2026-06-03
 
+- Decision: Migrate `notion-hub` (`/Users/shinzui/Keikaku/bokuno/notion-hub`,
+  `github:shinzui/notion-hub`) too, at the user's request mid-sweep. It was not in the
+  2026-06-03 inventory (registered in mori on 2026-06-04). It is the same overlay-CLI shape as
+  the "Tier A" group (eachDefaultSystem + nixpkgs-direct + overlay, ghc9122) and is converted
+  with the same blueprint. Its working tree was already dirty with the user's in-progress build
+  fixes (a pinned nixpkgs to retain ghc9122 — made moot by following haskell-nix-dev/nixpkgs;
+  `gogol`/`gogol-core`/`gogol-storage` jailbreaks in `nix/haskell-overlay.nix`; `cabal.project`
+  allow-newer; a custom `notion-hub-subscriptions` overrideAttrs package). The conversion
+  preserves all of these — the overlay file and `cabal.project` are left untouched and the
+  custom package is copied verbatim into `flake.module.nix`.
+  Rationale: User asked for it; it is in-scope-shaped and the blueprint applies unchanged.
+  Date: 2026-06-04
+
 - Decision: Run `seihou registry sync-versions` while registering the blueprint, correcting
   pre-existing module version drift (nix-haskell-flake 0.10.0->0.11.0, haskell-cli-app and
   haskell-library 0.1.0->0.2.0) so `seihou registry validate` is clean.
