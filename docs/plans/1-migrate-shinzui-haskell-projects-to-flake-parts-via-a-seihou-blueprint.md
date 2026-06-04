@@ -122,7 +122,10 @@ This section must always reflect the actual current state of the work.
   origin). Deferred-but-now-fixable: mori (keiro) and reiko (pgmq-core) — the registry patches
   were corrected locally (keiro subpath; pgmq-core hash) and need verify + push of haskell-nix,
   then a lock bump + rebuild + commit of those two.
-- [~] Milestone 4 (in progress, 2026-06-04): Sweep the 18 Tier B projects. Done so far:
+- [x] Milestone 4 (2026-06-04): Swept the Tier B projects — 17 of 18 converted + pushed
+  (typeid-hs, hasql-migration, hw-kafka-streamly, notion-client, shibuya-message-db-adapter
+  completed in the final batch once their WIP was committed); nagare excluded (bespoke
+  Pulumi/cloud dev-shell). Details:
   - pgmq-hs — converted (own overlay kept, 6 packages, withTests checks, postgres shellHook),
     built on ghc9124 (default + pgmq-effectful), committed 973c107 and pushed.
   Dev-shell-only conversions done + pushed (the no-overlay library flakes that never built a
@@ -152,7 +155,12 @@ This section must always reflect the actual current state of the work.
     source via the shared registry. For these, the faithful conversion is a flake-parts dev shell
     on ghc9124 + treefmt + pre-commit with no flake.module.nix (or a callCabal2nix only if their
     inter-project deps resolve). This is a per-project judgement call, not a uniform transform.
-- [ ] Milestone 5: Confirm fleet-wide lockstep and write the retrospective.
+- [x] Milestone 5 (2026-06-04): Fleet lockstep confirmed. `just check-toolchain` from
+  `haskell-nix-dev` reports `✓ lockstep: all 25 consumers pin af29a4869ca8 — shared toolchain &
+  cache` (every consumer also on nixpkgs `4df1b885d76a`). Fixed two false-positive "drift"
+  sources in the scanner (`haskell-nix-dev` commit 0cf7e47: prune `dist-newstyle` build
+  artifacts and skip blueprint/recipe/module `files/` reference templates). Retrospective written
+  below.
 
 
 ## Surprises & Discoveries
@@ -420,7 +428,53 @@ Record every decision made while working on the plan.
 Summarize outcomes, gaps, and lessons learned at major milestones or at completion.
 Compare the result against the original purpose.
 
-(To be filled during and after implementation.)
+**Outcome (2026-06-04).** The plan's goal — every shinzui-namespace Haskell project on one thin
+flake-parts structure sharing a single GHC 9.12.4 toolchain and nixpkgs — is achieved. The
+fleet-wide property holds: `just check-toolchain` reports **all 25 consumers pinning one
+haskell-nix-dev rev (af29a4869ca8) and one nixpkgs (4df1b885d76a)**, i.e. one toolchain and one
+binary cache.
+
+**What shipped.**
+- The reusable artifact: the `upgrade-haskell-flake-parts` seihou blueprint (validated, registered,
+  refined across the sweep — the prompt now covers `git add -N` visibility and bumping a stale
+  unpinned `haskell-nix` registry).
+- Migrated + committed + pushed (built on ghc9124 where they have a real package build; dev-shell
+  on ghc9124 otherwise): the 3 reference projects (nihongo, kizamu, seihou); the "Tier A" set
+  (notion-cli, kiroku, mina, rei, reiko, mori-rei-app) + notion-hub + mori; and the Tier B set
+  (pgmq-hs with a full build; kafka-effectful, ephemeral-pg, keiki, shiki, hasql-opentelemetry,
+  keiro, kizashi, shibuya, shibuya-kafka-adapter, shibuya-pgmq-adapter, typeid-hs, hasql-migration,
+  hw-kafka-streamly, notion-client, shibuya-message-db-adapter as dev-shell-only). ~25 projects.
+- The shared `haskell-nix` registry was de-excluded (at user request) and upgraded: fixed the
+  `keiro` patch (subdir + missing subpackages) and the stale `pgmq-*` Hackage hashes, and replaced
+  the old `hs-opentelemetry-semantic-conventions` pin with the full OpenTelemetry **v1.40** family
+  from the upstream source (commit 41f6423).
+- The user's `~/.config/dotfiles.nix` (nix-darwin) was re-wired so all ten consumed Haskell
+  projects follow one shared `haskell-nix-dev` (maximal cache sharing); `darwinConfigurations.
+  SungkyungM1X.system` now evaluates on ghc9124. (Left uncommitted for the user to review +
+  `darwin-rebuild`.)
+
+**Comparison to the original purpose.** The original framing split the fleet into "Tier A
+(already on the base flake)" and "Tier B (plain nixpkgs)". In reality *no* project consumed the
+base flake yet, and many "library" flakes were dev-shell-only (never built their package via their
+own flake). So the conversion was uniform (base-flake addition everywhere) with one real branch:
+projects with a working overlay/package build got a full `flake.module.nix`; dev-shell-only library
+flakes got a dev-shell-only conversion (no `flake.module.nix`), since their packages are built by
+consumers via the registry. This was the major deviation from the plan-as-written, decided with the
+user mid-sweep.
+
+**Lessons / gaps.**
+- The inventory's tier labels were unreliable; always re-read each project's actual `flake.nix`.
+- `nix flake lock` preserves stale input revs — an out-of-date unpinned `haskell-nix` silently
+  hides newer registry packages; bump it when a build can't find one.
+- A shared OpenTelemetry major bump is API-breaking and cascades into every consumer's source;
+  here it was absorbed by bumping `message-db-hs` to its already-migrated v0.2.0.0 and (for mori)
+  a user-owned `mori-core` source fix. Coordinated, not drop-in.
+- `seihou agent run` launches an interactive `claude` TUI, so the blueprint was exercised by
+  spawning agents with its prompt rather than the interactive command; the artifact (prompt +
+  reference files) is what was validated.
+- Deferred / follow-up: `nagare` (bespoke Pulumi dev-shell, intentionally out of scope); a few
+  `cabal.project` files still pin `with-compiler: ghc-9.12.2` (benign, source-side, left untouched
+  per the no-source-edits rule); the dotfiles change awaits the user's review + rebuild.
 
 
 ## Context and Orientation
