@@ -93,13 +93,16 @@ This section must always reflect the actual current state of the work.
   - kiroku — converted, built (kiroku-cli + default on ghc9124), committed 8afe049 (flake files
     staged selectively; two unrelated untracked docs left alone).
   - mina — converted (mina-ui npm UI wired into overlay + as package); needed
-    `nix flake update haskell-nix` (stale lock hid `baikai`); rebuild in progress.
+    `nix flake update haskell-nix` (stale lock hid `baikai`); built (mina-cli + mina-ui on
+    ghc9124), committed cc8c87b.
   - mori-rei-app — converted (postgres shellHook, 5 *-src), haskell-nix is *pinned* (0fbd035);
     build pending.
   - mori (on branch spike/keiro-feasibility) — converted (6 *-src, postgres shellHook, gitRev),
-    haskell-nix bumped to 1e718f3; build pending.
+    haskell-nix bumped to 1e718f3. **DEFERRED — converted-but-unbuilt**: mori-core depends on
+    the registry `keiro`, whose haskell-nix patch is broken (see Surprises). Conversion left in
+    the working tree, uncommitted; re-run the blueprint once the registry `keiro` patch is fixed.
   - rei — converted (9 *-src, ast-grep custom pre-commit hook, postgres+pg_cron shellHook),
-    haskell-nix bumped to 1e718f3; build pending.
+    haskell-nix bumped to 1e718f3; build in progress (rei vendors its own keiro-src).
   - reiko — converted (reiko-ui npm UI + custom reiko/reiko-ui checks; previously had no
     treefmt/pre-commit wiring), haskell-nix bumped to 1e718f3; build pending.
 - [ ] Milestone 4: Sweep the Tier B projects (plain nixpkgs flakes; full migration).
@@ -182,6 +185,19 @@ implementation. Provide concise evidence.
   `haskell-nix` repo being unpushed (it is pushed); it is purely the consumer's lock being old.
   The blueprint prompt now documents bumping an *unpinned* `haskell-nix` when a build reports a
   missing registry package (and leaving a deliberately *pinned* `haskell-nix` alone).
+
+- Some projects are blocked from building by a bug in the shared **haskell-nix registry**
+  (which is explicitly excluded from this sweep, "revisit separately"). Concretely, the
+  registry's `keiro` patch (`haskell-nix/patches/keiro/*.nix`) does
+  `callCabal2nix "keiro" src` against the keiro repo *root* at rev `94c85e2`, but that rev has
+  no root `.cabal` (keiro is multi-package: keiro-core/keiro-migrations/… in subdirs), so the
+  derivation fails: `cabal2nix: Found neither a .cabal file nor package.yaml`. mori-core
+  build-depends on the registry `keiro`, so mori cannot build on either the old registry lock
+  (`4747cb8`, no keiro at all → "missing argument") or the new one (`1e718f3`, keiro present but
+  its patch is broken). This is a registry/source concern outside the flake-restructure's scope;
+  mori is left converted-but-unbuilt per the plan. Projects that vendor their own
+  `keiro-src`/`*-src` and build those packages in their *local* overlay (which composes after
+  the registry and overrides it) are not affected by this registry bug.
 
 - Nix flakes evaluate only **git-tracked** files. Newly created flake files are invisible to
   `nix eval`/`nix build` until at least intent-to-added (`git add -N`); if the agent adds them
