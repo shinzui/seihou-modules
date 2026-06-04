@@ -98,16 +98,18 @@ This section must always reflect the actual current state of the work.
   - mori-rei-app — converted (postgres shellHook, 5 *-src), haskell-nix is *pinned* (0fbd035);
     build pending.
   - mori (on branch spike/keiro-feasibility) — converted (6 *-src, postgres shellHook, gitRev),
-    haskell-nix bumped to 1e718f3. **DEFERRED — converted-but-unbuilt**: mori-core depends on
-    the registry `keiro`, whose haskell-nix patch is broken (see Surprises). Conversion left in
-    the working tree, uncommitted; re-run the blueprint once the registry `keiro` patch is fixed.
+    haskell-nix + message-db-hs-src bumped. Registry keiro/pgmq/OTel blockers all fixed+pushed,
+    but **DEFERRED — converted-but-unbuilt** on a *project source* issue:
+    `mori-core/src/Mori/Infrastructure/WorkerHost.hs:491` doesn't typecheck against message-db-hs
+    v0.2's API (TimerRow/UTCTime). Source fixes are out of scope per the Decision Log; left
+    converted + input-bumped, uncommitted, pending a mori-core source update.
   - rei — converted (9 *-src, ast-grep custom pre-commit hook, postgres+pg_cron shellHook),
     haskell-nix bumped to 1e718f3; built on ghc9124 (`rei 5.0.0.0`), committed 2683d21b.
   - reiko — converted (reiko-ui npm UI + custom reiko/reiko-ui checks; previously had no
-    treefmt/pre-commit wiring), haskell-nix bumped to 1e718f3. **DEFERRED — converted-but-unbuilt**:
-    depends on the registry `pgmq-core`, whose haskell-nix patch fetches a source with a stale
-    sha256 (hash mismatch: specified `rI22…`, got `RY1Q…`) — a registry bug (see Surprises).
-    Conversion left in the working tree, uncommitted.
+    treefmt/pre-commit wiring), haskell-nix bumped to the fixed registry (41f6423) and
+    message-db-hs-src bumped to v0.2.0.0 (8db65db). Built on ghc9124 (`reiko v0.1.0.0` +
+    reiko-ui), committed 9281b33 and pushed. reiko's own source needed no changes — once the
+    registry + message-db-hs were current it built clean.
   - notion-hub (added at user request, see Decision Log) — converted (3 packages incl custom
     notion-hub-subscriptions; 7 *-src; gogol overlay + cabal.project preserved); built on
     ghc9124 (`nhub v0.1.0.0 (12afaa6)` + notion-hub-subscriptions/migrations binaries),
