@@ -87,8 +87,21 @@ This section must always reflect the actual current state of the work.
   preserved). One prompt weakness was found and fixed: the agent must leave new files
   **intent-to-added** (`git add -N`) so both `nix eval` and the reviewer's `nix build` see them
   (flakes ignore untracked files). Blueprint re-validated after the fix.
-- [ ] Milestone 3: Sweep the remaining Tier A projects (already on `haskell-nix-dev`, old
-  `eachDefaultSystem` style).
+- [~] Milestone 3 (in progress, 2026-06-03): Sweep the (mis-labeled) "Tier A" projects. All six
+  are the notion-cli shape (eachDefaultSystem + nixpkgs-direct + overlay, ghc9122) — see
+  Surprises. Status:
+  - kiroku — converted, built (kiroku-cli + default on ghc9124), committed 8afe049 (flake files
+    staged selectively; two unrelated untracked docs left alone).
+  - mina — converted (mina-ui npm UI wired into overlay + as package); needed
+    `nix flake update haskell-nix` (stale lock hid `baikai`); rebuild in progress.
+  - mori-rei-app — converted (postgres shellHook, 5 *-src), haskell-nix is *pinned* (0fbd035);
+    build pending.
+  - mori (on branch spike/keiro-feasibility) — converted (6 *-src, postgres shellHook, gitRev),
+    haskell-nix bumped to 1e718f3; build pending.
+  - rei — converted (9 *-src, ast-grep custom pre-commit hook, postgres+pg_cron shellHook),
+    haskell-nix bumped to 1e718f3; build pending.
+  - reiko — converted (reiko-ui npm UI + custom reiko/reiko-ui checks; previously had no
+    treefmt/pre-commit wiring), haskell-nix bumped to 1e718f3; build pending.
 - [ ] Milestone 4: Sweep the Tier B projects (plain nixpkgs flakes; full migration).
 - [ ] Milestone 5: Confirm fleet-wide lockstep and write the retrospective.
 
@@ -142,6 +155,33 @@ implementation. Provide concise evidence.
   describes. The inventory fingerprint over-counted Tier A; re-confirm each project's actual
   `flake.nix` before the sweep rather than trusting the tier label. This made notion-cli a
   richer first test (it exercised both adding the base flake and the overlay graft).
+
+- The Tier A classification is wrong for the **entire** group, not just notion-cli. Inspecting
+  all seven listed Tier A projects' actual `flake.nix` files (2026-06-03): none of
+  notion-cli, kiroku, mina, mori, mori-rei-app, rei, reiko consume `haskell-nix-dev`. Every one
+  uses `flake-utils.eachDefaultSystem` importing `nixpkgs` directly, with a `haskell-nix`
+  overlay + `nix/haskell-overlay.nix`, pinning `ghc9122` (except notion-cli, already `ghc9124`).
+  So "Tier A = already on the base flake, pure structural reorg" does not describe any of them;
+  they are all base-flake *additions* with an existing overlay (Variant-A `flake.module.nix`),
+  and the GHC bump 9.12.2→9.12.4 applies to six of the seven. The practical consequence: Tier A
+  and Tier B require the *same* conversion; the only real split is "has an overlay" (these +
+  some Tier B) vs "no overlay" (the rest of Tier B). Re-confirm each project's real `flake.nix`
+  rather than trusting the tier label.
+
+- `nix flake lock` preserves the already-locked revision of every input, so a project whose old
+  `flake.lock` pinned an out-of-date **unpinned** `haskell-nix` (the shared registry overlay)
+  keeps that stale rev through the conversion — and then fails to build with a missing shinzui
+  package the newer registry provides. Concrete evidence: mina builds `mina-cli` which
+  build-depends on `baikai`/`baikai-claude`/`baikai-openai`; the registry provides those at
+  `haskell-nix/overlays/registry.nix:75-77`, but mina's carried-over lock pinned `haskell-nix`
+  at `4747cb8` (2026-04-24), an ancestor that predates the baikai patches, so the build failed
+  with `function 'anonymous lambda' called without required argument 'baikai'`. GitHub's
+  `haskell-nix` master is already at `1e718f3` (has baikai); `nix flake update haskell-nix`
+  bumped mina to it and the build proceeded. The same stale lock affected mori (`4747cb8`), rei
+  (`02f4cb3`), and reiko (`26f8e82`) — all bumped to `1e718f3`. This is **not** the excluded
+  `haskell-nix` repo being unpushed (it is pushed); it is purely the consumer's lock being old.
+  The blueprint prompt now documents bumping an *unpinned* `haskell-nix` when a build reports a
+  missing registry package (and leaving a deliberately *pinned* `haskell-nix` alone).
 
 - Nix flakes evaluate only **git-tracked** files. Newly created flake files are invisible to
   `nix eval`/`nix build` until at least intent-to-added (`git add -N`); if the agent adds them

@@ -152,6 +152,17 @@ If the build fails because the project's **Haskell source** does not compile on
 source. If it fails because of a **flake wiring mistake** (a missing input, a
 wrong attribute name, an un-carried overlay), fix the wiring and re-verify.
 
+**Stale shared-registry pin.** `nix flake lock` preserves any input revision that
+was already locked, so a project whose old `flake.lock` pinned an out-of-date
+`haskell-nix` (the shared registry overlay) will keep that stale rev. If the
+build fails with a missing shinzui package the registry is supposed to provide
+(for example `called without required argument 'baikai'`) **and** the project's
+`haskell-nix` input is *unpinned* (`github:shinzui/haskell-nix` with no `/rev`),
+bump just that input — `nix flake update haskell-nix` — and rebuild. Do **not**
+bump a `haskell-nix` input that is deliberately pinned to a specific revision
+(`github:shinzui/haskell-nix/<rev>`); a missing package there is a real pin
+mismatch to report, not auto-fix.
+
 ### 4. Hand off
 
 When the files match the target structure and (where buildable) the package
