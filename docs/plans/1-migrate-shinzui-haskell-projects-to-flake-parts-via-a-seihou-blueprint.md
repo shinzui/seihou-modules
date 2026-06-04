@@ -102,9 +102,12 @@ This section must always reflect the actual current state of the work.
     the registry `keiro`, whose haskell-nix patch is broken (see Surprises). Conversion left in
     the working tree, uncommitted; re-run the blueprint once the registry `keiro` patch is fixed.
   - rei — converted (9 *-src, ast-grep custom pre-commit hook, postgres+pg_cron shellHook),
-    haskell-nix bumped to 1e718f3; build in progress (rei vendors its own keiro-src).
+    haskell-nix bumped to 1e718f3; built on ghc9124 (`rei 5.0.0.0`), committed 2683d21b.
   - reiko — converted (reiko-ui npm UI + custom reiko/reiko-ui checks; previously had no
     treefmt/pre-commit wiring), haskell-nix bumped to 1e718f3; build pending.
+  - notion-hub (added at user request, see Decision Log) — converted (3 packages incl custom
+    notion-hub-subscriptions; 7 *-src; gogol overlay + cabal.project preserved); build in
+    progress.
 - [ ] Milestone 4: Sweep the Tier B projects (plain nixpkgs flakes; full migration).
 - [ ] Milestone 5: Confirm fleet-wide lockstep and write the retrospective.
 
