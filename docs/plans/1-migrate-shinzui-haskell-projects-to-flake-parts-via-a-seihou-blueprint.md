@@ -125,6 +125,23 @@ This section must always reflect the actual current state of the work.
 - [~] Milestone 4 (in progress, 2026-06-04): Sweep the 18 Tier B projects. Done so far:
   - pgmq-hs — converted (own overlay kept, 6 packages, withTests checks, postgres shellHook),
     built on ghc9124 (default + pgmq-effectful), committed 973c107 and pushed.
+  Dev-shell-only conversions done + pushed (the no-overlay library flakes that never built a
+  package via their own flake — converted to a flake-parts dev shell on ghc9124 + treefmt +
+  pre-commit, no flake.module.nix): kafka-effectful (f34a43c), ephemeral-pg (763a1a2), keiki
+  (2bac9a9), shiki (162b0f3), hasql-opentelemetry (46cc4f1), keiro (0730ae1), kizashi (384d32c;
+  flake files only — left the user's WIP), shibuya (772f0ce), shibuya-kafka-adapter (0155d5e),
+  shibuya-pgmq-adapter (b663265). Plus pgmq-hs (973c107) with a full build (it had a real
+  overlay). nagare is **excluded** — it is a bespoke Pulumi/cloud + Haskell developer-shell
+  flake (like load-testing-infra), not the standard package shape.
+  mori: the user fixed mori-core's source for message-db-hs v0.2, merged the flake-parts
+  conversion to master, and pushed (35162fa). Verified: `nix build .#mori` passes on ghc9124
+  (`mori v0.2.0.0`, test suite green). Dotfiles mori input bumped to 35162fa.
+  **Dotfiles fully verified:** `nix eval .#darwinConfigurations.SungkyungM1X.system.drvPath`
+  succeeds (no ghc9122 references; all ten projects resolve on the shared ghc9124 toolchain), so
+  `darwin-rebuild` will now succeed. The dotfiles flake.nix + flake.lock changes are left
+  uncommitted for the user to review and rebuild.
+  Still dirty (deferred until committed): typeid-hs, hasql-migration, hw-kafka-streamly,
+  notion-client, shibuya-message-db-adapter.
   Findings that shape the rest:
   - 6 of the 18 have **dirty working trees** (uncommitted work): typeid-hs, keiro, hasql-migration,
     hasql-opentelemetry, hw-kafka-streamly, kizashi, notion-client, shibuya-message-db-adapter —
