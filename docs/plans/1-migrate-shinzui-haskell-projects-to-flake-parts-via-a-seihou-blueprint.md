@@ -74,8 +74,19 @@ This section must always reflect the actual current state of the work.
   prompt embedding the full recipe and all five reference-file descriptions. The blueprint is
   made resolvable-by-name from any project directory via a symlink into the XDG modules search
   path (see Decision Log).
-- [ ] Milestone 2: Prove the blueprint end-to-end on one Tier A project; refine the prompt
-  from what the run reveals.
+- [x] Milestone 2 (2026-06-03): Proved the blueprint on notion-cli
+  (`/Users/shinzui/Keikaku/bokuno/notion-cli`, committed 385f280). The conversion (emulated by
+  spawning an agent with the blueprint's prompt scoped to the project — see Decision Log on how
+  the blueprint is "run" given `seihou agent run` is interactive) produced a structurally
+  correct result on the first pass: thin `flake.nix` stub, `nix/{haskell,treefmt,pre-commit}.nix`,
+  Variant-A `flake.module.nix` (overlay graft, `notion-client-src` passed through, `gitRev`
+  baked, `packages.notion-cli-exe`/`default`), `treefmt.nix` deleted, `nix/haskell-overlay.nix`
+  kept, `flake-utils` dropped, `nixpkgs` follows `haskell-nix-dev`. `.#checks.aarch64-darwin` =
+  `[ "pre-commit" "treefmt" ]`; `nix build .#notion-cli-exe` passed on GHC 9.12.4 (closure
+  compiled from source, expected); the binary runs: `ntn v0.1.0.0 (dirty)` (baked git revision
+  preserved). One prompt weakness was found and fixed: the agent must leave new files
+  **intent-to-added** (`git add -N`) so both `nix eval` and the reviewer's `nix build` see them
+  (flakes ignore untracked files). Blueprint re-validated after the fix.
 - [ ] Milestone 3: Sweep the remaining Tier A projects (already on `haskell-nix-dev`, old
   `eachDefaultSystem` style).
 - [ ] Milestone 4: Sweep the Tier B projects (plain nixpkgs flakes; full migration).
@@ -121,6 +132,24 @@ implementation. Provide concise evidence.
   in the repo are immediately live (see Decision Log). `seihou list` still does not print the
   blueprint (it lists project modules/recipes and *installed* blueprints), but `seihou agent
   run` resolves it via the symlink and `seihou validate-blueprint` validates it directly.
+
+- notion-cli was classified Tier A in the inventory but its actual `flake.nix` does **not**
+  consume `haskell-nix-dev` — it imports `nixpkgs-unstable` directly via
+  `flake-utils.eachDefaultSystem` and builds the toolchain with `ghcWithPackages`. It does
+  already pin `ghc9124` and carries the `haskell-nix` overlay plus a `notion-client-src` input.
+  So it is really a *base-flake addition with an existing overlay* (a Tier-B-shaped conversion
+  producing a Variant-A `flake.module.nix`), not the pure structural reorg the Tier A definition
+  describes. The inventory fingerprint over-counted Tier A; re-confirm each project's actual
+  `flake.nix` before the sweep rather than trusting the tier label. This made notion-cli a
+  richer first test (it exercised both adding the base flake and the overlay graft).
+
+- Nix flakes evaluate only **git-tracked** files. Newly created flake files are invisible to
+  `nix eval`/`nix build` until at least intent-to-added (`git add -N`); if the agent adds them
+  only to run eval and then `git reset`s, the reviewer's subsequent `nix build` fails with
+  "Path '…' in the repository … is not tracked by Git". Fixed by adding a step to the blueprint
+  prompt instructing the agent to `git add -N` the new files and leave them that way. Evidence:
+  the first notion-cli `nix build` aborted at evaluation with that exact error until the four new
+  files were re-added with `git add -N`.
 
 - The repo's `seihou-registry.dhall` had pre-existing version drift from earlier milestones:
   `nix-haskell-flake` was on disk at 0.11.0 but recorded as 0.10.0, and `haskell-cli-app` /
@@ -188,6 +217,19 @@ Record every decision made while working on the plan.
   Rationale: Records the intended permission surface for when seihou wires blueprint
   `allowedTools` into the launch, while the prompt enforces the invariants today. See Surprises
   for the evidence that the field is not yet enforced.
+  Date: 2026-06-03
+
+- Decision: Because `seihou agent run` launches `claude` **interactively** (a TUI session — see
+  `AgentLaunchExec.hs:launchClaude` → `launchClaudeInteractive`), which cannot be driven from a
+  non-interactive automation context, "running the blueprint" during this plan's execution is
+  done by spawning a fresh agent with the blueprint's `prompt.md` (plus the reference `files/`
+  on disk) scoped to the target project — the same system prompt seihou would hand the
+  interactive agent — then reviewing/building/committing as the human-in-the-loop. The
+  blueprint, its prompt, and its reference files are the artifact under test; the launch
+  mechanism is incidental. A human can still run it the documented way (`seihou agent run
+  upgrade-haskell-flake-parts`).
+  Rationale: Faithfully exercises the prompt's self-sufficiency (the de-risking goal of
+  Milestone 2) without requiring an interactive TTY, and keeps the review/commit gate.
   Date: 2026-06-03
 
 - Decision: Run `seihou registry sync-versions` while registering the blueprint, correcting

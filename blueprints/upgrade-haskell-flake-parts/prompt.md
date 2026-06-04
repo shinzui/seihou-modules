@@ -113,7 +113,21 @@ Then **delete the top-level `treefmt.nix`** if it existed. **Keep
 
 ### 3. Regenerate the lock and verify
 
-Run, from the project root:
+**First make the new files visible to Nix.** Nix flakes only evaluate files
+that git tracks, so the files you just created (`nix/haskell.nix`,
+`nix/treefmt.nix`, `nix/pre-commit.nix`, `flake.module.nix`, and any moved hook
+script) are invisible until git knows about them. Register them as
+**intent-to-add** so they are seen without staging their content:
+
+```
+git add -N nix/haskell.nix nix/treefmt.nix nix/pre-commit.nix flake.module.nix
+```
+
+Do **not** `git reset` or otherwise un-add them afterward — leave them
+intent-to-added so the human reviewer's `nix build` also sees them. (Adding the
+file deletion of the old top-level `treefmt.nix` is not required for evaluation.)
+
+Then run, from the project root:
 
 ```
 nix flake lock
