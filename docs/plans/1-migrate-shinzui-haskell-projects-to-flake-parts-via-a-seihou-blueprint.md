@@ -217,8 +217,22 @@ implementation. Provide concise evidence.
   (`haskell-nix/patches/pgmq-core/0.1.nix`) pins a fixed-output source fetch whose sha256 no
   longer matches the content (specified `sha256-rI22yBfCRbkx1xrN6jluYLlcBiDO7WHGiU64UNRmocI=`,
   got `sha256-RY1QSB0ryirKsn5V0aWzWqH0zzlTM9u9hTABmnqwkmg=`). Both keiro and pgmq-core blockers
-  live in the excluded `haskell-nix` registry; the consumer conversions are correct and build
-  once the registry patches are fixed/bumped.
+  lived in the (now de-excluded) `haskell-nix` registry and were fixed and pushed (haskell-nix
+  41f6423) — see Decision Log.
+
+- Upgrading the registry's `hs-opentelemetry` family to the v1.40 spec release (required by
+  `pgmq-effectful` 0.3+) is **API-breaking**, and the break cascades into OTel-consuming
+  dependencies and project source. Evidence chain while verifying mori: (1) `pgmq-effectful`
+  needs the v1.40 `OpenTelemetry.Propagator`/`SemanticConventions` names → fixed by building the
+  whole OTel family from the upstream source; (2) `message-db-effectful` (built from
+  `message-db-hs-src`) failed against the new OTel API (`IORef ImmutableSpan` vs `ImmutableSpan`,
+  `spanGetAttributes`/`addAttributes` gone) → fixed by bumping `message-db-hs-src` from
+  `059fba11` to the already-migrated v0.2.0.0 release `8db65db`; (3) then mori's **own** source
+  failed: `mori-core/src/Mori/Infrastructure/WorkerHost.hs:491` no longer typechecks against
+  message-db-hs v0.2 (a `TimerRow`/`UTCTime` change). Step 3 is a project source fix, which the
+  Decision Log scopes **out** of this migration — so mori is left converted + input-bumped but
+  unbuilt, pending a mori-core source update. Lesson: a shared OTel major bump requires a
+  coordinated source migration across every OTel/message-db consumer; it is not a drop-in edit.
 
 - Nix flakes evaluate only **git-tracked** files. Newly created flake files are invisible to
   `nix eval`/`nix build` until at least intent-to-added (`git add -N`); if the agent adds them
@@ -308,6 +322,21 @@ Record every decision made while working on the plan.
   Rationale: Faithfully exercises the prompt's self-sufficiency (the de-risking goal of
   Milestone 2) without requiring an interactive TTY, and keeps the review/commit gate.
   Date: 2026-06-03
+
+- Decision: Upgrade and push the shared `haskell-nix` registry (previously excluded) at the
+  user's explicit request, to "support the latest" and unblock the registry-blocked projects.
+  Changes (committed 41f6423, pushed): fix the `keiro` patch to build the top-level package from
+  the `keiro/` subdir and add `keiro-test-support`/`jitsurei`; correct the stale Hackage hashes
+  for `pgmq-core`/`pgmq-hasql`/`pgmq-effectful`/`pgmq-migration`; and replace the old Hackage
+  `hs-opentelemetry-semantic-conventions` 0.1.0.0 pin with the full OpenTelemetry **spec v1.40**
+  family built from the upstream `iand675/hs-opentelemetry` source (api-types, api,
+  semantic-conventions, otlp, sdk, all exporters + propagators) + thread-utils. Verified by
+  building mori's full dependency closure against it.
+  Rationale: User directed it across several messages; `pgmq-effectful` 0.3+ needs
+  semantic-conventions >=1.40, which the old pin predated.
+  Caveat recorded in Surprises: the OTel bump is API-breaking, so OTel-consuming dependencies
+  and project source must move to the v1.40 API.
+  Date: 2026-06-04
 
 - Decision: Push built-and-committed conversions to their `origin/master` (fast-forward) once
   verified, at the user's explicit request mid-sweep. First batch pushed 2026-06-04: notion-cli
