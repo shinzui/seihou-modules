@@ -104,10 +104,22 @@ This section must always reflect the actual current state of the work.
   - rei — converted (9 *-src, ast-grep custom pre-commit hook, postgres+pg_cron shellHook),
     haskell-nix bumped to 1e718f3; built on ghc9124 (`rei 5.0.0.0`), committed 2683d21b.
   - reiko — converted (reiko-ui npm UI + custom reiko/reiko-ui checks; previously had no
-    treefmt/pre-commit wiring), haskell-nix bumped to 1e718f3; build pending.
+    treefmt/pre-commit wiring), haskell-nix bumped to 1e718f3. **DEFERRED — converted-but-unbuilt**:
+    depends on the registry `pgmq-core`, whose haskell-nix patch fetches a source with a stale
+    sha256 (hash mismatch: specified `rI22…`, got `RY1Q…`) — a registry bug (see Surprises).
+    Conversion left in the working tree, uncommitted.
   - notion-hub (added at user request, see Decision Log) — converted (3 packages incl custom
-    notion-hub-subscriptions; 7 *-src; gogol overlay + cabal.project preserved); build in
-    progress.
+    notion-hub-subscriptions; 7 *-src; gogol overlay + cabal.project preserved); built on
+    ghc9124 (`nhub v0.1.0.0 (12afaa6)` + notion-hub-subscriptions/migrations binaries),
+    committed 111801b and pushed.
+  - mori-rei-app — converted (5 *-src, postgres shellHook), haskell-nix *pinned* (0fbd035);
+    built on ghc9124 (`mori-rei-app 0.1.0.0`), committed 419130b and pushed.
+
+  Pushed so far (origin/master): notion-cli, kiroku, mina, rei, notion-hub, mori-rei-app, and
+  the seihou-modules blueprint repo (the references nihongo/kizamu/seihou were already on
+  origin). Deferred-but-now-fixable: mori (keiro) and reiko (pgmq-core) — the registry patches
+  were corrected locally (keiro subpath; pgmq-core hash) and need verify + push of haskell-nix,
+  then a lock bump + rebuild + commit of those two.
 - [ ] Milestone 4: Sweep the Tier B projects (plain nixpkgs flakes; full migration).
 - [ ] Milestone 5: Confirm fleet-wide lockstep and write the retrospective.
 
@@ -200,7 +212,13 @@ implementation. Provide concise evidence.
   its patch is broken). This is a registry/source concern outside the flake-restructure's scope;
   mori is left converted-but-unbuilt per the plan. Projects that vendor their own
   `keiro-src`/`*-src` and build those packages in their *local* overlay (which composes after
-  the registry and overrides it) are not affected by this registry bug.
+  the registry and overrides it) are not affected by this registry bug. A second instance of the
+  same class: reiko depends on the registry `pgmq-core`, whose patch
+  (`haskell-nix/patches/pgmq-core/0.1.nix`) pins a fixed-output source fetch whose sha256 no
+  longer matches the content (specified `sha256-rI22yBfCRbkx1xrN6jluYLlcBiDO7WHGiU64UNRmocI=`,
+  got `sha256-RY1QSB0ryirKsn5V0aWzWqH0zzlTM9u9hTABmnqwkmg=`). Both keiro and pgmq-core blockers
+  live in the excluded `haskell-nix` registry; the consumer conversions are correct and build
+  once the registry patches are fixed/bumped.
 
 - Nix flakes evaluate only **git-tracked** files. Newly created flake files are invisible to
   `nix eval`/`nix build` until at least intent-to-added (`git add -N`); if the agent adds them
