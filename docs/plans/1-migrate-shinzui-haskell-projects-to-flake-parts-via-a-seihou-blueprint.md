@@ -291,6 +291,13 @@ Record every decision made while working on the plan.
   Milestone 2) without requiring an interactive TTY, and keeps the review/commit gate.
   Date: 2026-06-03
 
+- Decision: Push built-and-committed conversions to their `origin/master` (fast-forward) once
+  verified, at the user's explicit request mid-sweep. First batch pushed 2026-06-04: notion-cli
+  (385f280), kiroku (8afe049), mina (cc8c87b), rei (2683d21b), and the seihou-modules blueprint
+  repo (5af1a0a). This supersedes the earlier "never push" stance for these reviewed projects;
+  the blueprint itself still never pushes — the human does, after review and a green build.
+  Date: 2026-06-04
+
 - Decision: Migrate `notion-hub` (`/Users/shinzui/Keikaku/bokuno/notion-hub`,
   `github:shinzui/notion-hub`) too, at the user's request mid-sweep. It was not in the
   2026-06-03 inventory (registered in mori on 2026-06-04). It is the same overlay-CLI shape as
