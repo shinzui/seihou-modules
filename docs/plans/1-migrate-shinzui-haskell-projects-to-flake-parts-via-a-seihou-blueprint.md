@@ -122,7 +122,19 @@ This section must always reflect the actual current state of the work.
   origin). Deferred-but-now-fixable: mori (keiro) and reiko (pgmq-core) — the registry patches
   were corrected locally (keiro subpath; pgmq-core hash) and need verify + push of haskell-nix,
   then a lock bump + rebuild + commit of those two.
-- [ ] Milestone 4: Sweep the Tier B projects (plain nixpkgs flakes; full migration).
+- [~] Milestone 4 (in progress, 2026-06-04): Sweep the 18 Tier B projects. Done so far:
+  - pgmq-hs — converted (own overlay kept, 6 packages, withTests checks, postgres shellHook),
+    built on ghc9124 (default + pgmq-effectful), committed 973c107 and pushed.
+  Findings that shape the rest:
+  - 6 of the 18 have **dirty working trees** (uncommitted work): typeid-hs, keiro, hasql-migration,
+    hasql-opentelemetry, hw-kafka-streamly, kizashi, notion-client, shibuya-message-db-adapter —
+    these cannot be converted cleanly until their trees are committed/stashed.
+  - Many of the no-overlay Tier B flakes are **dev-shell-only**: their `packages.default`
+    references a `pkgs.haskell.packages.<ghc>.<localpkg>` attr that does not exist (no overlay, no
+    callCabal2nix), so the flake never actually built the package — consumers build these from
+    source via the shared registry. For these, the faithful conversion is a flake-parts dev shell
+    on ghc9124 + treefmt + pre-commit with no flake.module.nix (or a callCabal2nix only if their
+    inter-project deps resolve). This is a per-project judgement call, not a uniform transform.
 - [ ] Milestone 5: Confirm fleet-wide lockstep and write the retrospective.
 
 
