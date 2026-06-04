@@ -325,6 +325,24 @@ Record every decision made while working on the plan.
   Milestone 2) without requiring an interactive TTY, and keeps the review/commit gate.
   Date: 2026-06-03
 
+- Decision: Re-wire `~/.config/dotfiles.nix` (the user's nix-darwin/home-manager flake) so all
+  ten consumed Haskell projects (mori, rei, reiko, seihou, kizamu, mina, nihongo, notion-cli,
+  mori-rei-app, notion-hub) share **one** `haskell-nix-dev` input and follow its pinned nixpkgs,
+  instead of each following the dotfiles' `nixpkgs-unstable`. Added a single
+  `haskell-nix-dev.url = "github:shinzui/haskell-nix-dev"` input and set, per project,
+  `inputs.nixpkgs.follows = "haskell-nix-dev/nixpkgs"` and
+  `inputs.haskell-nix-dev.follows = "haskell-nix-dev"`. Bumped the dotfiles lock to the migrated
+  revs of the nine non-mori projects.
+  Rationale: User updated nixpkgs and GHC 9.12.2 was dropped, breaking every still-ghc9122
+  project; the migrated projects are on 9.12.4 via haskell-nix-dev. Following one shared
+  haskell-nix-dev means a single GHC 9.12.4 toolchain + one nixpkgs (currently `4df1b88`) across
+  all projects → maximal binary-cache sharing and no toolchain rebuild when `nixpkgs-unstable`
+  moves. Evidence it deduped: the dotfiles `flake.lock` shrank ~1000 lines. mori still points at
+  its old pre-migration rev (a harmless "non-existent input haskell-nix-dev" warning) and the
+  dotfiles can't fully evaluate until the user's migrated mori is pushed (old mori references the
+  removed ghc9122). The dotfiles changes are left uncommitted for the user to review + rebuild.
+  Date: 2026-06-04
+
 - Decision: Upgrade and push the shared `haskell-nix` registry (previously excluded) at the
   user's explicit request, to "support the latest" and unblock the registry-blocked projects.
   Changes (committed 41f6423, pushed): fix the `keiro` patch to build the top-level package from
