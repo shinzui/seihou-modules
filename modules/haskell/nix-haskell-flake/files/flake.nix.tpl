@@ -18,12 +18,13 @@
     {{/if}}
   };
 
-  # TODO(haskell-nix-dev EP-2): fill in the Cachix substituter URL and public key once the
-  # base flake's binary cache is published, so the first `nix develop` downloads prebuilt
-  # GHC/HLS/cabal instead of compiling HLS from source. Left empty (inert) until then.
+  # The haskell-nix-dev base flake's binary cache, so the first `nix develop` downloads
+  # prebuilt GHC/HLS/cabal instead of compiling HLS from source. nixConfig is only honored
+  # for users who trust this flake; for a guaranteed pull run `cachix use shinzui` once, or
+  # add these two lines to your nix.conf.
   nixConfig = {
-    extra-substituters = [ ];
-    extra-trusted-public-keys = [ ];
+    extra-substituters = [ "https://shinzui.cachix.org" ];
+    extra-trusted-public-keys = [ "shinzui.cachix.org-1:QEmAoJrA9WwLP0uxfDgktLi2BRrcvQQWdz8NzcMg4/E=" ];
   };
 
   # This flake is a thin, seihou-managed shell. All project wiring lives in the
