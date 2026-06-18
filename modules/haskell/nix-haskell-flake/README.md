@@ -83,6 +83,7 @@ your input line. Everything else stays clean.
 | `nix.postgresql` | `bool` | — | yes | — | Include postgresql (and `jq`) in the dev shell with local DB setup in the shellHook |
 | `nix.treefmt` | `bool` | `true` | yes | — | Include treefmt-nix and generate the `nix/treefmt.nix` flake-parts module (wires `nix fmt` and a formatting check) |
 | `nix.pre-commit` | `bool` | `true` | yes | — | Include git-hooks.nix and generate the `nix/pre-commit.nix` flake-parts module |
+| `nix.fourmolu-ghc-opts` | `text` | — | no | — | Optional override for fourmolu's GHC options (the language extensions it must be told about, since it can't auto-detect "manual" ones). Leave unset to use treefmt-nix's defaults (`BangPatterns`, `PatternSynonyms`, `TypeApplications`). Set it when those don't fit — e.g. a project that uses `pattern` as an identifier (lens-generated fields) must drop `PatternSynonyms`, or one using CPP must add it. Value is the space-separated, double-quoted, bare extension names spliced into a Nix list, e.g. `"BangPatterns" "TypeApplications" "CPP"` (no `-X` prefix; treefmt-nix adds it). Only used when `nix.treefmt` is enabled. |
 
 ## Prompts
 
@@ -98,7 +99,9 @@ The following values are asked interactively (unless supplied via `--var`):
 - **`nix.pre-commit`** — Include pre-commit hooks via git-hooks.nix?
 
 `ghc.secondary` has no prompt — supply it with `--var ghc.secondary=<attr>` when you want a
-second devShell.
+second devShell. Likewise `nix.fourmolu-ghc-opts` has no prompt — supply it with
+`--var nix.fourmolu-ghc-opts='"BangPatterns" "TypeApplications" "CPP"'` when the default
+fourmolu extensions don't suit the project.
 
 ## Exports
 

@@ -16,7 +16,7 @@ let MigrationOp =
 
 in      S.Module::{
         , name = "nix-haskell-flake"
-        , version = Some "0.11.2"
+        , version = Some "0.11.3"
         , description = Some
             "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal toolchains). Project wiring lives in imported nix/*.nix modules and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, treefmt-nix, and pre-commit-hooks."
         , vars =
@@ -79,6 +79,13 @@ in      S.Module::{
             , description = Some
                 "Include git-hooks.nix and generate the nix/pre-commit.nix flake-parts module"
             , required = True
+            }
+          , S.VarDecl::{
+            , name = "nix.fourmolu-ghc-opts"
+            , type = "text"
+            , description = Some
+                "Optional override for fourmolu's GHC options (the language extensions it must be told about, since it cannot auto-detect \"manual\" extensions). Leave unset to use treefmt-nix's defaults (BangPatterns, PatternSynonyms, TypeApplications). Set it when those defaults don't fit — e.g. a project that uses `pattern` as an identifier (lens-generated fields) must drop PatternSynonyms, or one using CPP must add it. Value is the space-separated, double-quoted, bare extension names spliced into a Nix list, e.g. `\"BangPatterns\" \"TypeApplications\" \"CPP\"` (no -X prefix; treefmt-nix adds it). Only used when nix.treefmt is enabled."
+            , required = False
             }
           ]
         , exports =

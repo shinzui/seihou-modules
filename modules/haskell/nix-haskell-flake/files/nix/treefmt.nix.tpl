@@ -9,6 +9,12 @@
       projectRootFile = "flake.nix";
       programs.nixpkgs-fmt.enable = true;
       programs.fourmolu.enable = true;
+      {{#if IsSet nix.fourmolu-ghc-opts}}
+      # fourmolu can't auto-detect "manual" extensions, so they must be passed
+      # explicitly. Override treefmt-nix's defaults (BangPatterns,
+      # PatternSynonyms, TypeApplications) with what this project actually needs.
+      programs.fourmolu.ghcOpts = [ {{nix.fourmolu-ghc-opts}} ];
+      {{/if}}
       programs.cabal-fmt.enable = true;
     };
   };
