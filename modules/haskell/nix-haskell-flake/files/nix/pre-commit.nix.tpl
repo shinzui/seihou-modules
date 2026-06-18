@@ -7,7 +7,7 @@
 
   perSystem = { config, ... }: {
     pre-commit.settings.hooks = {
-      {{#if Eq nix.treefmt true}}
+      {{#if Eq nix.treefmt true || Eq nix.treefmt "true"}}
       treefmt = {
         enable = true;
         package = config.treefmt.build.wrapper;

@@ -7,11 +7,11 @@
 
     flake-parts.url = "github:hercules-ci/flake-parts";
     flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
-    {{#if Eq nix.treefmt true}}
+    {{#if Eq nix.treefmt true || Eq nix.treefmt "true"}}
 
     treefmt-nix.follows = "haskell-nix-dev/treefmt-nix";
     {{/if}}
-    {{#if Eq nix.pre-commit true}}
+    {{#if Eq nix.pre-commit true || Eq nix.pre-commit "true"}}
 
     pre-commit-hooks.url = "github:cachix/git-hooks.nix";
     pre-commit-hooks.inputs.nixpkgs.follows = "nixpkgs";
@@ -37,10 +37,10 @@
       imports =
         [
           ./nix/haskell.nix
-          {{#if Eq nix.treefmt true}}
+          {{#if Eq nix.treefmt true || Eq nix.treefmt "true"}}
           ./nix/treefmt.nix
           {{/if}}
-          {{#if Eq nix.pre-commit true}}
+          {{#if Eq nix.pre-commit true || Eq nix.pre-commit "true"}}
           ./nix/pre-commit.nix
           {{/if}}
         ]
