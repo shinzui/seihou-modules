@@ -26,20 +26,20 @@
         pkgs.zlib
         pkgs.just
         pkgs.pkg-config
-        {{#if Eq nix.postgresql true || Eq nix.postgresql "true"}}
+        {{#if Eq nix.postgresql true}}
         pkgs.postgresql
         pkgs.jq
         {{/if}}
-        {{#if Eq nix.process-compose true || Eq nix.process-compose "true"}}
+        {{#if Eq nix.process-compose true}}
         pkgs.process-compose
         {{/if}}
       ];
 
       shellHook = ''
-        {{#if Eq nix.pre-commit true || Eq nix.pre-commit "true"}}
+        {{#if Eq nix.pre-commit true}}
         ${config.pre-commit.installationScript}
         {{/if}}
-        {{#if Eq nix.postgresql true || Eq nix.postgresql "true"}}
+        {{#if Eq nix.postgresql true}}
 
         export PGHOST="$PWD/db"
         export PGDATA="$PGHOST/db"

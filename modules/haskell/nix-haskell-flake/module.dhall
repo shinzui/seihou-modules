@@ -140,13 +140,13 @@ in      S.Module::{
             , strategy = "template"
             , src = "nix/treefmt.nix.tpl"
             , dest = "nix/treefmt.nix"
-            , when = Some "Eq nix.treefmt true || Eq nix.treefmt \"true\""
+            , when = Some "Eq nix.treefmt true"
             }
           , S.Step::{
             , strategy = "template"
             , src = "nix/pre-commit.nix.tpl"
             , dest = "nix/pre-commit.nix"
-            , when = Some "Eq nix.pre-commit true || Eq nix.pre-commit \"true\""
+            , when = Some "Eq nix.pre-commit true"
             }
           , S.Step::{
             , strategy = "template"
@@ -163,7 +163,7 @@ in      S.Module::{
             , src = "process-compose.yaml.tpl"
             , dest = "process-compose.yaml"
             , when = Some
-                "Eq nix.process-compose true || Eq nix.process-compose \"true\""
+                "Eq nix.process-compose true"
             }
           , S.Step::{
             , strategy = "template"
@@ -186,7 +186,7 @@ in      S.Module::{
             , strategy = "template"
             , src = "gitignore-precommit.tpl"
             , dest = ".gitignore"
-            , when = Some "Eq nix.pre-commit true || Eq nix.pre-commit \"true\""
+            , when = Some "Eq nix.pre-commit true"
             , patch = Some "append-line-if-absent"
             }
           ]

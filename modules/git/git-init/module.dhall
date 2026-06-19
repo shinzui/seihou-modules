@@ -76,19 +76,19 @@ in  S.Module::{
         , text =
             "GitHub org or username? (tip: set globally with `seihou config set git.githubOwner <value> --global`)"
         , when =
-            Some "Eq git.createGithub true || Eq git.createGithub \"true\""
+            Some "Eq git.createGithub true"
         }
       , S.Prompt::{
         , var = "git.repoName"
         , text = "GitHub repo name?"
         , when =
-            Some "Eq git.createGithub true || Eq git.createGithub \"true\""
+            Some "Eq git.createGithub true"
         }
       , S.Prompt::{
         , var = "git.githubVisibility"
         , text = "GitHub repo visibility?"
         , when =
-            Some "Eq git.createGithub true || Eq git.createGithub \"true\""
+            Some "Eq git.createGithub true"
         , choices = Some [ "private", "public", "internal" ]
         }
       ]
@@ -106,28 +106,28 @@ in  S.Module::{
         , run =
             "git add -A && (git diff --cached --quiet || git -c commit.gpgsign=false commit -m 'Initial commit')"
         , when =
-            Some "Eq git.initialCommit true || Eq git.initialCommit \"true\""
+            Some "Eq git.initialCommit true"
         }
       , S.Command::{
         , run =
             "gh repo create {{git.githubOwner}}/{{git.repoName}} --private --source=. --remote=origin --push"
         , when =
             Some
-              "(Eq git.createGithub true || Eq git.createGithub \"true\") && Eq git.githubVisibility \"private\""
+              "Eq git.createGithub true && Eq git.githubVisibility \"private\""
         }
       , S.Command::{
         , run =
             "gh repo create {{git.githubOwner}}/{{git.repoName}} --public --source=. --remote=origin --push"
         , when =
             Some
-              "(Eq git.createGithub true || Eq git.createGithub \"true\") && Eq git.githubVisibility \"public\""
+              "Eq git.createGithub true && Eq git.githubVisibility \"public\""
         }
       , S.Command::{
         , run =
             "gh repo create {{git.githubOwner}}/{{git.repoName}} --internal --source=. --remote=origin --push"
         , when =
             Some
-              "(Eq git.createGithub true || Eq git.createGithub \"true\") && Eq git.githubVisibility \"internal\""
+              "Eq git.createGithub true && Eq git.githubVisibility \"internal\""
         }
       ]
     , removal = None S.Removal.Type

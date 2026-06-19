@@ -49,7 +49,7 @@ When run, this module writes:
 - `.envrc` — strategy: `copy`
 - `.gitignore` — strategy: `template`, patch mode: `append-line-if-absent`
 - `.gitignore` — strategy: `template`, patch mode: `append-line-if-absent`
-  - Applied when: `Eq nix.pre-commit true || Eq nix.pre-commit "true"`
+  - Applied when: `Eq nix.pre-commit true`
 
 ## Removal
 

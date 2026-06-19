@@ -62,7 +62,7 @@ in  S.Module::{
         , strategy = "template"
         , src = "gitignore-precommit.tpl"
         , dest = ".gitignore"
-        , when = Some "Eq nix.pre-commit true || Eq nix.pre-commit \"true\""
+        , when = Some "Eq nix.pre-commit true"
         , patch = Some "append-line-if-absent"
         }
       ]
