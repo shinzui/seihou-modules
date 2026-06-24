@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "fumadocs"
-    , version = Some "0.1.1"
+    , version = Some "0.1.2"
     , description = Some
         "Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, beautiful-mermaid diagrams, and an interactive zoom/pan/expand widget for every diagram"
     , vars =
