@@ -1,0 +1,34 @@
+---
+title: Diagram demo
+description: Verifies beautiful Mermaid diagrams with zoom, pan, and expand.
+---
+
+Every ` ```mermaid ` fenced block renders with the interactive `<Mermaid>`
+component: wheel to zoom toward the cursor, drag to pan, double-click to fit, and
+**Expand** for a full-screen view. Keyboard: `+` / `-` zoom, `0` fits, `Esc`
+closes the overlay.
+
+A flowchart:
+
+```mermaid
+flowchart TD
+    A[Producer] -->|emit event| B[(Event store)]
+    B --> C{Subscription}
+    C -->|stream| D[Projection]
+    C -->|group| E[Worker]
+    D --> F[Read model]
+    E --> G[Command]
+```
+
+A sequence diagram, to confirm non-flowchart diagrams render too:
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant API
+    participant Store
+    Client->>API: request
+    API->>Store: append(events)
+    Store-->>API: version
+    API-->>Client: ok
+```

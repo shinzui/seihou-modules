@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "nix-bun-flake"
-    , version = Some "0.1.0"
+    , version = Some "0.2.0"
     , description = Some "Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, and optional git-hooks.nix pre-commit checks"
     , vars =
       [ S.VarDecl::{
@@ -28,7 +28,10 @@ in  S.Module::{
         , required = True
         }
       ]
-    , exports = [ { var = "project.name", alias = None Text } ]
+    , exports =
+      [ { var = "project.name", alias = None Text }
+      , { var = "project.description", alias = None Text }
+      ]
     , prompts =
       [ S.Prompt::{
         , var = "project.name"

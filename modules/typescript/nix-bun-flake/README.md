@@ -2,7 +2,7 @@
 
 > Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a `just` task runner, and optional git-hooks.nix pre-commit checks.
 
-**Version:** `0.1.0`
+**Version:** `0.2.0`
 
 ## Overview
 
@@ -34,6 +34,7 @@ The following values are asked interactively (unless supplied via `--var`):
 Variables this module exposes to parent modules:
 
 - `project.name`
+- `project.description`
 
 ## Generated Files
 

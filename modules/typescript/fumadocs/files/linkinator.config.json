@@ -1,0 +1,6 @@
+{
+  "recurse": true,
+  "silent": true,
+  "directoryListing": true,
+  "skip": "^https?://"
+}

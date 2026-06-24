@@ -26,10 +26,16 @@
     , tags = [ "git", "github", "bootstrap", "gitignore" ]
     }
   , { name = "nix-bun-flake"
-    , version = Some "0.1.0"
+    , version = Some "0.2.0"
     , path = "modules/typescript/nix-bun-flake"
     , description = Some "Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, and optional git-hooks.nix pre-commit checks"
     , tags = [ "typescript", "bun", "nix", "flake", "oxc", "devshell" ]
+    }
+  , { name = "fumadocs"
+    , version = Some "0.1.0"
+    , path = "modules/typescript/fumadocs"
+    , description = Some "Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, beautiful-mermaid diagrams, and an interactive zoom/pan/expand widget for every diagram"
+    , tags = [ "typescript", "fumadocs", "docs", "mermaid", "vite", "tanstack" ]
     }
   ]
 , recipes =
