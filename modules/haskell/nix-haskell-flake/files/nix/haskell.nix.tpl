@@ -20,7 +20,9 @@
   config.perSystem = { system, pkgs, config, ... }:
     let
       hsdev = inputs.haskell-nix-dev.lib.${system};
+      {{#if Eq nix.builtin-package true}}
       haskellPackages = pkgs.haskell.packages."{{ghc.version}}";
+      {{/if}}
 
       baseDevPackages = [
         pkgs.zlib
@@ -44,7 +46,7 @@
         export PGHOST="$PWD/db"
         export PGDATA="$PGHOST/db"
         export PGLOG=$PGHOST/postgres.log
-        export PGDATABASE={{project.name}}
+        export PGDATABASE={{#if IsSet nix.pg-database}}{{nix.pg-database}}{{#else}}{{project.name}}{{/if}}
         export PG_CONNECTION_STRING=postgresql://$(jq -rn --arg x $PGHOST '$x|@uri')/$PGDATABASE
 
         mkdir -p $PGHOST
@@ -64,8 +66,10 @@
       };
     in
     {
+      {{#if Eq nix.builtin-package true}}
       packages.default = haskellPackages.callCabal2nix "{{project.name}}" inputs.self { };
 
+      {{/if}}
       devShells.default = mkProjectShell "{{ghc.version}}";
       devShells."{{ghc.version}}" = mkProjectShell "{{ghc.version}}";
       {{#if IsSet ghc.secondary}}

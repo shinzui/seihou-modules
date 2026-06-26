@@ -16,7 +16,7 @@ let MigrationOp =
 
 in      S.Module::{
         , name = "nix-haskell-flake"
-        , version = Some "0.11.4"
+        , version = Some "0.12.0"
         , description = Some
             "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal toolchains). Project wiring lives in imported nix/*.nix modules and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, treefmt-nix, and pre-commit-hooks."
         , vars =
@@ -65,6 +65,13 @@ in      S.Module::{
             , required = True
             }
           , S.VarDecl::{
+            , name = "nix.pg-database"
+            , type = "text"
+            , description = Some
+                "Postgres database name used in the dev-shell shellHook (PGDATABASE and the derived PG_CONNECTION_STRING). Defaults to project.name when unset. Set it when the database name must differ from the (possibly hyphenated) project name — e.g. an underscore name like `notion_hub`, since unquoted hyphenated identifiers are invalid in Postgres. Only used when nix.postgresql is enabled."
+            , required = False
+            }
+          , S.VarDecl::{
             , name = "nix.treefmt"
             , type = "bool"
             , default = Some "true"
@@ -78,6 +85,14 @@ in      S.Module::{
             , default = Some "true"
             , description = Some
                 "Include git-hooks.nix and generate the nix/pre-commit.nix flake-parts module"
+            , required = True
+            }
+          , S.VarDecl::{
+            , name = "nix.builtin-package"
+            , type = "bool"
+            , default = Some "true"
+            , description = Some
+                "Emit a `packages.default = callCabal2nix project.name self` build in nix/haskell.nix. Set False for projects that define their own package build in the unmanaged flake.module.nix (e.g. a haskell-nix overlay supplying patched private dependencies); leaving it True there produces a duplicate `packages.default` and a flake-parts evaluation error."
             , required = True
             }
           , S.VarDecl::{
