@@ -12,14 +12,14 @@ tags:
 - mermaid
 - vite
 - tanstack
-version: 0.1.0
+version: 0.1.2
 ---
 
 # fumadocs
 
 Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, beautiful-mermaid diagrams, and an interactive zoom/pan/expand widget for every diagram
 
-**Version:** 0.1.0
+**Version:** 0.1.2
 
 ## Dependencies
 
