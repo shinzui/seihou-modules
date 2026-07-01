@@ -1,8 +1,8 @@
 # nix-haskell-flake
 
-> Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects, consuming the `haskell-nix-dev` base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal toolchains). Project wiring lives in imported `nix/*.nix` modules and user customizations go in an unmanaged `flake.module.nix`, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, treefmt-nix, and pre-commit-hooks.
+> Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects, consuming the `haskell-nix-dev` base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal toolchains). Project wiring lives in imported `nix/*.nix` modules and user customizations go in an unmanaged `flake.module.nix`, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, ClickHouse, treefmt-nix, and pre-commit-hooks.
 
-**Version:** `0.11.0`
+**Version:** `0.13.0`
 
 ## Overview
 
@@ -81,6 +81,7 @@ your input line. Everything else stays clean.
 | `ghc.secondary` | `text` | — | no | — | Optional second GHC attribute exposed as `nix develop .#<attr>` for cross-version testing. Must also be base-flake-supported. Leave unset for a single-version project. (Exactly one extra version is supported.) |
 | `nix.process-compose` | `bool` | — | yes | — | Include process-compose in the dev shell and generate `process-compose.yaml` |
 | `nix.postgresql` | `bool` | — | yes | — | Include postgresql (and `jq`) in the dev shell with local DB setup in the shellHook |
+| `nix.clickhouse` | `bool` | `false` | yes | — | Include `clickhouse` in the dev shell with a local, rootless server. The shellHook exports `CLICKHOUSE_HOME` (per-project data dir) and `CLICKHOUSE_TCP_PORT`/`CLICKHOUSE_HTTP_PORT`; when `nix.process-compose` is on, `process-compose.yaml` gains a `clickhouse` process running `clickhouse-server` with a `SELECT 1` readiness probe. Uses clickhouse's embedded default config; override the ports if two projects clash. |
 | `nix.treefmt` | `bool` | `true` | yes | — | Include treefmt-nix and generate the `nix/treefmt.nix` flake-parts module (wires `nix fmt` and a formatting check) |
 | `nix.pre-commit` | `bool` | `true` | yes | — | Include git-hooks.nix and generate the `nix/pre-commit.nix` flake-parts module |
 | `nix.fourmolu-ghc-opts` | `text` | — | no | — | Optional override for fourmolu's GHC options (the language extensions it must be told about, since it can't auto-detect "manual" ones). Leave unset to use treefmt-nix's defaults (`BangPatterns`, `PatternSynonyms`, `TypeApplications`). Set it when those don't fit — e.g. a project that uses `pattern` as an identifier (lens-generated fields) must drop `PatternSynonyms`, or one using CPP must add it. Value is the space-separated, double-quoted, bare extension names spliced into a Nix list, e.g. `"BangPatterns" "TypeApplications" "CPP"` (no `-X` prefix; treefmt-nix adds it). Only used when `nix.treefmt` is enabled. |
@@ -95,6 +96,7 @@ The following values are asked interactively (unless supplied via `--var`):
   - Choices: `ghc9124`
 - **`nix.process-compose`** — Include process-compose for service orchestration?
 - **`nix.postgresql`** — Include PostgreSQL with local database setup?
+- **`nix.clickhouse`** — Include ClickHouse with a local server?
 - **`nix.treefmt`** — Include treefmt-nix for code formatting (fourmolu, nixpkgs-fmt, cabal-fmt)?
 - **`nix.pre-commit`** — Include pre-commit hooks via git-hooks.nix?
 
@@ -124,11 +126,13 @@ When run, this module writes:
 - `flake.lock` — strategy: `copy`
 - `process-compose.yaml` — strategy: `template`
   - Applied when: `Eq nix.process-compose true`
+  - Emits a `postgres` (+ `create_schema`) process when `nix.postgresql`, and a `clickhouse`
+    process when `nix.clickhouse`
 - `.envrc` — strategy: `template`
 - `.gitignore` — strategy: `template`, patch `append-line-if-absent`
   - Appends `.envrc`, Haskell build artifacts (`dist`, `dist-*`, `cabal-dev`, `.direnv`,
-    `cabal.project.local`, `result`, `result-*`), and (when `nix.pre-commit`)
-    `.pre-commit-config.yaml`
+    `cabal.project.local`, `result`, `result-*`), (when `nix.pre-commit`)
+    `.pre-commit-config.yaml`, and (when `nix.clickhouse`) `clickhouse/`
 
 ## Migrations
 

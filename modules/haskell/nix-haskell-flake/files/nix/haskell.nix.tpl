@@ -32,6 +32,9 @@
         pkgs.postgresql
         pkgs.jq
         {{/if}}
+        {{#if Eq nix.clickhouse true}}
+        pkgs.clickhouse
+        {{/if}}
         {{#if Eq nix.process-compose true}}
         pkgs.process-compose
         {{/if}}
@@ -55,6 +58,20 @@
         if [ ! -d $PGDATA ]; then
           initdb --auth=trust --no-locale --encoding=UTF8
         fi
+        {{/if}}
+        {{#if Eq nix.clickhouse true}}
+
+        # Local, rootless ClickHouse. The server (started by process-compose, or
+        # manually with `clickhouse-server --path=$CLICKHOUSE_HOME/ …`) keeps all
+        # of its state under CLICKHOUSE_HOME and uses clickhouse's embedded
+        # default config. Override the ports here (or in an unmanaged .envrc/
+        # flake.module.nix) if two projects need to run side by side.
+        export CLICKHOUSE_HOME="$PWD/clickhouse"
+        export CLICKHOUSE_TCP_PORT=9000
+        export CLICKHOUSE_HTTP_PORT=8123
+
+        mkdir -p $CLICKHOUSE_HOME
+        mkdir -p .dev
         {{/if}}
       '';
 
