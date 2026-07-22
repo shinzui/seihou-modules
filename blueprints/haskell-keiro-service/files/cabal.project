@@ -42,9 +42,14 @@ constraints:
   pgmq-migration ==0.4.0.1,
   settei ==0.2.0.0,
   settei-env ==0.2.0.0,
-  settei-formats ==0.2.0.0,
   settei-optparse-applicative ==0.2.0.0,
   settei-kubernetes ==0.2.0.0,
+  -- Use the direct YAML adapter for this GHC 9.12 cohort. The released
+  -- settei-formats umbrella pulls settei-dhall -> dhall-json ==1.7.12, whose
+  -- bytestring <0.12 bound conflicts with GHC 9.12.4's bytestring-0.12.2.0.
+  -- Do not relax either package's bounds; re-evaluate the umbrella only after
+  -- a complete released-cohort verification proves it compatible.
+  settei-yaml ==0.2.0.0,
   shibuya-core ==0.8.0.1,
   shibuya-metrics ==0.8.0.1,
   shibuya-pgmq-adapter ==0.12.0.0,
@@ -54,4 +59,7 @@ constraints:
   hs-opentelemetry-exporter-otlp ==1.0.0.0,
   hs-opentelemetry-instrumentation-wai ==1.0.0.0,
   hs-opentelemetry-propagator-w3c ==1.0.0.0,
+  -- Required by WAI instrumentation (>=1.40 && <2); pin it so the complete
+  -- OpenTelemetry cohort moves as one verified unit.
+  hs-opentelemetry-semantic-conventions ==1.40.0.0,
   hasql-notifications ==0.2.5.0

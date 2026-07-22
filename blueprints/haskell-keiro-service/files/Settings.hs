@@ -5,16 +5,18 @@ module Acme.Settings
     SecretText,
     Settings,
     environmentBindings,
+    loadYamlSettingsSource,
     resolveSettings,
     settingsConfig,
   )
 where
 
 import Acme.Prelude
+import Data.List.NonEmpty (NonEmpty)
 import Data.Text qualified as Text
 import Settei
 import Settei.Env
-import Settei.Formats
+import Settei.Yaml
 
 data RuntimeEnvironment = Development | Test | Production
   deriving stock (Generic, Eq, Ord, Show)
@@ -55,6 +57,13 @@ environmentBindings =
           binding (EnvName "DATABASE_PASSWORD") (validKey "database.password")
         ]
     )
+
+-- | Load one general configuration file through the cohort-compatible direct
+-- YAML adapter. The released settei-formats umbrella is deliberately absent:
+-- its settei-dhall dependency is not solvable with this GHC 9.12 cohort.
+loadYamlSettingsSource :: FilePath -> IO (Either (NonEmpty YamlSourceError) Source)
+loadYamlSettingsSource path =
+  readYamlSource (yamlSourceOptions "service-config") path
 
 -- | Supply general file sources followed by mounted Secret directory sources.
 -- The explicit environment snapshot is always highest precedence.

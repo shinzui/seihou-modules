@@ -42,7 +42,10 @@ the released Keiro runtime, Effectful, PostgreSQL, Servant/Warp, Settei, and Ope
   `--describe-config`, `--explain-config`, and `--check-config`; preserve exit codes 2/3/4. This is
   the fleet target even though older services predate it. Read `config/settei-service-standard.md`
   (`config-settei-service-standard`) and `config/kubernetes-deployment.md`
-  (`config-kubernetes-deployment`) in `shinzui/keiro-runtime-patterns`.
+  (`config-kubernetes-deployment`) in `shinzui/keiro-runtime-patterns`. For this released GHC 9.12
+  cohort, load general files through the direct `settei-yaml` adapter; do not add the
+  `settei-formats` umbrella, whose transitive Dhall adapter is not bytestring-compatible with the
+  cohort.
 - **Validated event streams and two schemas.** Generated `Generated.EventStream` modules construct
   `ValidatedEventStream` values with `mkEventStreamOrThrow`; any Keiki replay warning rejects
   startup. `mkEventStreamUnchecked` is forbidden. Application SQL explicitly schema-qualifies
@@ -56,6 +59,11 @@ the released Keiro runtime, Effectful, PostgreSQL, Servant/Warp, Settei, and Ope
   `api/health-endpoints.md` (`api-health-endpoints`) in `shinzui/haskell-jitsurei`.
 - **Keiro DSL first.** Author and check the `.keiro` spec before domain Haskell. Generated modules
   are disposable; hand-owned `Holes` modules are not.
+- **Compile-first dependency discovery.** Use Mori's registered source paths for dependency APIs;
+  do not download package tarballs or clone extra dependency copies into scratch directories.
+  After the DSL scaffold, materialize all six package files and their smallest typed interfaces
+  before deepening any one module, then run `cabal build all`. Let compiler errors drive the next
+  lookup instead of attempting to pre-research every integration surface.
 - **Generated artifacts have freshness gates.** Regenerate lifecycle diagrams from transducers and
   fail tests when committed output is stale. Never hand-edit generated blocks.
 - **Never commit.** Create and validate files, but do not run `git add`, `git commit`, or `git push`.

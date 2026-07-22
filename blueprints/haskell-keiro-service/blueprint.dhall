@@ -4,7 +4,7 @@ let S =
 
 in  S.Blueprint::{
     , name = "haskell-keiro-service"
-    , version = Some "0.2.1"
+    , version = Some "0.2.2"
     , description = Some
         "Agent-driven scaffold for an event-sourced Haskell service on the released Keiro runtime: a six-package vertical-slice layout with generated and hand-owned rings, Hackage-pinned dependencies, pg-migrate components, validated event streams, Settei configuration, real OpenTelemetry wiring, health and request-logging contracts, and a Keiro-DSL-first workflow."
     , prompt = ./prompt.md as Text
@@ -105,7 +105,7 @@ in  S.Blueprint::{
       [ S.Blueprint.BlueprintFile::{
         , src = "cabal.project"
         , description = Some
-            "Reference cabal.project: Hackage-only runtime cohort at the verified index-state, GHC 9.12.4, and the six-package list. Adapt package names; keep the index-state and never add local paths or runtime source-repository-package pins."
+            "Reference cabal.project: Hackage-only runtime cohort at the verified index-state, GHC 9.12.4, the direct settei-yaml adapter (the released settei-formats umbrella is not solvable with this bytestring cohort), and the six-package list. Adapt package names; keep the index-state and never add local paths or runtime source-repository-package pins."
         }
       , S.Blueprint.BlueprintFile::{
         , src = "core.cabal"
@@ -160,7 +160,7 @@ in  S.Blueprint::{
       , S.Blueprint.BlueprintFile::{
         , src = "Settings.hs"
         , description = Some
-            "Reference Settei service declaration and canonical file, mounted-secret, then environment precedence. Adapt keys and types; preserve explicit bindings, secret sensitivity, unknown-key rejection, and diagnostic modes."
+            "Reference Settei service declaration, direct YAML file loader, and canonical file, mounted-secret, then environment precedence. Adapt keys and types; preserve explicit bindings, secret sensitivity, unknown-key rejection, and diagnostic modes."
         }
       , S.Blueprint.BlueprintFile::{
         , src = "standards-map.md"

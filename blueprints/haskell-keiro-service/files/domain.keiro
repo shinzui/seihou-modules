@@ -28,9 +28,10 @@ readmodel widgets {
     status text required
     created_by text required
     created_at timestamptz
+    stream_version bigint required
   }
   version = 1
-  shape = "fnv1a:5995fd6c3572bcd7"
+  shape = "fnv1a:421d16373630a9b1"
   consistency = Strong
   scope = category "widget"
   feed = subscription

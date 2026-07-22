@@ -49,6 +49,7 @@ library
     Acme.Postgres.Pool
     Acme.Postgres.Runner
     Acme.Prelude
+    Acme.Settings
     Acme.Widget.Generated.Codec
     Acme.Widget.Generated.Domain
     Acme.Widget.Generated.EventStream
@@ -78,6 +79,9 @@ library
     , kiroku-store         >=0.3.1 && <0.4
     , lens
     , mmzk-typeid
+    , settei               >=0.2   && <0.3
+    , settei-env           >=0.2   && <0.3
+    , settei-yaml          >=0.2   && <0.3
     , text
     , time
 

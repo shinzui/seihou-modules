@@ -14,14 +14,14 @@ tags:
 - effectful
 - event-sourcing
 - bootstrap
-version: 0.2.1
+version: 0.2.2
 ---
 
 # haskell-keiro-service
 
 Agent-driven scaffold for an event-sourced Haskell service on the released Keiro runtime: a six-package vertical-slice layout with generated and hand-owned rings, Hackage-pinned dependencies, pg-migrate components, validated event streams, Settei configuration, real OpenTelemetry wiring, health and request-logging contracts, and a Keiro-DSL-first workflow.
 
-**Version:** 0.2.1
+**Version:** 0.2.2
 
 ## Base modules
 
@@ -34,7 +34,7 @@ Agent-driven scaffold for an event-sourced Haskell service on the released Keiro
 
 ## Reference files
 
-- `cabal.project` - Reference cabal.project: Hackage-only runtime cohort at the verified index-state, GHC 9.12.4, and the six-package list. Adapt package names; keep the index-state and never add local paths or runtime source-repository-package pins.
+- `cabal.project` - Reference cabal.project: Hackage-only runtime cohort at the verified index-state, GHC 9.12.4, the direct settei-yaml adapter (the released settei-formats umbrella is not solvable with this bytestring cohort), and the six-package list. Adapt package names; keep the index-state and never add local paths or runtime source-repository-package pins.
 - `core.cabal` - Reference <name>-core.cabal: the shared common stanzas, bounded released dependencies, and exposed modules organized by vertical slice, including generated, hand-owned, and read-model rings. Adapt names while preserving package bounds and layout.
 - `Prelude.hs` - Reference <Ns>.Prelude: a thin re-export over base using {-# LANGUAGE PackageImports #-} (ONLY here), re-exporting module Control.Lens. Notes the rule that Data.Generics.Labels is NOT re-exported (its orphan IsLabel collides with keiki's); each module that uses #field lenses imports it locally.
 - `AppConfig.hs` - Reference runtime dependency module: the strict AppConfig record populated only after Settei resolves Settings, plus the Eff es + Reader AppConfig + Error + IOE effect-row shape. Adapt dependencies; do not merge source resolution into this module.
@@ -45,6 +45,6 @@ Agent-driven scaffold for an event-sourced Haskell service on the released Keiro
 - `Migrations.hs` - Reference pg-migrate package wiring: embedded strict manifest, application MigrationComponent, ordered complete plan, CLI command dispatch, and test-support notes. Split the module and executable sketches into their real package paths.
 - `manifest` - Exact two-entry strict pg-migrate manifest format for application SQL. Copy the format, replace entries with real ordered migration files, and keep it exhaustive.
 - `Telemetry.hs` - Reference production OpenTelemetry resource bracket: tracer and meter providers, flush/shutdown, W3C propagation, and Keiro metrics construction. Adapt resource attributes and thread the result into server and worker run options.
-- `Settings.hs` - Reference Settei service declaration and canonical file, mounted-secret, then environment precedence. Adapt keys and types; preserve explicit bindings, secret sensitivity, unknown-key rejection, and diagnostic modes.
+- `Settings.hs` - Reference Settei service declaration, direct YAML file loader, and canonical file, mounted-secret, then environment precedence. Adapt keys and types; preserve explicit bindings, secret sensitivity, unknown-key rejection, and diagnostic modes.
 - `standards-map.md` - Topic-to-doc and Mori DocRef map for the normative Keiro runtime, architecture, configuration, migration, messaging, and HTTP standards. Read these docs before deviating from the prompt.
 

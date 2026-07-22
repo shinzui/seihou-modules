@@ -60,7 +60,7 @@
     , tags = [ "haskell", "nix", "flake", "flake-parts", "migration", "devshell" ]
     }
   , { name = "haskell-keiro-service"
-    , version = Some "0.2.1"
+    , version = Some "0.2.2"
     , path = "blueprints/haskell-keiro-service"
     , description = Some "Agent-driven scaffold for an event-sourced Haskell service on the released Keiro runtime: a six-package vertical-slice layout with generated and hand-owned rings, Hackage-pinned dependencies, pg-migrate components, validated event streams, Settei configuration, real OpenTelemetry wiring, health and request-logging contracts, and a Keiro-DSL-first workflow."
     , tags = [ "haskell", "service", "keiro", "effectful", "event-sourcing", "bootstrap" ]
