@@ -1,13 +1,11 @@
 ---
 type: SeihouBlueprint
 title: haskell-keiro-service
-description: 'Agent-driven scaffold for an event-sourced Haskell service on the keiro
-  runtime (keiki/kiroku/shibuya/pgmq), shaped like danwa: a six-package <name>-<role>
-  layout (core/api/migrations/workers/server/client) with read models in core, a custom
-  prelude, an effectful app monad with Reader AppConfig, the keiro stack pinned via
-  cabal.project, codd migrations, servant/warp HTTP, and a keiro-DSL-first domain
-  workflow (author and check a .keiro spec, then keiro-dsl scaffold with collocated
-  layout, before hand-filling the holes)'
+description: 'Agent-driven scaffold for an event-sourced Haskell service on the released
+  Keiro runtime: a six-package vertical-slice layout with generated and hand-owned
+  rings, Hackage-pinned dependencies, pg-migrate components, validated event streams,
+  Settei configuration, real OpenTelemetry wiring, health and request-logging contracts,
+  and a Keiro-DSL-first workflow.'
 resource: seihou://seihou-modules/blueprints/haskell-keiro-service
 tags:
 - haskell
@@ -16,14 +14,14 @@ tags:
 - effectful
 - event-sourcing
 - bootstrap
-version: 0.2.0
+version: 0.2.1
 ---
 
 # haskell-keiro-service
 
-Agent-driven scaffold for an event-sourced Haskell service on the keiro runtime (keiki/kiroku/shibuya/pgmq), shaped like danwa: a six-package <name>-<role> layout (core/api/migrations/workers/server/client) with read models in core, a custom prelude, an effectful app monad with Reader AppConfig, the keiro stack pinned via cabal.project, codd migrations, servant/warp HTTP, and a keiro-DSL-first domain workflow (author and check a .keiro spec, then keiro-dsl scaffold with collocated layout, before hand-filling the holes)
+Agent-driven scaffold for an event-sourced Haskell service on the released Keiro runtime: a six-package vertical-slice layout with generated and hand-owned rings, Hackage-pinned dependencies, pg-migrate components, validated event streams, Settei configuration, real OpenTelemetry wiring, health and request-logging contracts, and a Keiro-DSL-first workflow.
 
-**Version:** 0.2.0
+**Version:** 0.2.1
 
 ## Base modules
 

@@ -4,7 +4,7 @@ let S =
 
 in  S.Blueprint::{
     , name = "haskell-keiro-service"
-    , version = Some "0.2.0"
+    , version = Some "0.2.1"
     , description = Some
         "Agent-driven scaffold for an event-sourced Haskell service on the released Keiro runtime: a six-package vertical-slice layout with generated and hand-owned rings, Hackage-pinned dependencies, pg-migrate components, validated event streams, Settei configuration, real OpenTelemetry wiring, health and request-logging contracts, and a Keiro-DSL-first workflow."
     , prompt = ./prompt.md as Text

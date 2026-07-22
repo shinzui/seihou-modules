@@ -12,11 +12,36 @@ enum WidgetKind {
   Standard=standard Premium=premium
 }
 
+# --- First-class read model backing the `widgets` projection. Declaring the node
+# --- (rather than a standalone projection) is what makes registration, schema
+# --- identity, Strong consistency, and rebuild helpers available. `shape` is the
+# --- captured fnv1a digest of `table|column:type:req|...`; the checker rejects
+# --- drift, so re-run `keiro-dsl check` after every column change and bump
+# --- `version` when the table shape really changed. ---
+readmodel widgets {
+  table = "widgets"
+  schema = "acme"
+  columns {
+    widget_id text required
+    name text required
+    kind text required
+    status text required
+    created_by text required
+    created_at timestamptz
+  }
+  version = 1
+  shape = "fnv1a:5995fd6c3572bcd7"
+  consistency = Strong
+  scope = category "widget"
+  feed = subscription
+  subscription = "acme-widgets-sub"
+}
+
 aggregate Widget
   regs
     widgetId    WidgetId     = placeholder
     widgetState WidgetVertex = Active
-  states Active Archived!
+  states Active Shelved!
 
   command CreateWidget  { widgetId kind:WidgetKind name:Text createdBy commandId }
   command ArchiveWidget { widgetId archivedBy commandId }
@@ -25,13 +50,13 @@ aggregate Widget
   event WidgetArchived = fields(ArchiveWidget)
 
   Active -- CreateWidget  --> emit WidgetCreated  ; goto Active
-  Active -- ArchiveWidget --> emit WidgetArchived ; goto Archived
+  Active -- ArchiveWidget --> emit WidgetArchived ; goto Shelved
 
   wire kind=ctorName fields=camelCase schemaVersion=1
   projection widgets consistency=Strong key=widgetId
     status-map {
-      Created=>active
-      Archived=>archived
+      WidgetCreated=>active
+      WidgetArchived=>archived
     }
 
 # --- Operations: the intended API surface. A `command` operation becomes a
