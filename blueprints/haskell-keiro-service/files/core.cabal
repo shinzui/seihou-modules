@@ -1,0 +1,124 @@
+cabal-version: 3.4
+name:          acme-core
+version:       0.1.0.0
+synopsis:      Domain core + per-concept persistence for the Acme keiro service
+license:       BSD-3-Clause
+author:        Nadeem Bitar
+maintainer:    nadeem@gmail.com
+build-type:    Simple
+
+-- The two shared `common` stanzas every package declares and every buildable
+-- stanza imports (`import: warnings, shared`).
+common warnings
+  ghc-options:
+    -Wall -Wcompat -Widentities -Wincomplete-record-updates
+    -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
+
+common shared
+  default-language:   GHC2024
+  default-extensions:
+    BlockArguments
+    DataKinds
+    DeriveAnyClass
+    DuplicateRecordFields
+    LambdaCase
+    MultilineStrings
+    OverloadedLabels
+    OverloadedRecordDot
+    OverloadedStrings
+    QualifiedDo
+    TemplateHaskell
+    TypeApplications
+    TypeFamilies
+    TypeOperators
+
+library
+  import:          warnings, shared
+  hs-source-dirs:  src
+
+  -- Vertical-slice by concept. Per aggregate the keiro-DSL-scaffolded `-- @generated`
+  -- layer is a `.Generated` leaf (overwritten by `keiro-dsl scaffold --out acme-core/src`
+  -- because domain/acme.keiro declares `layout collocated`); the hand-owned
+  -- Acme.<Aggregate>.Holes (keiki transducer + read-model apply) is create-if-absent; and
+  -- the read-model hasql code is Acme.<Aggregate>.ReadModel. Only cross-cutting infra keeps
+  -- a technical-layer name. (`keiro-dsl scaffold` writes a keiro-dsl-manifest.<context>.txt
+  -- with the exact module list to paste here.)
+  exposed-modules:
+    Acme.App.Config
+    Acme.Diagrams
+    Acme.Postgres.Pool
+    Acme.Postgres.Runner
+    Acme.Prelude
+    Acme.Widget.Generated.Codec
+    Acme.Widget.Generated.Domain
+    Acme.Widget.Generated.EventStream
+    Acme.Widget.Generated.Harness
+    Acme.Widget.Generated.Projection
+    Acme.Widget.Holes
+    Acme.Widget.ReadModel
+
+  build-depends:
+    , aeson
+    , base                  >=4.18 && <5
+    , bytestring
+    , containers
+    , contravariant-extras
+    , directory
+    , effectful
+    , effectful-core
+    , filepath
+    , generic-lens
+    , hasql                 >=1.10
+    , hasql-pool            >=1.2
+    , hasql-transaction     >=1.0
+    , keiki                >=0.2   && <0.3
+    , keiki-codec-json     >=0.2   && <0.3
+    , keiro                >=0.3   && <0.4
+    , keiro-core           >=0.3   && <0.4
+    , kiroku-store         >=0.3.1 && <0.4
+    , lens
+    , mmzk-typeid
+    , text
+    , time
+
+-- Renders each aggregate's keiki transducer to a stateDiagram-v2 block in
+-- docs/diagrams/domain-lifecycles.md. `--write` regenerates in place; `--check`
+-- (CI + `just diagrams-check`) fails on any stale block. Mirrors keiro's
+-- jitsurei-diagrams tool; runs from the workspace root (repo-relative paths).
+executable acme-diagrams
+  import:         warnings, shared
+  main-is:        Diagrams.hs
+  hs-source-dirs: app
+  ghc-options:    -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+    , acme-core
+    , base
+    , text
+
+-- Spec-derived behavioural harness: runs every aggregate's harnessAssertions.
+test-suite acme-core-domain
+  import:         warnings, shared
+  type:           exitcode-stdio-1.0
+  hs-source-dirs: test-domain
+  main-is:        Main.hs
+  ghc-options:    -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+    , base
+    , acme-core
+
+-- Freshness gate: fails if any generated lifecycle diagram in
+-- docs/diagrams/domain-lifecycles.md has drifted from its transducer (or trips
+-- keiki's Mermaid validator). The `cabal test` counterpart of `acme-diagrams
+-- --check`, so a forgotten regeneration fails `cabal test all`, not just CI.
+test-suite acme-core-diagrams
+  import:         warnings, shared
+  type:           exitcode-stdio-1.0
+  hs-source-dirs: test-diagrams
+  main-is:        Main.hs
+  build-depends:
+    , acme-core
+    , base
+    , keiki
+    , tasty
+    , tasty-hunit
+    , text

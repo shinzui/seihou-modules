@@ -60,7 +60,7 @@
     , tags = [ "haskell", "nix", "flake", "flake-parts", "migration", "devshell" ]
     }
   , { name = "haskell-keiro-service"
-    , version = Some "0.1.0"
+    , version = Some "0.2.0"
     , path = "blueprints/haskell-keiro-service"
     , description = Some "Agent-driven scaffold for an event-sourced Haskell service on the keiro runtime (keiki/kiroku/shibuya/pgmq), shaped like danwa: a six-package <name>-<role> layout (core/api/migrations/workers/server/client) with read models in core, a custom prelude, an effectful app monad with Reader AppConfig, the keiro stack pinned via cabal.project, codd migrations, servant/warp HTTP, and a keiro-DSL-first domain workflow (author and check a .keiro spec, then keiro-dsl scaffold with collocated layout, before hand-filling the holes)"
     , tags = [ "haskell", "service", "keiro", "effectful", "event-sourcing", "bootstrap" ]

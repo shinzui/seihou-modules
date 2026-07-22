@@ -16,14 +16,14 @@ tags:
 - effectful
 - event-sourcing
 - bootstrap
-version: 0.1.0
+version: 0.2.0
 ---
 
 # haskell-keiro-service
 
 Agent-driven scaffold for an event-sourced Haskell service on the keiro runtime (keiki/kiroku/shibuya/pgmq), shaped like danwa: a six-package <name>-<role> layout (core/api/migrations/workers/server/client) with read models in core, a custom prelude, an effectful app monad with Reader AppConfig, the keiro stack pinned via cabal.project, codd migrations, servant/warp HTTP, and a keiro-DSL-first domain workflow (author and check a .keiro spec, then keiro-dsl scaffold with collocated layout, before hand-filling the holes)
 
-**Version:** 0.1.0
+**Version:** 0.2.0
 
 ## Base modules
 
@@ -32,16 +32,21 @@ Agent-driven scaffold for an event-sourced Haskell service on the keiro runtime 
 
 ## Agent prompt
 
-# Scaffold an event-sourced Haskell service ({{project.name}}) on the keiro runtime
+# Scaffold an event-sourced Haskell service ({{project.name}}) on the Keiro runtime
 
 ## Reference files
 
-- `cabal.project` - Reference cabal.project: the GitHub source-repository-package pin cohort (keiki/kiroku/keiro/codd/typeid-hs/hasql-* /ephemeral-pg), the Hackage index-state, with-compiler ghc-9.12.4, the six-package list, and the constraints/allow-newer block. NEVER use file:// or corpus paths; mmzk-typeid comes from Hackage. Adapt the packages list; keep the pin cohort.
-- `core.cabal` - Reference <name>-core.cabal: cabal-version 3.4, the two shared `common` stanzas (warnings + shared) with the DB-tier default-extensions, leading-comma build-depends on the keiro stack (keiki, keiki-codec-json, keiro, keiro-core, kiroku-store, mmzk-typeid, hasql, hasql-pool, hasql-transaction, contravariant-extras, effectful, generic-lens, lens, aeson, bytestring, text, time), and exposed-modules organized vertical-slice by concept: the prelude, the cross-cutting App.Config/Postgres.{Pool,Runner}, and per concept the keiro-scaffolded <Ns>.<Agg>.Generated.{Domain,Codec,EventStream,Projection,Harness} (a .Generated leaf), the hand-owned <Ns>.<Agg>.Holes, and <Ns>.<Agg>.ReadModel.
+- `cabal.project` - Reference cabal.project: Hackage-only runtime cohort at the verified index-state, GHC 9.12.4, and the six-package list. Adapt package names; keep the index-state and never add local paths or runtime source-repository-package pins.
+- `core.cabal` - Reference <name>-core.cabal: the shared common stanzas, bounded released dependencies, and exposed modules organized by vertical slice, including generated, hand-owned, and read-model rings. Adapt names while preserving package bounds and layout.
 - `Prelude.hs` - Reference <Ns>.Prelude: a thin re-export over base using {-# LANGUAGE PackageImports #-} (ONLY here), re-exporting module Control.Lens. Notes the rule that Data.Generics.Labels is NOT re-exported (its orphan IsLabel collides with keiki's); each module that uses #field lenses imports it locally.
-- `AppConfig.hs` - Reference effectful application-config module: the AppConfig record (hasql pool, kiroku store handle, stream categories) with every field strict (!), explicit deriving stock, and a note on the Eff es + Reader AppConfig + Error + IOE effect-row shape (peeled by Postgres.Runner).
-- `Api.hs` - Reference servant skeleton: a NamedRoutes route record plus wire DTO types with deriving stock/anyclass JSON instances, illustrating the <name>-api package shape (depends only on <name>-core) and how closed-enum wire fields are carried as Text and validated in the handler.
+- `AppConfig.hs` - Reference runtime dependency module: the strict AppConfig record populated only after Settei resolves Settings, plus the Eff es + Reader AppConfig + Error + IOE effect-row shape. Adapt dependencies; do not merge source resolution into this module.
+- `Api.hs` - Reference Servant skeleton: NamedRoutes, wire DTOs, and the fleet liveness/readiness route shape. Adapt domain routes and keep probe semantics separate from dependency health.
 - `Diagrams.hs` - Reference <Ns>.Diagrams: renders each aggregate's keiki transducer to a stateDiagram-v2 block (Keiki.Render.Mermaid.toMermaid) and splices it between HTML-comment markers in docs/diagrams/domain-lifecycles.md (Keiki.Render.Markdown.replaceMarkdownDiagramBlock). staleDiagrams/writeDiagrams back the <name>-diagrams executable (--check/--write) and the <name>-core-diagrams test suite that fails `cabal test` when a committed diagram has drifted from its transducer — the generated-artifact freshness gate.
 - `domain.keiro` - Reference keiro DSL spec: a bounded context with a `layout collocated` clause, one aggregate, an id newtype with a prefix, a closed enum referenced via an explicit field:Enum annotation, a couple of commands/events, a projection, and command/query operations — the keiro-DSL-first shape to author and `keiro-dsl check` BEFORE writing any domain Haskell.
 - `fourmolu.yaml` - Reference fourmolu.yaml (the fleet formatter config, also shipped by the nix-haskell-flake base module) so the generated project formats identically to the rest of the fleet.
+- `Migrations.hs` - Reference pg-migrate package wiring: embedded strict manifest, application MigrationComponent, ordered complete plan, CLI command dispatch, and test-support notes. Split the module and executable sketches into their real package paths.
+- `manifest` - Exact two-entry strict pg-migrate manifest format for application SQL. Copy the format, replace entries with real ordered migration files, and keep it exhaustive.
+- `Telemetry.hs` - Reference production OpenTelemetry resource bracket: tracer and meter providers, flush/shutdown, W3C propagation, and Keiro metrics construction. Adapt resource attributes and thread the result into server and worker run options.
+- `Settings.hs` - Reference Settei service declaration and canonical file, mounted-secret, then environment precedence. Adapt keys and types; preserve explicit bindings, secret sensitivity, unknown-key rejection, and diagnostic modes.
+- `standards-map.md` - Topic-to-doc and Mori DocRef map for the normative Keiro runtime, architecture, configuration, migration, messaging, and HTTP standards. Read these docs before deviating from the prompt.
 

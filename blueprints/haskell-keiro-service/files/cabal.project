@@ -1,0 +1,57 @@
+-- Reference cabal.project for a released Keiro-runtime service.
+-- ADAPT the package names. KEEP the index-state and coherent Hackage constraints
+-- unless a later complete-cohort verification proves a replacement. NEVER add a
+-- file:// or corpus path, or runtime source-repository-package stanza.
+
+index-state: 2026-07-22T18:04:31Z
+
+with-compiler: ghc-9.12.4
+
+packages:
+    acme-core
+    acme-api
+    acme-migrations
+    acme-workers
+    acme-server
+    acme-client
+
+tests: True
+test-show-details: direct
+
+-- Verified together on Hackage 2026-07-22. Keep each package family together.
+constraints:
+  keiki ==0.2.0.0,
+  keiki-codec-json ==0.2.0.0,
+  keiro ==0.3.0.0,
+  keiro-core ==0.3.0.0,
+  keiro-dsl ==0.3.0.0,
+  keiro-migrations ==0.3.0.0,
+  keiro-pgmq ==0.3.0.0,
+  kiroku-store ==0.3.1.0,
+  kiroku-store-migrations ==0.3.0.0,
+  kiroku-metrics ==0.1.0.1,
+  kiroku-otel ==0.2.0.1,
+  pg-migrate ==1.1.0.0,
+  pg-migrate-cli ==1.1.0.0,
+  pg-migrate-embed ==1.1.0.0,
+  pg-migrate-test-support ==1.1.0.0,
+  pgmq-core ==0.4.0.1,
+  pgmq-config ==0.4.0.1,
+  pgmq-effectful ==0.4.0.1,
+  pgmq-hasql ==0.4.0.1,
+  pgmq-migration ==0.4.0.1,
+  settei ==0.2.0.0,
+  settei-env ==0.2.0.0,
+  settei-formats ==0.2.0.0,
+  settei-optparse-applicative ==0.2.0.0,
+  settei-kubernetes ==0.2.0.0,
+  shibuya-core ==0.8.0.1,
+  shibuya-metrics ==0.8.0.1,
+  shibuya-pgmq-adapter ==0.12.0.0,
+  shibuya-kiroku-adapter ==0.4.0.0,
+  hs-opentelemetry-api ==1.0.0.0,
+  hs-opentelemetry-sdk ==1.0.0.0,
+  hs-opentelemetry-exporter-otlp ==1.0.0.0,
+  hs-opentelemetry-instrumentation-wai ==1.0.0.0,
+  hs-opentelemetry-propagator-w3c ==1.0.0.0,
+  hasql-notifications ==0.2.5.0

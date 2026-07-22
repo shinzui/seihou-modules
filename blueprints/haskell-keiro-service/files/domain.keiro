@@ -1,0 +1,48 @@
+context acme
+layout collocated
+
+# --- Identifiers (newtypes over Text with typeid-style prefixes) ---
+id WidgetId  prefix=wid
+id CommandId prefix=cmd
+
+# --- Closed enumerations (Ctor=wire-spelling). Reference a closed enum from a
+# --- payload field with an explicit `field:EnumName` annotation (a bare field
+# --- only resolves to an enum when its PascalCased name equals the enum name). ---
+enum WidgetKind {
+  Standard=standard Premium=premium
+}
+
+aggregate Widget
+  regs
+    widgetId    WidgetId     = placeholder
+    widgetState WidgetVertex = Active
+  states Active Archived!
+
+  command CreateWidget  { widgetId kind:WidgetKind name:Text createdBy commandId }
+  command ArchiveWidget { widgetId archivedBy commandId }
+
+  event WidgetCreated  = fields(CreateWidget)
+  event WidgetArchived = fields(ArchiveWidget)
+
+  Active -- CreateWidget  --> emit WidgetCreated  ; goto Active
+  Active -- ArchiveWidget --> emit WidgetArchived ; goto Archived
+
+  wire kind=ctorName fields=camelCase schemaVersion=1
+  projection widgets consistency=Strong key=widgetId
+    status-map {
+      Created=>active
+      Archived=>archived
+    }
+
+# --- Operations: the intended API surface. A `command` operation becomes a
+# --- servant route that issues a command; a `query` operation reads a projection. ---
+operation CreateWidget
+  command on Widget
+    stream from widgetId via widgetStream
+    project [ widgets ]
+
+operation GetWidget
+  query widgets
+    input WidgetId
+    result Maybe WidgetView
+    consistency Strong
