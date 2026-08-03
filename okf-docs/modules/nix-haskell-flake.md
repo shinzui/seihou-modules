@@ -10,14 +10,14 @@ tags:
 - nix
 - flake
 - devshell
-version: 0.13.0
+version: 0.13.1
 ---
 
 # nix-haskell-flake
 
 Nix flake for Haskell projects consuming the haskell-nix-dev base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal), with optional process-compose, PostgreSQL, treefmt, and pre-commit
 
-**Version:** 0.13.0
+**Version:** 0.13.1
 
 ## Dependencies
 

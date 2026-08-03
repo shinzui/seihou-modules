@@ -2,7 +2,7 @@
 
 > Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects, consuming the `haskell-nix-dev` base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal toolchains). Project wiring lives in imported `nix/*.nix` modules and user customizations go in an unmanaged `flake.module.nix`, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, ClickHouse, treefmt-nix, and pre-commit-hooks.
 
-**Version:** `0.13.0`
+**Version:** `0.13.1`
 
 ## Overview
 
@@ -34,8 +34,14 @@ nix/
   pre-commit.nix           # seihou-managed: git-hooks flake-parts module     (nix.pre-commit)
 flake.module.nix.example   # template you copy to flake.module.nix (see "Extending")
 process-compose.yaml       # (nix.process-compose)
-.envrc .gitignore
+.envrc                     # watches imported modules, then loads the dev shell
+.gitignore
 ```
+
+The generated `.envrc` explicitly watches `nix/haskell.nix`, the optional
+treefmt and pre-commit modules, and the optional unmanaged `flake.module.nix`
+before `use flake`. This prevents nix-direnv from retaining an obsolete dev
+shell or pre-commit wrapper after an imported module changes.
 
 ## Extending your project (without migration conflicts)
 
@@ -128,7 +134,8 @@ When run, this module writes:
   - Applied when: `Eq nix.process-compose true`
   - Emits a `postgres` (+ `create_schema`) process when `nix.postgresql`, and a `clickhouse`
     process when `nix.clickhouse`
-- `.envrc` — strategy: `template`
+- `.envrc` — strategy: `template`; watches every local module imported by
+  `flake.nix` before loading the dev shell
 - `.gitignore` — strategy: `template`, patch `append-line-if-absent`
   - Appends `.envrc`, Haskell build artifacts (`dist`, `dist-*`, `cabal-dev`, `.direnv`,
     `cabal.project.local`, `result`, `result-*`), (when `nix.pre-commit`)
