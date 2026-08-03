@@ -47,14 +47,25 @@ for full descriptions:
 Required values you will be asked for (or must supply via `--var`):
 
 - `project.name`, `project.description`, `project.namespace` — CLI identity.
+- `nix.process-compose`, `nix.postgresql` — required bools with no default; the
+  recipe will error unless you answer the prompts or pass them via `--var`.
 
 Optional with sensible defaults:
 
 - `project.description-long`, `project.author`, `project.maintainer`,
   `project.copyright-year`
-- `nix.process-compose`, `nix.postgresql`, `nix.treefmt`, `nix.pre-commit`
+- `nix.clickhouse` (default `false`), `nix.treefmt` (default `true`),
+  `nix.pre-commit` (default `true`), `nix.builtin-package` (default `true`)
 - `git.defaultBranch`, `git.initialCommit`, `git.createGithub`,
   `git.githubVisibility`
+
+Optional with no default (leave unset unless you need them):
+
+- `ghc.version` (default `ghc9124`), `ghc.secondary` — pin/cross-test GHC.
+- `nix.pg-database` — Postgres DB name when it must differ from `project.name`
+  (only used when `nix.postgresql=true`).
+- `nix.fourmolu-ghc-opts` — override fourmolu's GHC options (only used when
+  `nix.treefmt=true`).
 
 ## Generated Files
 
