@@ -65,6 +65,12 @@
     , description = Some "Agent-driven scaffold for an event-sourced Haskell service on the released Keiro runtime: a six-package vertical-slice layout with generated and hand-owned rings, Hackage-pinned dependencies, pg-migrate components, validated event streams, Settei configuration, real OpenTelemetry wiring, health and request-logging contracts, and a Keiro-DSL-first workflow."
     , tags = [ "haskell", "service", "keiro", "effectful", "event-sourcing", "bootstrap" ]
     }
+  , { name = "fix-nix-haskell-flake-customizations"
+    , version = Some "0.1.0"
+    , path = "blueprints/fix-nix-haskell-flake-customizations"
+    , description = Some "Agent-driven, in-place remediation of a repo that already consumes the nix-haskell-flake seihou module: upgrades the module to its latest version (seihou migrate + seihou run --force) and relocates every local edit made directly to the seihou-managed nix/haskell.nix (extra dev-shell packages, etc.) into the unmanaged, upgrade-safe flake.module.nix via haskellProject.extraDevPackages, git-tracking that file so Nix actually sees it, and proving dev-shell parity with nix print-dev-env; reviews and verifies but never commits"
+    , tags = [ "haskell", "nix", "flake", "flake-parts", "seihou", "migration", "devshell" ]
+    }
   ]
 , prompts =
   [] : List { name : Text, version : Optional Text, path : Text, description : Optional Text, tags : List Text }
