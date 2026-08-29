@@ -116,7 +116,7 @@ entries is the meaningful signal that a C library is actually wired in.
   touch show `[unchanged]`/`[modified]`. Confirm the only conflicts are the
   files you backed up in step 1.
 - Note any **new variables** the newer module version introduces (e.g.
-  `nix.builtin-package`, `nix.clickhouse`, `nix.pg-database`, `ghc.secondary`)
+  `nix.builtin-package`, `nix.redis`, `nix.clickhouse`, `nix.pg-database`, `ghc.secondary`)
   and their resolved defaults, so regeneration does not silently drop a block
   you rely on. `nix.builtin-package` defaults to `true` and keeps the
   `packages.default = callCabal2nix …` build; verify it resolves the way this

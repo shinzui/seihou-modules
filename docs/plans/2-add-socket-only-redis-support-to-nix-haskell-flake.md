@@ -41,7 +41,9 @@ environment, process, or ignored state directory.
 - [x] (2026-08-29 14:10Z) Milestone 1: added the generated Redis interface; `seihou
   validate-module modules/haskell/nix-haskell-flake` reported 13 variables, 9 prompts, 14
   steps, and a valid module.
-- [ ] Milestone 2: synchronize public documentation, registry metadata, and generated OKF docs.
+- [x] (2026-08-29 14:11Z) Milestone 2: synchronized public documentation, Seihou and Mori
+  metadata, and generated OKF docs at version 0.14.0; registry validation reported all 11
+  entries in sync and OKF validation reported 11 valid concepts.
 - [ ] Milestone 3: prove disabled rendering, enabled idempotence, and the live socket-only server.
 - [ ] Completion: run final acceptance checks, distill durable ADR context, and write the retrospective.
 
@@ -51,7 +53,22 @@ environment, process, or ignored state directory.
 Document unexpected behaviors, bugs, optimizations, or insights discovered during
 implementation. Provide concise evidence.
 
-(None yet.)
+- Observation: Regenerating the existing `okf-docs/` directory requires the OKF extension's
+  `--force` flag even though the original plan command omitted it.
+  Evidence: `seihou extension run okf -- docs --dir . --out okf-docs` exited with
+  `output directory is not empty: okf-docs; pass --force to overwrite`.
+
+- Observation: A full OKF regeneration now writes 11 concepts rather than the 10 anticipated by
+  the plan because it materializes the previously missing current blueprint document.
+  Evidence: the successful generator reported `Wrote 11 concepts to okf-docs` and created
+  `okf-docs/blueprints/fix-nix-haskell-flake-customizations.md`; `okf validate okf-docs`
+  subsequently reported `OK: 11 concepts`.
+
+- Observation: The newly generated blueprint concept contained an extra blank line at end of
+  file, which is accepted by OKF but rejected by Git's whitespace check.
+  Evidence: `git diff --cached --check` reported
+  `okf-docs/blueprints/fix-nix-haskell-flake-customizations.md:40: new blank line at EOF`;
+  removing that final blank line made the check clean without changing document content.
 
 
 ## Decision Log
@@ -106,6 +123,11 @@ this section into docs/adr/. Keep task-local execution details here.
 - Milestone 1 established the default-disabled `nix.redis` variable, conditional Redis package
   and shell environment, socket-only supervised process, and idempotent `redis/` ignore patch.
   The module-level structural validation passed with the planned counts.
+
+- Milestone 2 made Redis discoverable in the module README, composed-recipe inventories,
+  remediation blueprint, Seihou registry, Mori template metadata, and regenerated OKF module
+  documentation. Regeneration also restored the missing generated document for the current
+  customization-remediation blueprint.
 
 
 ## Context and Orientation

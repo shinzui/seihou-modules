@@ -29,9 +29,9 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "nix-haskell-flake"
-        , version = Some "0.9.0"
+        , version = Some "0.14.0"
         , description = Some
-            "Nix flake for Haskell projects with toggleable process-compose, PostgreSQL, treefmt-nix, and pre-commit-hooks"
+            "Nix flake for Haskell projects with toggleable process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt-nix, and pre-commit-hooks"
         , modulePath = "modules/haskell/nix-haskell-flake"
         , tags = [ "haskell", "nix", "flake", "devshell" ]
         , requiredVars =

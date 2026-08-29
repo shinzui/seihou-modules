@@ -49,7 +49,8 @@ Optional with sensible defaults:
 
 - `project.author`, `project.maintainer`, `project.copyright-year`,
   `project.cabal-version`, `project.tests`
-- `nix.process-compose`, `nix.postgresql`, `nix.treefmt`, `nix.pre-commit`
+- `nix.process-compose`, `nix.postgresql`, `nix.redis` (default `false`),
+  `nix.clickhouse` (default `false`), `nix.treefmt`, `nix.pre-commit`
 - `git.defaultBranch`, `git.initialCommit`, `git.createGithub`,
   `git.githubVisibility`
 

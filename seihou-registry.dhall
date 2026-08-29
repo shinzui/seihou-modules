@@ -2,9 +2,9 @@
 , repoDescription = Some "Composable Seihou modules for bootstrapping projects"
 , modules =
   [ { name = "nix-haskell-flake"
-    , version = Some "0.13.2"
+    , version = Some "0.14.0"
     , path = "modules/haskell/nix-haskell-flake"
-    , description = Some "Nix flake for Haskell projects consuming the haskell-nix-dev base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal), with optional process-compose, PostgreSQL, treefmt, and pre-commit"
+    , description = Some "Nix flake for Haskell projects consuming the haskell-nix-dev base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal), with optional process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt, and pre-commit"
     , tags = [ "haskell", "nix", "flake", "devshell" ]
     }
   , { name = "haskell-cli-app"

@@ -1,8 +1,8 @@
 # nix-haskell-flake
 
-> Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects, consuming the `haskell-nix-dev` base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal toolchains). Project wiring lives in imported `nix/*.nix` modules and user customizations go in an unmanaged `flake.module.nix`, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, ClickHouse, treefmt-nix, and pre-commit-hooks.
+> Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects, consuming the `haskell-nix-dev` base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal toolchains). Project wiring lives in imported `nix/*.nix` modules and user customizations go in an unmanaged `flake.module.nix`, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt-nix, and pre-commit-hooks.
 
-**Version:** `0.13.2`
+**Version:** `0.14.0`
 
 ## Overview
 
@@ -87,6 +87,7 @@ your input line. Everything else stays clean.
 | `ghc.secondary` | `text` | — | no | — | Optional second GHC attribute exposed as `nix develop .#<attr>` for cross-version testing. Must also be base-flake-supported. Leave unset for a single-version project. (Exactly one extra version is supported.) |
 | `nix.process-compose` | `bool` | — | yes | — | Include process-compose in the dev shell and generate `process-compose.yaml` |
 | `nix.postgresql` | `bool` | — | yes | — | Include postgresql (and `jq`) in the dev shell with local DB setup in the shellHook |
+| `nix.redis` | `bool` | `false` | yes | — | Include `redis-server` and `redis-cli` in the dev shell. The shellHook exports `REDIS_SOCKET` and `REDIS_LOG` beneath the project-local `redis/` directory; when `nix.process-compose` is on, `process-compose.yaml` gains a socket-only `redis` process with TCP disabled. |
 | `nix.clickhouse` | `bool` | `false` | yes | — | Include `clickhouse` in the dev shell with a local, rootless server. The shellHook exports `CLICKHOUSE_HOME` (per-project data dir) and `CLICKHOUSE_TCP_PORT`/`CLICKHOUSE_HTTP_PORT`; when `nix.process-compose` is on, `process-compose.yaml` gains a `clickhouse` process running `clickhouse-server` with a `SELECT 1` readiness probe. Uses clickhouse's embedded default config; override the ports if two projects clash. |
 | `nix.treefmt` | `bool` | `true` | yes | — | Include treefmt-nix and generate the `nix/treefmt.nix` flake-parts module (wires `nix fmt` and a formatting check) |
 | `nix.pre-commit` | `bool` | `true` | yes | — | Include git-hooks.nix and generate the `nix/pre-commit.nix` flake-parts module |
@@ -102,6 +103,7 @@ The following values are asked interactively (unless supplied via `--var`):
   - Choices: `ghc9124`
 - **`nix.process-compose`** — Include process-compose for service orchestration?
 - **`nix.postgresql`** — Include PostgreSQL with local database setup?
+- **`nix.redis`** — Include Redis with a local socket-only server?
 - **`nix.clickhouse`** — Include ClickHouse with a local server?
 - **`nix.treefmt`** — Include treefmt-nix for code formatting (fourmolu, nixpkgs-fmt, cabal-fmt)?
 - **`nix.pre-commit`** — Include pre-commit hooks via git-hooks.nix?
@@ -132,14 +134,30 @@ When run, this module writes:
 - `flake.lock` — strategy: `copy`
 - `process-compose.yaml` — strategy: `template`
   - Applied when: `Eq nix.process-compose true`
-  - Emits a `postgres` (+ `create_schema`) process when `nix.postgresql`, and a `clickhouse`
-    process when `nix.clickhouse`
+  - Emits a `postgres` (+ `create_schema`) process when `nix.postgresql`, a socket-only `redis`
+    process when `nix.redis`, and a `clickhouse` process when `nix.clickhouse`
 - `.envrc` — strategy: `template`; watches every local module imported by
   `flake.nix` before loading the dev shell
 - `.gitignore` — strategy: `template`, patch `append-line-if-absent`
   - Appends `.envrc`, Haskell build artifacts (`dist`, `dist-*`, `cabal-dev`, `.direnv`,
     `cabal.project.local`, `result`, `result-*`), (when `nix.pre-commit`)
-    `.pre-commit-config.yaml`, and (when `nix.clickhouse`) `clickhouse/`
+    `.pre-commit-config.yaml`, (when `nix.redis`) `redis/`, and (when `nix.clickhouse`)
+    `clickhouse/`
+
+## Redis socket interface
+
+With `nix.redis=true`, entering the generated development shell creates the local `redis/`
+directory and exports:
+
+```bash
+REDIS_SOCKET="$PWD/redis/redis.sock"
+REDIS_LOG="$PWD/redis/redis.log"
+```
+
+When `nix.process-compose=true` as well, the generated `redis` process starts Redis in the
+foreground with TCP port `0`, owner-only UNIX-socket permissions, and snapshot persistence
+disabled. Applications and health checks connect through `REDIS_SOCKET`; no TCP host or port
+is exported.
 
 ## Migrations
 
@@ -181,6 +199,16 @@ With variable overrides:
 
 ```bash
 seihou run nix-haskell-flake --var project.name=my-app --var nix.postgresql=true
+```
+
+Enable the project-local, socket-only Redis server:
+
+```bash
+seihou run nix-haskell-flake \
+  --var project.name=my-app \
+  --var nix.process-compose=true \
+  --var nix.postgresql=false \
+  --var nix.redis=true
 ```
 
 Preview without writing files:

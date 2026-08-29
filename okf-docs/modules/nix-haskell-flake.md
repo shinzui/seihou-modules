@@ -3,21 +3,21 @@ type: SeihouModule
 title: nix-haskell-flake
 description: Nix flake for Haskell projects consuming the haskell-nix-dev base flake
   (shared nixpkgs lock, prebuilt GHC/HLS/cabal), with optional process-compose, PostgreSQL,
-  treefmt, and pre-commit
+  socket-only Redis, ClickHouse, treefmt, and pre-commit
 resource: seihou://seihou-modules/modules/haskell/nix-haskell-flake
 tags:
 - haskell
 - nix
 - flake
 - devshell
-version: 0.13.1
+version: 0.14.0
 ---
 
 # nix-haskell-flake
 
-Nix flake for Haskell projects consuming the haskell-nix-dev base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal), with optional process-compose, PostgreSQL, treefmt, and pre-commit
+Nix flake for Haskell projects consuming the haskell-nix-dev base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal), with optional process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt, and pre-commit
 
-**Version:** 0.13.1
+**Version:** 0.14.0
 
 ## Dependencies
 
@@ -32,6 +32,7 @@ This module has no dependencies.
 - `nix.process-compose` (required)
 - `nix.postgresql` (required)
 - `nix.pg-database`
+- `nix.redis` (required)
 - `nix.clickhouse` (required)
 - `nix.treefmt` (required)
 - `nix.pre-commit` (required)

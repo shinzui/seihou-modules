@@ -54,8 +54,9 @@ Optional with sensible defaults:
 
 - `project.description-long`, `project.author`, `project.maintainer`,
   `project.copyright-year`
-- `nix.clickhouse` (default `false`), `nix.treefmt` (default `true`),
-  `nix.pre-commit` (default `true`), `nix.builtin-package` (default `true`)
+- `nix.redis` (default `false`), `nix.clickhouse` (default `false`),
+  `nix.treefmt` (default `true`), `nix.pre-commit` (default `true`),
+  `nix.builtin-package` (default `true`)
 - `git.defaultBranch`, `git.initialCommit`, `git.createGithub`,
   `git.githubVisibility`
 
