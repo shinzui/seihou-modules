@@ -157,7 +157,9 @@ REDIS_LOG="$PWD/redis/redis.log"
 When `nix.process-compose=true` as well, the generated `redis` process starts Redis in the
 foreground with TCP port `0`, owner-only UNIX-socket permissions, and snapshot persistence
 disabled. Applications and health checks connect through `REDIS_SOCKET`; no TCP host or port
-is exported.
+is exported. UNIX-domain socket paths have platform limits; Redis 8.8.0 on macOS requires the
+full path to be under 104 bytes, so use a shorter checkout path if `redis/redis.log` reports
+that the socket path is too long.
 
 ## Migrations
 

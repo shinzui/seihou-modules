@@ -44,8 +44,15 @@ environment, process, or ignored state directory.
 - [x] (2026-08-29 14:11Z) Milestone 2: synchronized public documentation, Seihou and Mori
   metadata, and generated OKF docs at version 0.14.0; registry validation reported all 11
   entries in sync and OKF validation reported 11 valid concepts.
-- [ ] Milestone 3: prove disabled rendering, enabled idempotence, and the live socket-only server.
-- [ ] Completion: run final acceptance checks, distill durable ADR context, and write the retrospective.
+- [x] (2026-08-29 14:13Z) Milestone 3 rendering proof: the disabled fixture contained no Redis
+  artifacts, and applying the enabled fixture twice produced the planned Redis content with
+  exactly one `redis/` ignore entry.
+- [x] (2026-08-29 14:30Z) Milestone 3 live proof: Redis 8.8.0 ran from the project-local socket,
+  returned `PONG`, reported port `0`, appeared as `Running` and `Ready` with zero restarts in
+  process-compose, and stopped cleanly through the same fixture-local control socket.
+- [x] (2026-08-29 14:50Z) Completion: reran module, registry, OKF, and Mori checks; confirmed
+  no repository flake or lock change; distilled the durable service contract into ADR 1; and
+  removed both exact temporary fixtures.
 
 
 ## Surprises & Discoveries
@@ -69,6 +76,18 @@ implementation. Provide concise evidence.
   Evidence: `git diff --cached --check` reported
   `okf-docs/blueprints/fix-nix-haskell-flake-customizations.md:40: new blank line at EOF`;
   removing that final blank line made the check clean without changing document content.
+
+- Observation: Redis 8.8.0 on macOS rejects a UNIX socket path once the full encoded path is
+  104 bytes or longer; the operating system's default per-user temporary directory made the
+  first enabled fixture's socket path 106 bytes.
+  Evidence: `redis/redis.log` reported
+  `Failed opening Unix socket: unix socket path too long (106), must be under 104` after
+  confirming `Running mode=standalone, port=0`.
+
+- Observation: This execution environment already owns TCP port 8080, which is also
+  process-compose's default control-server port and is unrelated to Redis's disabled TCP port.
+  Evidence: `lsof -nP -iTCP:8080 -sTCP:LISTEN` showed an existing `container` listener, and a
+  plain `process-compose down` reached that listener and returned `405 Method Not Allowed`.
 
 
 ## Decision Log
@@ -110,6 +129,23 @@ implementation. Provide concise evidence.
   reconfiguration, and the false default is backward-compatible.
   Date: 2026-08-29
 
+- Decision: Preserve the public `$PWD/redis/redis.sock` interface, use `/tmp` explicitly for
+  the live fixture, and give process-compose a fixture-local UNIX control socket during the
+  smoke test.
+  Rationale: The Redis socket must remain project-local and match the planned consumer
+  contract. A short fixture proves that contract within macOS's UNIX socket limit, while a
+  separate process-compose control socket avoids this runner's unrelated port-8080 listener
+  without changing generated consumer files.
+  Date: 2026-08-29
+
+- Decision: Record the socket-only development-service contract and platform path-length
+  constraint in
+  [ADR 1](../adr/1-use-project-local-sockets-for-redis-development-services.md).
+  Rationale: The connection interface, deliberate TCP exclusion, persistence policy, and
+  platform constraint affect future module evolution and consumer checkout layout beyond this
+  implementation task.
+  Date: 2026-08-29
+
 
 ## Outcomes & Retrospective
 
@@ -117,8 +153,6 @@ Summarize outcomes, gaps, and lessons learned at major milestones or at completi
 Compare the result against the original purpose. Before marking the plan complete,
 distill durable project context from the Decision Log, Surprises & Discoveries, and
 this section into docs/adr/. Keep task-local execution details here.
-
-(To be filled during and after implementation.)
 
 - Milestone 1 established the default-disabled `nix.redis` variable, conditional Redis package
   and shell environment, socket-only supervised process, and idempotent `redis/` ignore patch.
@@ -129,6 +163,20 @@ this section into docs/adr/. Keep task-local execution details here.
   documentation. Regeneration also restored the missing generated document for the current
   customization-remediation blueprint.
 
+- Milestone 3 proved both conditional rendering branches and the live service. The enabled
+  development shell exposed Redis 8.8.0, process-compose reported the process `Running` and
+  `Ready`, the project-local socket returned `PONG`, live configuration reported TCP port `0`,
+  and shutdown removed reachability. The first macOS fixture exposed the durable socket-path
+  limit now documented in the README and
+  [ADR 1](../adr/1-use-project-local-sockets-for-redis-development-services.md).
+
+- The completed release meets the original purpose: consumers can opt into Redis without
+  editing generated files or claiming port 6379, while default-disabled consumers render no
+  Redis artifacts. All planned structural, metadata, rendering, idempotence, live-service, and
+  shutdown checks passed. No implementation gap remains. The one operational caveat is the
+  platform UNIX-socket path limit, which is now explicit in user documentation and durable
+  architectural context.
+
 
 ## Context and Orientation
 
@@ -136,7 +184,7 @@ This repository stores reusable Seihou scaffolding. A Seihou module declares var
 prompts, generated-file steps, and a semantic version in a Dhall record. Applying a module
 renders its templates into another project and records baselines so later updates can detect
 user conflicts. The module in scope is rooted at
-`modules/haskell/nix-haskell-flake/`; its current version is 0.13.2.
+`modules/haskell/nix-haskell-flake/`; its implemented version is 0.14.0.
 
 `modules/haskell/nix-haskell-flake/module.dhall` is the authoritative module declaration. It
 currently declares `nix.postgresql`, optional PostgreSQL database-name configuration, and
@@ -192,10 +240,12 @@ Mori did identify an existing, working consumer at
 socket-based Redis CLI readiness probe. This plan incorporates that behavior directly, so an
 implementer does not need the other checkout to proceed.
 
-There is no `docs/adr/` directory in this repository, so no relevant local ADR exists. The
-change extends an established per-service template pattern and does not require a new ADR at
-plan creation. During implementation, create one only if work uncovers a durable constraint
-or changes the service-configuration boundary described here.
+There was no `docs/adr/` directory at plan creation, so no relevant local ADR existed then.
+Implementation uncovered a durable macOS UNIX-socket path constraint and established the
+long-lived service interface in
+[ADR 1](../adr/1-use-project-local-sockets-for-redis-development-services.md). The repository
+has no profiled ADR bundle, so the record follows a plain filesystem Markdown convention
+without OKF frontmatter.
 
 
 ## Plan of Work
@@ -286,7 +336,7 @@ Expected key output after the edits is:
 ✓ 14 steps defined
 Module 'nix-haskell-flake' is valid.
 OK: 6 modules, 2 recipes, 3 blueprints, 0 prompts, all versions in sync.
-OK: 10 concepts
+OK: 11 concepts
 ```
 
 Run a focused search to catch stale inventories without rewriting historical ExecPlans:
@@ -300,14 +350,14 @@ Every current module or recipe inventory found by this command should either men
 clearly be scoped only to another service. Do not edit completed historical plans merely to
 make old prose describe the new release.
 
-Create isolated fixtures under the operating system's temporary directory. The local
-`.seihou/modules` symlinks make the fixtures resolve the module being edited rather than an
-older installed copy:
+Create isolated fixtures directly under `/tmp` so the project-local Redis socket remains below
+macOS's 104-byte UNIX-socket-path limit. The local `.seihou/modules` symlinks make the fixtures
+resolve the module being edited rather than an older installed copy:
 
 ```bash
 repo_root="$(pwd)"
-disabled_fixture="$(mktemp -d "${TMPDIR:-/tmp}/nix-haskell-redis-disabled.XXXXXX")"
-enabled_fixture="$(mktemp -d "${TMPDIR:-/tmp}/nix-haskell-redis-enabled.XXXXXX")"
+disabled_fixture="$(mktemp -d "/tmp/nix-haskell-redis-disabled.XXXXXX")"
+enabled_fixture="$(mktemp -d "/tmp/nix-haskell-redis-enabled.XXXXXX")"
 
 mkdir -p "$disabled_fixture/.seihou/modules" "$enabled_fixture/.seihou/modules"
 ln -s "$repo_root/modules/haskell/nix-haskell-flake" \
@@ -379,7 +429,9 @@ Finally, evaluate and exercise the service from the enabled fixture:
 
 ```bash
 cd "$enabled_fixture"
-nix develop .#ghc9124 --command process-compose up --detached
+pc_control_socket="$enabled_fixture/.dev/process-compose-control.sock"
+nix develop .#ghc9124 --command process-compose \
+  --use-uds --unix-socket "$pc_control_socket" up --detached
 nix develop .#ghc9124 --command bash -ceu '
   for attempt in {1..20}; do
     if test -S "$REDIS_SOCKET" && test "$(redis-cli -s "$REDIS_SOCKET" ping)" = PONG; then
@@ -392,7 +444,8 @@ nix develop .#ghc9124 --command bash -ceu '
   test "$(redis-cli -s "$REDIS_SOCKET" --raw CONFIG GET port | tail -n 1)" = 0
   printf "%s\n" "$REDIS_SOCKET"
 '
-nix develop .#ghc9124 --command process-compose down
+nix develop .#ghc9124 --command process-compose \
+  --use-uds --unix-socket "$pc_control_socket" down
 ```
 
 The printed socket must be inside the enabled fixture and the command must exit zero. The
@@ -415,8 +468,8 @@ it, and creates their parent directory. The generated `.gitignore` contains exac
 `redis/` line even after applying the module a second time.
 
 With both `nix.redis=true` and `nix.process-compose=true`, `process-compose up --detached`
-starts Redis and its readiness probe becomes healthy. `redis-cli -s "$REDIS_SOCKET" ping`
-returns exactly:
+(using a fixture-local control socket when the default control port is occupied) starts Redis
+and its readiness probe becomes healthy. `redis-cli -s "$REDIS_SOCKET" ping` returns exactly:
 
 ```text
 PONG
@@ -440,12 +493,14 @@ step uses `append-line-if-absent`, and rerunning `seihou registry sync-versions`
 documentation generator converges on the same output. Reapplying the module to a fixture is
 therefore a useful idempotence check; it must not duplicate `redis/` in `.gitignore`.
 
-If the live probe fails, first run `process-compose down` from the enabled fixture, then read
-`redis/redis.log` and `.dev/process-compose.log`. A stale socket left after an abnormal exit
-belongs only to that fixture and can be removed after confirming no Redis process is using
-it; restarting the service then recreates the socket. Do not delete a consumer project's
-whole `redis/` directory automatically, because future users may deliberately change the
-development persistence policy.
+If the live probe fails, first run `process-compose down` from the enabled fixture with the same
+control-port or control-socket arguments used for `up`, then read `redis/redis.log` and
+`.dev/process-compose.log`. If Redis reports that the UNIX socket path is too long, use a shorter
+checkout or fixture path; on macOS Redis 8.8.0 requires the full path to be under 104 bytes. A
+stale socket left after an abnormal exit belongs only to that fixture and can be removed after
+confirming no Redis process is using it; restarting the service then recreates the socket. Do
+not delete a consumer project's whole `redis/` directory automatically, because future users
+may deliberately change the development persistence policy.
 
 Temporary fixtures are disposable, but delete only the exact directories returned by the
 two `mktemp -d` commands. The repository working tree should contain only the planned source,
@@ -486,3 +541,10 @@ command depends on Redis 8.8.0's stable configuration arguments `--port`, `--uni
 `--unixsocketperm`, `--logfile`, `--daemonize`, and `--save`; the readiness and acceptance
 commands depend on `redis-cli -s <socket>`. `pkgs.process-compose` remains conditional on the
 existing `nix.process-compose` variable and gains no new dependency or flake input.
+
+Plan revision note (2026-08-29): Implementation changed the fixture instructions to create
+short paths directly under `/tmp` after Redis 8.8.0 demonstrated macOS's under-104-byte UNIX
+socket requirement. The live process-compose commands now use a fixture-local control socket
+because this execution environment already occupies process-compose's default control port
+8080. These validation-harness changes preserve the generated Redis interface and are recorded
+in the living sections and ADR 1.
