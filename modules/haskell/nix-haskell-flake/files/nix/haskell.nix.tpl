@@ -49,6 +49,9 @@
         {{#if Eq nix.clickhouse true}}
         pkgs.clickhouse
         {{/if}}
+        {{#if Eq nix.redis true}}
+        pkgs.redis
+        {{/if}}
         {{#if Eq nix.process-compose true}}
         pkgs.process-compose
         {{/if}}
@@ -85,6 +88,16 @@
         export CLICKHOUSE_HTTP_PORT=8123
 
         mkdir -p $CLICKHOUSE_HOME
+        mkdir -p .dev
+        {{/if}}
+        {{#if Eq nix.redis true}}
+
+        # Local Redis communicates only through a project-local UNIX-domain
+        # socket. TCP is disabled by the process-compose command.
+        export REDIS_SOCKET="$PWD/redis/redis.sock"
+        export REDIS_LOG="$PWD/redis/redis.log"
+
+        mkdir -p "$PWD/redis"
         mkdir -p .dev
         {{/if}}
       '';

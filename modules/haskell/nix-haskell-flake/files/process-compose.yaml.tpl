@@ -48,3 +48,18 @@ processes:
     availability:
       restart: on_failure
   {{/if}}
+  {{#if Eq nix.redis true}}
+
+  redis:
+    command: redis-server --port 0 --unixsocket "$REDIS_SOCKET" --unixsocketperm 700 --logfile "$REDIS_LOG" --daemonize no --save ""
+    readiness_probe:
+      exec:
+        command: redis-cli -s "$REDIS_SOCKET" ping
+      initial_delay_seconds: 3
+      period_seconds: 10
+      timeout_seconds: 4
+      success_threshold: 1
+      failure_threshold: 5
+    availability:
+      restart: on_failure
+  {{/if}}

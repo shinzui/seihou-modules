@@ -16,9 +16,9 @@ let MigrationOp =
 
 in      S.Module::{
         , name = "nix-haskell-flake"
-        , version = Some "0.13.2"
+        , version = Some "0.14.0"
         , description = Some
-            "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal toolchains). Project wiring lives in imported nix/*.nix modules and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, ClickHouse, treefmt-nix, and pre-commit-hooks."
+            "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal toolchains). Project wiring lives in imported nix/*.nix modules and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, and pre-commit-hooks."
         , vars =
           [ S.VarDecl::{
             , name = "project.name"
@@ -70,6 +70,14 @@ in      S.Module::{
             , description = Some
                 "Postgres database name used in the dev-shell shellHook (PGDATABASE and the derived PG_CONNECTION_STRING). Defaults to project.name when unset. Set it when the database name must differ from the (possibly hyphenated) project name — e.g. an underscore name like `notion_hub`, since unquoted hyphenated identifiers are invalid in Postgres. Only used when nix.postgresql is enabled."
             , required = False
+            }
+          , S.VarDecl::{
+            , name = "nix.redis"
+            , type = "bool"
+            , default = Some "false"
+            , description = Some
+                "Include Redis in the dev shell. The shellHook exports REDIS_SOCKET and REDIS_LOG beneath the project's local redis/ directory and, when nix.process-compose is enabled, process-compose.yaml gains a socket-only `redis` process with TCP disabled."
+            , required = True
             }
           , S.VarDecl::{
             , name = "nix.clickhouse"
@@ -137,6 +145,10 @@ in      S.Module::{
           , S.Prompt::{
             , var = "nix.postgresql"
             , text = "Include PostgreSQL with local database setup?"
+            }
+          , S.Prompt::{
+            , var = "nix.redis"
+            , text = "Include Redis with a local socket-only server?"
             }
           , S.Prompt::{
             , var = "nix.clickhouse"
@@ -219,6 +231,13 @@ in      S.Module::{
             , src = "gitignore-precommit.tpl"
             , dest = ".gitignore"
             , when = Some "Eq nix.pre-commit true"
+            , patch = Some "append-line-if-absent"
+            }
+          , S.Step::{
+            , strategy = "template"
+            , src = "gitignore-redis.tpl"
+            , dest = ".gitignore"
+            , when = Some "Eq nix.redis true"
             , patch = Some "append-line-if-absent"
             }
           , S.Step::{
