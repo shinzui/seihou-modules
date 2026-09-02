@@ -41,10 +41,23 @@
         # `cabal build` never reconfigures it, so the shell looks fine until
         # something forces a fresh configure -- `cabal build --enable-profiling`
         # does exactly that, because the profiling way changes the unit-id hash.
+        {{#if IsSet nix.pg-extensions}}
+        # Postgres rebuilt with the requested extensions (e.g. pg_partman),
+        # so their .control/.sql land in share and CREATE EXTENSION works.
+        # pkgs.postgresql.dev below still supplies the matching libpq headers.
+        (pkgs.postgresql.withPackages (pgp: [ {{nix.pg-extensions}} ]))
+        {{#else}}
         pkgs.postgresql
+        {{/if}}
         pkgs.postgresql.dev
         pkgs.openssl.dev
         pkgs.jq
+        {{/if}}
+        {{#if Eq nix.kafka true}}
+        # librdkafka (nixpkgs: rdkafka). hw-kafka-client links -lrdkafka; both
+        # the runtime lib and its .dev (headers + pkg-config) are needed.
+        pkgs.rdkafka
+        pkgs.rdkafka.dev
         {{/if}}
         {{#if Eq nix.clickhouse true}}
         pkgs.clickhouse
@@ -99,6 +112,14 @@
 
         mkdir -p "$PWD/redis"
         mkdir -p .dev
+        {{/if}}
+        {{#if Eq nix.kafka true}}
+
+        # Make librdkafka discoverable to GHC's linker, the C preprocessor, and
+        # pkg-config (hw-kafka-client links -lrdkafka).
+        export CPATH="${pkgs.rdkafka.dev}/include''${CPATH:+:$CPATH}"
+        export LIBRARY_PATH="${pkgs.rdkafka}/lib''${LIBRARY_PATH:+:$LIBRARY_PATH}"
+        export PKG_CONFIG_PATH="${pkgs.rdkafka.dev}/lib/pkgconfig''${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
         {{/if}}
       '';
 

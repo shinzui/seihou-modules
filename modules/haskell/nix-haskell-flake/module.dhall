@@ -16,7 +16,7 @@ let MigrationOp =
 
 in      S.Module::{
         , name = "nix-haskell-flake"
-        , version = Some "0.14.0"
+        , version = Some "0.15.0"
         , description = Some
             "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal toolchains). Project wiring lives in imported nix/*.nix modules and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, and pre-commit-hooks."
         , vars =
@@ -72,6 +72,13 @@ in      S.Module::{
             , required = False
             }
           , S.VarDecl::{
+            , name = "nix.pg-extensions"
+            , type = "text"
+            , description = Some
+                "Optional space-separated PostgreSQL extension attributes to build into the dev-shell postgresql via `withPackages`, e.g. `pgp.pg_partman pgp.postgis`. Each item is spliced verbatim into `pkgs.postgresql.withPackages (pgp: [ … ])`, so include the `pgp.` prefix. Leave unset for a plain postgres. The extension-bearing server shares the same major version as `pkgs.postgresql.dev`, so libpq headers still resolve. Only used when nix.postgresql is enabled."
+            , required = False
+            }
+          , S.VarDecl::{
             , name = "nix.redis"
             , type = "bool"
             , default = Some "false"
@@ -85,6 +92,14 @@ in      S.Module::{
             , default = Some "false"
             , description = Some
                 "Include clickhouse in the dev shell with a local, rootless server. The shellHook exports CLICKHOUSE_HOME (a per-project data dir) plus CLICKHOUSE_TCP_PORT/CLICKHOUSE_HTTP_PORT, and — when nix.process-compose is enabled — process-compose.yaml gains a `clickhouse` process that runs `clickhouse-server` against that data dir with a `SELECT 1` readiness probe. The server uses clickhouse's embedded default config; override ports via the env vars if two projects clash."
+            , required = True
+            }
+          , S.VarDecl::{
+            , name = "nix.kafka"
+            , type = "bool"
+            , default = Some "false"
+            , description = Some
+                "Include librdkafka (rdkafka + rdkafka.dev) in the dev shell for hw-kafka-client-based projects. The shellHook exports CPATH, LIBRARY_PATH, and PKG_CONFIG_PATH so GHC's linker, the C preprocessor, and pkg-config resolve `-lrdkafka`. This adds the client library only; run your own Kafka-compatible broker (e.g. redpanda) as needed."
             , required = True
             }
           , S.VarDecl::{
@@ -155,6 +170,11 @@ in      S.Module::{
             , text = "Include ClickHouse with a local server?"
             }
           , S.Prompt::{
+            , var = "nix.kafka"
+            , text =
+                "Include Kafka client support (librdkafka for hw-kafka-client)?"
+            }
+          , S.Prompt::{
             , var = "nix.treefmt"
             , text =
                 "Include treefmt-nix for code formatting (fourmolu, nixpkgs-fmt, cabal-fmt)?"
@@ -206,6 +226,13 @@ in      S.Module::{
             , strategy = "template"
             , src = "process-compose.yaml.tpl"
             , dest = "process-compose.yaml"
+            , when = Some
+                "Eq nix.process-compose true"
+            }
+          , S.Step::{
+            , strategy = "template"
+            , src = "process-compose.override.yaml.example.tpl"
+            , dest = "process-compose.override.yaml.example"
             , when = Some
                 "Eq nix.process-compose true"
             }
