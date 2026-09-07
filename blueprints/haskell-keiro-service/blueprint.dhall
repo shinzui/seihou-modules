@@ -4,7 +4,7 @@ let S =
 
 in  S.Blueprint::{
     , name = "haskell-keiro-service"
-    , version = Some "0.2.2"
+    , version = Some "0.3.0"
     , description = Some
         "Agent-driven scaffold for an event-sourced Haskell service on the released Keiro runtime: a six-package vertical-slice layout with generated and hand-owned rings, Hackage-pinned dependencies, pg-migrate components, validated event streams, Settei configuration, real OpenTelemetry wiring, health and request-logging contracts, and a Keiro-DSL-first workflow."
     , prompt = ./prompt.md as Text
@@ -13,104 +13,110 @@ in  S.Blueprint::{
         , name = "project.name"
         , type = "text"
         , description = Some
-            "Project base name (lowercase, hyphenated). Cabal packages are named <name>-core, <name>-api, <name>-migrations, <name>-workers, <name>-server, <name>-client; executables include <name>-migrate, <name>-server, and <name>-worker. Read models live in <name>-core (there is no separate <name>-postgres package)."
+            "Project base name; creates <name>-core, -api, -migrations, -workers, -server, and -client. Shared with the Nix environment."
         , required = True
-        , validation = Some "[a-z][a-z0-9-]*"
-        }
-      , S.VarDecl::{
-        , name = "project.namespace"
-        , type = "text"
-        , description = Some
-            "Top-level Haskell module namespace (single PascalCase segment, e.g. Danwa). Modules are organized vertical-slice by domain concept: everything for one concept lives under <Namespace>.<Aggregate>.* regardless of package — the keiro-scaffolded <Namespace>.<Aggregate>.Generated.{Domain,Codec,EventStream,Projection,Harness} (a `.Generated` leaf, each carrying a `-- @generated` header, overwritten by `keiro-dsl scaffold --out <name>-core/src` because the spec declares `layout collocated`), the hand-owned <Namespace>.<Aggregate>.Holes (the keiki transducer + the read-model `apply`, create-if-absent), and that concept's <Namespace>.<Aggregate>.{Api,Worker,ReadModel,Handler}. Only cross-cutting infra keeps a technical-layer name (<Namespace>.Prelude, <Namespace>.App.Config, <Namespace>.Postgres.{Pool,Runner}, <Namespace>.Migrations, <Namespace>.Workers.{Subscription,Registry}, the <Namespace>.Api umbrella, <Namespace>.Server.{Config,App,Seam,Boot})."
-        , required = True
-        , validation = Some "[A-Z][A-Za-z0-9]*"
+        , validation = Some "[a-z][a-z0-9]*(-[a-z][a-z0-9]*)*"
         }
       , S.VarDecl::{
         , name = "project.description"
         , type = "text"
         , description = Some
-            "One-line synopsis (used as the flake description and cabal synopsis across packages)."
+            "One-line synopsis used in Cabal files, the implementation brief, and the Nix flake description."
         , required = True
         }
       , S.VarDecl::{
-        , name = "keiro.context"
+        , name = "project.namespace"
         , type = "text"
         , description = Some
-            "The keiro DSL context name for the domain (e.g. danwa). Names the .keiro file (domain/<context>.keiro) and the bounded context inside it."
+            "Top-level Haskell module namespace (single segment, e.g. Rei). Used both as the source-tree directory and as the module prefix in generated .hs files."
         , required = True
-        , validation = Some "[a-z][a-z0-9-]*"
+        , validation = Some "[A-Z][A-Za-z0-9]*"
         }
       , S.VarDecl::{
         , name = "project.author"
         , type = "text"
         , default = Some "Nadeem Bitar"
-        , description = Some "Author name written into LICENSE and .cabal files."
+        , description = Some "Author name written into LICENSE and .cabal files"
         , required = True
         }
       , S.VarDecl::{
         , name = "project.maintainer"
         , type = "text"
         , default = Some "nadeem@gmail.com"
-        , description = Some "Maintainer email written into .cabal files."
+        , description = Some "Maintainer email written into .cabal files"
         , required = True
         }
       , S.VarDecl::{
-        , name = "nix.postgresql"
-        , type = "bool"
-        , default = Some "true"
-        , description = Some
-            "Include PostgreSQL in the dev shell (the event store and read models are Postgres). Bound through to the nix-haskell-flake base module."
+        , name = "project.copyright-year"
+        , type = "text"
+        , default = Some "2026"
+        , description = Some "Copyright year written into LICENSE"
         , required = True
+        , validation = Some "[0-9]{4}"
         }
       , S.VarDecl::{
-        , name = "nix.process-compose"
-        , type = "bool"
-        , default = Some "true"
+        , name = "keiro.context"
+        , type = "text"
         , description = Some
-            "Include process-compose for local service orchestration. Bound through to the nix-haskell-flake base module."
+            "Stable service workspace identity and shared DSL context."
         , required = True
+        , validation = Some "[a-z][a-z0-9]*(-[a-z][a-z0-9]*)*"
+        }
+      , S.VarDecl::{
+        , name = "haskell.index-state"
+        , type = "text"
+        , default = Some "2026-09-07T00:00:00Z"
+        , description = Some
+            "Hackage index snapshot for the initial libraries; reverify the runtime cohort before adding domain dependencies."
+        , required = True
+        , validation = Some
+            "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z"
         }
       ]
     , prompts =
       [ S.Prompt::{
         , var = "project.name"
         , text =
-            "Project name? (lowercase, hyphenated; cabal packages will be <name>-core, <name>-api, <name>-migrations, <name>-workers, <name>-server, <name>-client)"
-        }
-      , S.Prompt::{
-        , var = "project.namespace"
-        , text = "Top-level Haskell module namespace? (single PascalCase segment, e.g. Danwa)"
+            "What is your project name? (lowercase, hyphenated; cabal packages will be <name>-core, -api, -migrations, -workers, -server, and -client)"
         }
       , S.Prompt::{
         , var = "project.description"
-        , text = "One-line project synopsis?"
+        , text =
+            "One-line project synopsis (used as cabal `synopsis:` and the flake description):"
         }
       , S.Prompt::{
+        , var = "project.namespace"
+        , text =
+            "Top-level Haskell module namespace? (single PascalCase segment, e.g. Rei)"
+        }
+      , S.Prompt::{ var = "project.author", text = "Author name?" }
+      , S.Prompt::{ var = "project.maintainer", text = "Maintainer email?" }
+      , S.Prompt::{ var = "project.copyright-year", text = "Copyright year?" }
+      , S.Prompt::{
         , var = "keiro.context"
-        , text = "keiro DSL context name for the domain? (lowercase, e.g. danwa)"
+        , text = "Stable Keiro service/context name? (lowercase, e.g. contacts)"
+        }
+      , S.Prompt::{
+        , var = "haskell.index-state"
+        , text = "Hackage index-state for this bootstrap? (UTC timestamp)"
         }
       ]
     , baseModules =
       [ S.Dependency::{
-        , module = "nix-haskell-flake"
-        , vars =
-          [ { name = "nix.postgresql", value = "true" }
-          , { name = "nix.process-compose", value = "true" }
-          , { name = "nix.treefmt", value = "true" }
-          , { name = "nix.pre-commit", value = "true" }
-          ]
+        , module = "haskell-keiro-project"
+        , vars = [] : List { name : Text, value : Text }
         }
       ]
     , files =
       [ S.Blueprint.BlueprintFile::{
         , src = "cabal.project"
         , description = Some
-            "Reference cabal.project: Hackage-only runtime cohort at the verified index-state, GHC 9.12.4, the direct settei-yaml adapter (the released settei-formats umbrella is not solvable with this bytestring cohort), and the six-package list. Adapt package names; keep the index-state and never add local paths or runtime source-repository-package pins."
+            "Historical cabal.project sketch for a six-package runtime cohort. Verify current releases and follow the generated bootstrap brief before choosing bounds, index-state, or adapter compatibility workarounds; never add local runtime paths."
         }
       , S.Blueprint.BlueprintFile::{
         , src = "core.cabal"
         , description = Some
-            "Reference <name>-core.cabal: the shared common stanzas, bounded released dependencies, and exposed modules organized by vertical slice, including generated, hand-owned, and read-model rings. Adapt names while preserving package bounds and layout."
+            "Reference <name>-core.cabal: the shared common stanzas, bounded released dependencies, and exposed modules organized by vertical slice, including generated, hand-owned, and read-model rings. Historical sketch only: replace bounds with the verified cohort and use the complete current generated Cabal fragment."
         }
       , S.Blueprint.BlueprintFile::{
         , src = "Prelude.hs"
@@ -135,7 +141,7 @@ in  S.Blueprint::{
       , S.Blueprint.BlueprintFile::{
         , src = "domain.keiro"
         , description = Some
-            "Reference keiro DSL spec: a bounded context with a `layout collocated` clause, one aggregate, an id newtype with a prefix, a closed enum referenced via an explicit field:Enum annotation, a couple of commands/events, a projection, and command/query operations — the keiro-DSL-first shape to author and `keiro-dsl check` BEFORE writing any domain Haskell."
+            "Reference keiro DSL spec: a historical bare-source example with a `layout collocated` clause, one aggregate, an id newtype with a prefix, a closed enum referenced via an explicit field:Enum annotation, a couple of commands/events, a projection, and command/query operations — adapt only after reading the current workspace and language standards; the generated workspace is authoritative."
         }
       , S.Blueprint.BlueprintFile::{
         , src = "fourmolu.yaml"

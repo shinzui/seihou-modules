@@ -7,6 +7,12 @@
     , description = Some "Nix flake for Haskell projects consuming the haskell-nix-dev base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal), with optional process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt, and pre-commit"
     , tags = [ "haskell", "nix", "flake", "devshell" ]
     }
+  , { name = "haskell-keiro-project"
+    , version = Some "0.1.0"
+    , path = "modules/haskell/haskell-keiro-project"
+    , description = Some "Six-package Keiro bootstrap with a Nix development shell, workspace manifest, development recipes, and a project-specific implementation brief"
+    , tags = [ "haskell", "keiro", "service", "bootstrap" ]
+    }
   , { name = "haskell-cli-app"
     , version = Some "0.2.0"
     , path = "modules/haskell/haskell-cli-app"
@@ -60,7 +66,7 @@
     , tags = [ "haskell", "nix", "flake", "flake-parts", "migration", "devshell" ]
     }
   , { name = "haskell-keiro-service"
-    , version = Some "0.2.2"
+    , version = Some "0.3.0"
     , path = "blueprints/haskell-keiro-service"
     , description = Some "Agent-driven scaffold for an event-sourced Haskell service on the released Keiro runtime: a six-package vertical-slice layout with generated and hand-owned rings, Hackage-pinned dependencies, pg-migrate components, validated event streams, Settei configuration, real OpenTelemetry wiring, health and request-logging contracts, and a Keiro-DSL-first workflow."
     , tags = [ "haskell", "service", "keiro", "effectful", "event-sourcing", "bootstrap" ]

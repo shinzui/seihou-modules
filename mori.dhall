@@ -70,19 +70,24 @@ in  Schema.Project::{
           ]
         }
       , Schema.SeihouTemplate::{
-        , name = "haskell-keiro-service"
+        , name = "haskell-keiro-project"
         , version = Some "0.1.0"
         , description = Some
-            "Agent-driven scaffold for an event-sourced Haskell service on the keiro runtime (keiki/kiroku/shibuya/pgmq), shaped like danwa: a six-package <name>-<role> layout with read models in core, a custom prelude, an effectful app monad with Reader AppConfig, the keiro stack pinned via cabal.project, codd migrations, servant/warp HTTP, and a keiro-DSL-first domain workflow"
-        , modulePath = "blueprints/haskell-keiro-service"
-        , tags = [ "haskell", "service", "keiro", "effectful", "event-sourcing", "bootstrap" ]
+            "Six-package Keiro bootstrap with a Nix shell, workspace-first domain structure, and implementation brief"
+        , modulePath = "modules/haskell/haskell-keiro-project"
+        , tags = [ "haskell", "keiro", "service", "bootstrap" ]
         , dependencies = [ "nix-haskell-flake" ]
-        , requiredVars =
-          [ "project.name"
-          , "project.namespace"
-          , "project.description"
-          , "keiro.context"
-          ]
+        , requiredVars = [ "project.name", "project.namespace", "project.description", "keiro.context" ]
+        }
+      , Schema.SeihouTemplate::{
+        , name = "haskell-keiro-service"
+        , version = Some "0.3.0"
+        , description = Some
+            "Agent implementation of a six-package service using the haskell-keiro-project scaffold and current Keiro runtime patterns"
+        , modulePath = "blueprints/haskell-keiro-service"
+        , tags = [ "haskell", "service", "keiro", "bootstrap" ]
+        , dependencies = [ "haskell-keiro-project" ]
+        , requiredVars = [ "project.name", "project.namespace", "project.description", "keiro.context" ]
         }
       ]
     }
