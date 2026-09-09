@@ -10,14 +10,14 @@ tags:
 - nix
 - flake
 - devshell
-version: 0.14.0
+version: 0.16.0
 ---
 
 # nix-haskell-flake
 
 Nix flake for Haskell projects consuming the haskell-nix-dev base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal), with optional process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt, and pre-commit
 
-**Version:** 0.14.0
+**Version:** 0.16.0
 
 ## Dependencies
 
@@ -32,8 +32,10 @@ This module has no dependencies.
 - `nix.process-compose` (required)
 - `nix.postgresql` (required)
 - `nix.pg-database`
+- `nix.pg-extensions`
 - `nix.redis` (required)
 - `nix.clickhouse` (required)
+- `nix.kafka` (required)
 - `nix.treefmt` (required)
 - `nix.pre-commit` (required)
 - `nix.builtin-package` (required)

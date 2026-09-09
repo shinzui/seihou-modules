@@ -15,7 +15,10 @@
       # PatternSynonyms, TypeApplications) with what this project actually needs.
       programs.fourmolu.ghcOpts = [ {{nix.fourmolu-ghc-opts}} ];
       {{/if}}
-      programs.cabal-fmt.enable = true;
+      # cabal-gild (github.com/tfausak/cabal-gild) formats *.cabal plus
+      # cabal.project/cabal.project.local, and can discover module lists from
+      # the filesystem via `-- cabal-gild: discover <dir>` pragmas.
+      programs.cabal-gild.enable = true;
     };
   };
 }

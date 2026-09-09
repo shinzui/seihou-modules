@@ -16,7 +16,7 @@ let MigrationOp =
 
 in      S.Module::{
         , name = "nix-haskell-flake"
-        , version = Some "0.15.0"
+        , version = Some "0.16.0"
         , description = Some
             "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal toolchains). Project wiring lives in imported nix/*.nix modules and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, and pre-commit-hooks."
         , vars =
@@ -177,7 +177,7 @@ in      S.Module::{
           , S.Prompt::{
             , var = "nix.treefmt"
             , text =
-                "Include treefmt-nix for code formatting (fourmolu, nixpkgs-fmt, cabal-fmt)?"
+                "Include treefmt-nix for code formatting (fourmolu, nixpkgs-fmt, cabal-gild)?"
             }
           , S.Prompt::{
             , var = "nix.pre-commit"
