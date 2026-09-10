@@ -1,20 +1,27 @@
 {
   description = "{{project.description}}";
 
+  # Every module-owned input is decided by exactly ONE pin: the haskell-nix-dev revision
+  # below. Everything else `follows` it, so this project's flake.lock is a pure function of
+  # that rev — every project on this nix-haskell-flake version locks to byte-identical pins
+  # and shares one store closure instead of each re-resolving `master` on its own schedule.
+  #
+  # The rev lives in the URL, not only in flake.lock, which is what makes it stick: a
+  # rev-pinned input cannot be moved by `nix flake update`, so a stray full update in this
+  # project is a no-op here and only touches inputs you added yourself. Verify with
+  # `git diff flake.lock` — it should come back empty.
+  #
+  # seihou-managed: to move the toolchain, release a new nix-haskell-flake version and
+  # `seihou run nix-haskell-flake`. Editing the rev here is a conflict at the next run.
   inputs = {
-    haskell-nix-dev.url = "github:shinzui/haskell-nix-dev";
+    haskell-nix-dev.url = "github:shinzui/haskell-nix-dev/05579ed8151fe8fd5e79d23d6ef9f4608b08d35a";
     nixpkgs.follows = "haskell-nix-dev/nixpkgs";
-
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    flake-parts.inputs.nixpkgs-lib.follows = "nixpkgs";
+    flake-parts.follows = "haskell-nix-dev/flake-parts";
     {{#if Eq nix.treefmt true}}
-
     treefmt-nix.follows = "haskell-nix-dev/treefmt-nix";
     {{/if}}
     {{#if Eq nix.pre-commit true}}
-
-    pre-commit-hooks.url = "github:cachix/git-hooks.nix";
-    pre-commit-hooks.inputs.nixpkgs.follows = "nixpkgs";
+    pre-commit-hooks.follows = "haskell-nix-dev/pre-commit-hooks";
     {{/if}}
   };
 

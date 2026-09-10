@@ -16,9 +16,9 @@ let MigrationOp =
 
 in      S.Module::{
         , name = "nix-haskell-flake"
-        , version = Some "0.16.0"
+        , version = Some "0.17.0"
         , description = Some
-            "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (shared nixpkgs lock, prebuilt GHC/HLS/cabal toolchains). Project wiring lives in imported nix/*.nix modules and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, and pre-commit-hooks."
+            "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is decided by one rev-pinned haskell-nix-dev URL that the rest follow, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, and pre-commit-hooks."
         , vars =
           [ S.VarDecl::{
             , name = "project.name"
