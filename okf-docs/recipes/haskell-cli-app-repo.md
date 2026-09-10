@@ -10,6 +10,9 @@ tags:
 - cli
 - git
 - bootstrap
+status: stable
+generated:
+  by: seihou-okf-extension/0.8.0.0
 version: 0.1.0
 ---
 
@@ -23,4 +26,3 @@ Bootstrap a two-package Haskell CLI app (core library + CLI exe) in a fresh git 
 
 - [haskell-cli-app](/modules/haskell-cli-app.md)
 - [git-init](/modules/git-init.md)
-

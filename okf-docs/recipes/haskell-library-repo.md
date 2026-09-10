@@ -10,6 +10,9 @@ tags:
 - library
 - git
 - bootstrap
+status: stable
+generated:
+  by: seihou-okf-extension/0.8.0.0
 version: 0.1.0
 ---
 
@@ -23,4 +26,3 @@ Bootstrap a single-package Haskell library in a fresh git repo: applies haskell-
 
 - [haskell-library](/modules/haskell-library.md)
 - [git-init](/modules/git-init.md)
-
