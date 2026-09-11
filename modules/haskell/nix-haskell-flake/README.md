@@ -2,7 +2,7 @@
 
 > Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects, consuming the `haskell-nix-dev` base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is decided by one rev-pinned `haskell-nix-dev` URL that the rest `follows`, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported `nix/*.nix` modules and user customizations go in an unmanaged `flake.module.nix`, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt-nix, pre-commit-hooks, and the shared `haskell-nix` patch registry (paired with the same `haskell-nix-dev`).
 
-**Version:** `0.18.0`
+**Version:** `0.19.0`
 
 ## Overview
 
@@ -113,19 +113,18 @@ adding it by hand. The generated input is paired with this flake's `haskell-nix-
 
 ```nix
 haskell-nix = {
-  url = "github:shinzui/haskell-nix";          # or …/haskell-nix/<nix.haskell-nix-rev>
+  url = "github:shinzui/haskell-nix/<rev>";    # pinned by the module
   inputs.haskell-nix-dev.follows = "haskell-nix-dev";
   inputs.nixpkgs.follows = "nixpkgs";
 };
 ```
 
 `haskell-nix` builds its patches, checks, and GHC list on `haskell-nix-dev`'s nixpkgs, so the
-two `follows` keep one `haskell-nix-dev` and one `nixpkgs` in the lock. It is the one input
-the `haskell-nix-dev` pin does not decide, because each project chooses when to take new
-shared patches: set `nix.haskell-nix-rev` to pin a revision (immune to `nix flake update`), or
-leave it unset to track master and bump with `nix flake update haskell-nix`. It is left out
-of the shipped canonical `flake.lock`; the first `nix flake lock` appends its nodes. Consume
-it from `flake.module.nix` with `inputs.haskell-nix.lib.haskellExtension` (see
+two `follows` keep one `haskell-nix-dev` and one `nixpkgs` in the lock. Its revision is the
+module's second pin: `update-nix-haskell-flake-lock.sh` moves it to the latest `haskell-nix`
+together with `haskell-nix-dev`, and the shipped `flake.lock` carries its nodes. Like the
+`haskell-nix-dev` pin it cannot be moved by `nix flake update`; projects take new shared
+patches by moving to a newer module version. Consume it from `flake.module.nix` with `inputs.haskell-nix.lib.haskellExtension` (see
 `flake.module.nix.example`), usually with `nix.builtin-package = false`.
 
 ### Moving the toolchain
@@ -210,7 +209,6 @@ your input line. Everything else stays clean.
 | `nix.redis` | `bool` | `false` | yes | — | Include `redis-server` and `redis-cli` in the dev shell. The shellHook exports `REDIS_SOCKET` and `REDIS_LOG` beneath the project-local `redis/` directory; when `nix.process-compose` is on, `process-compose.yaml` gains a socket-only `redis` process with TCP disabled. |
 | `nix.clickhouse` | `bool` | `false` | yes | — | Include `clickhouse` in the dev shell with a local, rootless server. The shellHook exports `CLICKHOUSE_HOME` (per-project data dir) and `CLICKHOUSE_TCP_PORT`/`CLICKHOUSE_HTTP_PORT`; when `nix.process-compose` is on, `process-compose.yaml` gains a `clickhouse` process running `clickhouse-server` with a `SELECT 1` readiness probe. Uses clickhouse's embedded default config; override the ports if two projects clash. |
 | `nix.haskell-nix` | `bool` | `false` | yes | — | Add the shared `haskell-nix` patch registry as a module-owned input, paired with this flake's `haskell-nix-dev` (`inputs.haskell-nix-dev.follows`, `inputs.nixpkgs.follows`). Consume it from `flake.module.nix` via `inputs.haskell-nix.lib.haskellExtension`, typically with `nix.builtin-package = false`. See [The shared haskell-nix patch registry](#the-shared-haskell-nix-patch-registry). |
-| `nix.haskell-nix-rev` | `text` | — | no | `[0-9a-f]{40}` | Optional `haskell-nix` revision pinned in the input URL. Leave unset to track master (bump with `nix flake update haskell-nix`). Only used when `nix.haskell-nix` is enabled. |
 | `nix.treefmt` | `bool` | `true` | yes | — | Include treefmt-nix and generate the `nix/treefmt.nix` flake-parts module (wires `nix fmt` and a formatting check) |
 | `nix.pre-commit` | `bool` | `true` | yes | — | Include git-hooks.nix and generate the `nix/pre-commit.nix` flake-parts module |
 | `nix.fourmolu-ghc-opts` | `text` | — | no | — | Optional override for fourmolu's GHC options (the language extensions it must be told about, since it can't auto-detect "manual" ones). Leave unset to use treefmt-nix's defaults (`BangPatterns`, `PatternSynonyms`, `TypeApplications`). Set it when those don't fit — e.g. a project that uses `pattern` as an identifier (lens-generated fields) must drop `PatternSynonyms`, or one using CPP must add it. Value is the space-separated, double-quoted, bare extension names spliced into a Nix list, e.g. `"BangPatterns" "TypeApplications" "CPP"` (no `-X` prefix; treefmt-nix adds it). Only used when `nix.treefmt` is enabled. |
@@ -293,6 +291,7 @@ that the socket path is too long.
 |------|----|--------|
 | `0.10.0` | `0.11.0` | Retire the top-level `treefmt.nix` (its config moved into `nix/treefmt.nix`). |
 | `0.15.0` | `0.16.0` | `nix/treefmt.nix` switches the `.cabal` formatter from `cabal-fmt` to [`cabal-gild`](https://github.com/tfausak/cabal-gild). No migration ops — regenerating the file is enough. |
+| `0.18.0` | `0.19.0` | Pins `haskell-nix` by rev in the template (latest, `7b696dc`) and ships it in the canonical lock; drops the `nix.haskell-nix-rev` var. No migration ops. |
 | `0.17.0` | `0.18.0` | Moves the pin to `haskell-nix-dev` `206ecd2` (nixpkgs `d5dfd8e`, 26.11; `x86_64-darwin` dropped). New `nix.haskell-nix` / `nix.haskell-nix-rev` vars make the `haskell-nix` input module-owned and paired with `haskell-nix-dev`. No migration ops; see below. |
 | `0.16.0` | `0.17.0` | `flake.nix` pins `haskell-nix-dev` by rev and `follows` it for `flake-parts` and `pre-commit-hooks` (previously their own branch-ref `url`s). `.envrc` gains an untracked-`flake.lock` guard. No migration ops — regenerating both files is enough. |
 
@@ -302,12 +301,16 @@ regenerates `nix/treefmt.nix` with `programs.cabal-gild.enable`. Expect a one-ti
 formats `cabal.project` and `cabal.project.local`, which cabal-fmt left alone. Commit that reformat
 on its own so it does not muddy later diffs.
 
+The `0.19.0` release needs no `seihou migrate` step: `seihou update nix-haskell-flake`
+regenerates `flake.nix` with the pinned `haskell-nix` URL. Drop any saved
+`nix.haskell-nix-rev` value; the module now decides the revision.
+
 The `0.18.0` release needs no `seihou migrate` step. It moves nixpkgs (June → September 2026),
 so the first build after `seihou update nix-haskell-flake` recompiles the project's Haskell
 closure; GHC and cabal come from cache.nixos.org and HLS from the shinzui Cachix once the
 `haskell-nix-dev` CI run completes. Projects that added `haskell-nix` to
 `flake.nix` by hand should move it to the module: rerun with `--var nix.haskell-nix=true`
-(plus `--var nix.haskell-nix-rev=<rev>` if the hand-written URL pinned one), accept the new
+accept the new
 `flake.nix`, drop the hand-written `haskell-nix` lines, and re-lock. Projects that leave
 `nix.haskell-nix` off regenerate an identical `flake.nix`.
 
@@ -356,12 +359,13 @@ rewrites. `scripts/update-nix-haskell-flake-lock.sh` in this repo is the only su
 move them:
 
 ```bash
-./scripts/update-nix-haskell-flake-lock.sh              # bump to latest haskell-nix-dev master
-./scripts/update-nix-haskell-flake-lock.sh --rev <rev>  # or pin a specific rev
+./scripts/update-nix-haskell-flake-lock.sh              # bump haskell-nix-dev and haskell-nix to latest master
+./scripts/update-nix-haskell-flake-lock.sh --rev <rev>  # or pin a specific haskell-nix-dev rev
+./scripts/update-nix-haskell-flake-lock.sh --haskell-nix-rev <rev>  # …or haskell-nix rev
 ./scripts/update-nix-haskell-flake-lock.sh --check      # CI: is the shipped pair current?
 ```
 
-It rewrites the rev in the template, renders the **superset** flake (every optional input on),
+It rewrites both revs in the template, renders the **superset** flake (every optional input on),
 locks it, and only then writes both files — after asserting two things that the whole
 guarantee rests on:
 

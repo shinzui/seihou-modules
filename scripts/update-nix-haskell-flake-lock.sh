@@ -14,8 +14,9 @@
 # rev-pinned input.
 #
 # This script is the only supported way to move that rev. It:
-#   1. resolves the target haskell-nix-dev rev (--rev, else latest master),
-#   2. rewrites the rev in files/flake.nix.tpl,
+#   1. resolves the target haskell-nix-dev rev (--rev, else latest master) and
+#      haskell-nix rev (--haskell-nix-rev, else latest master),
+#   2. rewrites both revs in files/flake.nix.tpl,
 #   3. renders the SUPERSET flake (every optional input switched on) and locks it,
 #      so projects with any combination of toggles find their nodes present,
 #   4. asserts `nix flake update` on that flake is a no-op (the pin really sticks),
@@ -24,9 +25,11 @@
 #   6. writes files/flake.lock.
 #
 # Usage:
-#   update-nix-haskell-flake-lock.sh [--rev REV] [--check]
+#   update-nix-haskell-flake-lock.sh [--rev REV] [--haskell-nix-rev REV] [--check]
 #
 #   --rev REV   Pin to a specific haskell-nix-dev revision (default: latest master).
+#   --haskell-nix-rev REV
+#               Pin to a specific haskell-nix revision (default: latest master).
 #   --check     Verify only: fail if the shipped tpl/lock are not what this script
 #               would produce for the current pin. Writes nothing. For CI.
 #
@@ -38,12 +41,15 @@ MODULE_FILES="$REPO_ROOT/modules/haskell/nix-haskell-flake/files"
 TPL="$MODULE_FILES/flake.nix.tpl"
 LOCK="$MODULE_FILES/flake.lock"
 FLAKE_REF="github:shinzui/haskell-nix-dev"
+HN_FLAKE_REF="github:shinzui/haskell-nix"
 
 REV=""
+HN_REV=""
 CHECK=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --rev) REV="$2"; shift 2 ;;
+    --haskell-nix-rev) HN_REV="$2"; shift 2 ;;
     --check) CHECK=1; shift ;;
     -h|--help) sed -n '2,36p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
@@ -65,18 +71,12 @@ import re, sys
 tpl, mode = sys.argv[1], sys.argv[2]
 lines = open(tpl).read().splitlines()
 
-# Conditions whose inputs are NOT module-owned: their revision is each project's
-# choice (e.g. nix.haskell-nix-rev), so they stay out of the canonical lock in both
-# modes — a branch-ref haskell-nix would also fail the no-op update check below.
-PROJECT_OWNED = ("nix.haskell-nix",)
-
 out, stack = [], []
 for line in lines:
     stripped = line.strip()
     if stripped.startswith("{{#if"):
-        # "all" keeps every module-owned conditional body (the superset); "minimal"
-        # drops them all.
-        stack.append(mode == "minimal" or any(c in stripped for c in PROJECT_OWNED))
+        # "all" keeps every conditional body (the superset); "minimal" drops them.
+        stack.append(mode == "minimal")
         continue
     if stripped.startswith("{{/if}}"):
         if stack:
@@ -123,15 +123,24 @@ if [ -z "$REV" ]; then
         | python3 -c 'import json,sys; print(json.load(sys.stdin)["revision"])')"
 fi
 echo "target haskell-nix-dev rev: $REV"
+if [ -z "$HN_REV" ]; then
+  echo "resolving latest $HN_FLAKE_REF …"
+  HN_REV="$(nix flake metadata "$HN_FLAKE_REF" --refresh --json \
+        | python3 -c 'import json,sys; print(json.load(sys.stdin)["revision"])')"
+fi
+echo "target haskell-nix rev: $HN_REV"
 
 # --- 2. rewrite the pin in the template --------------------------------------
-python3 - "$TPL" "$REV" "$WORK/flake.nix.tpl" <<'PY'
+python3 - "$TPL" "$REV" "$HN_REV" "$WORK/flake.nix.tpl" <<'PY'
 import re, sys
 src = open(sys.argv[1]).read()
 out = re.sub(r'(github:shinzui/haskell-nix-dev)(/[^"?]*)?', r'\1/' + sys.argv[2], src)
 assert out.count("github:shinzui/haskell-nix-dev/" + sys.argv[2]) == 1, \
     "expected exactly one haskell-nix-dev pin in the template"
-open(sys.argv[3], "w").write(out)
+out = re.sub(r'(github:shinzui/haskell-nix)(?![-\w])(/[^"?]*)?', r'\1/' + sys.argv[3], out)
+assert out.count("github:shinzui/haskell-nix/" + sys.argv[3]) == 1, \
+    "expected exactly one haskell-nix pin in the template"
+open(sys.argv[4], "w").write(out)
 PY
 
 # --- 3. lock the superset render ---------------------------------------------
@@ -142,7 +151,7 @@ git -C "$WORK/superset" add flake.nix
 echo "locking the superset flake …"
 nix flake lock "$WORK/superset" >/dev/null
 
-for node in haskell-nix-dev nixpkgs flake-parts treefmt-nix pre-commit-hooks; do
+for node in haskell-nix-dev nixpkgs flake-parts treefmt-nix pre-commit-hooks haskell-nix; do
   python3 -c "
 import json,sys
 nodes = json.load(open('$WORK/superset/flake.lock'))['nodes']
@@ -181,7 +190,7 @@ if [ "$CHECK" = 1 ]; then
   diff -u "$TPL" "$WORK/flake.nix.tpl" || status=1
   diff -u <(lock_pins "$LOCK") <(lock_pins "$WORK/superset/flake.lock") || status=1
   if [ "$status" = 0 ]; then
-    echo "✓ shipped template and lock match the canonical pin $REV"
+    echo "✓ shipped template and lock match the canonical pins $REV / haskell-nix $HN_REV"
   else
     echo "✗ shipped template/lock are stale — rerun without --check" >&2
   fi
