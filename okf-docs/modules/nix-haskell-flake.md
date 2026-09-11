@@ -4,7 +4,8 @@ title: nix-haskell-flake
 description: Nix flake for Haskell projects consuming the haskell-nix-dev base flake
   (prebuilt GHC/HLS/cabal); one rev-pinned base-flake URL that every other input follows,
   so a module version locks identically everywhere. Optional process-compose, PostgreSQL,
-  socket-only Redis, ClickHouse, treefmt, and pre-commit
+  socket-only Redis, ClickHouse, treefmt, pre-commit, and the paired haskell-nix patch
+  registry
 resource: seihou://seihou-modules/modules/haskell/nix-haskell-flake
 tags:
 - haskell
@@ -14,14 +15,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.8.0.0
-version: 0.17.0
+version: 0.18.0
 ---
 
 # nix-haskell-flake
 
-Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal); one rev-pinned base-flake URL that every other input follows, so a module version locks identically everywhere. Optional process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt, and pre-commit
+Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal); one rev-pinned base-flake URL that every other input follows, so a module version locks identically everywhere. Optional process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt, pre-commit, and the paired haskell-nix patch registry
 
-**Version:** 0.17.0
+**Version:** 0.18.0
 
 ## Dependencies
 
@@ -42,6 +43,8 @@ This module has no dependencies.
 - `nix.kafka` — boolean, required, default `false`. Include librdkafka (rdkafka + rdkafka.dev) in the dev shell for hw-kafka-client-based projects. The shellHook exports CPATH, LIBRARY_PATH, and PKG_CONFIG_PATH so GHC's linker, the C preprocessor, and pkg-config resolve `-lrdkafka`. This adds the client library only; run your own Kafka-compatible broker (e.g. redpanda) as needed.
 - `nix.treefmt` — boolean, required, default `true`. Include treefmt-nix and generate the nix/treefmt.nix flake-parts module (wires `nix fmt` and a formatting check)
 - `nix.pre-commit` — boolean, required, default `true`. Include git-hooks.nix and generate the nix/pre-commit.nix flake-parts module
+- `nix.haskell-nix` — boolean, required, default `false`. Add the shared haskell-nix patch registry (github:shinzui/haskell-nix) as a module-owned flake input, paired with this flake's haskell-nix-dev (`inputs.haskell-nix-dev.follows`, `inputs.nixpkgs.follows`) so the lock carries one haskell-nix-dev and one nixpkgs. Consume it from the unmanaged flake.module.nix via `inputs.haskell-nix.lib.haskellExtension` (see flake.module.nix.example), typically with nix.builtin-package = false. Unlike the rest of the module's inputs, haskell-nix is not decided by the haskell-nix-dev pin; see nix.haskell-nix-rev.
+- `nix.haskell-nix-rev` — text, optional, matching `[0-9a-f]{40}`. Optional haskell-nix revision to pin in the input URL (`github:shinzui/haskell-nix/<rev>`). A rev-pinned input cannot be moved by `nix flake update`, so shared-patch bumps happen only when you change this value. Leave unset to track master, then bump it with `nix flake update haskell-nix`. Only used when nix.haskell-nix is enabled.
 - `nix.builtin-package` — boolean, required, default `true`. Emit a `packages.default = callCabal2nix project.name self` build in nix/haskell.nix. Set False for projects that define their own package build in the unmanaged flake.module.nix (e.g. a haskell-nix overlay supplying patched private dependencies); leaving it True there produces a duplicate `packages.default` and a flake-parts evaluation error.
 - `nix.fourmolu-ghc-opts` — text, optional. Optional override for fourmolu's GHC options (the language extensions it must be told about, since it cannot auto-detect "manual" extensions). Leave unset to use treefmt-nix's defaults (BangPatterns, PatternSynonyms, TypeApplications). Set it when those defaults don't fit — e.g. a project that uses `pattern` as an identifier (lens-generated fields) must drop PatternSynonyms, or one using CPP must add it. Value is the space-separated, double-quoted, bare extension names spliced into a Nix list, e.g. `"BangPatterns" "TypeApplications" "CPP"` (no -X prefix; treefmt-nix adds it). Only used when nix.treefmt is enabled.
 
@@ -60,6 +63,7 @@ This module has no dependencies.
 - `nix.redis` — Include Redis with a local socket-only server?
 - `nix.clickhouse` — Include ClickHouse with a local server?
 - `nix.kafka` — Include Kafka client support (librdkafka for hw-kafka-client)?
+- `nix.haskell-nix` — Include the shared haskell-nix patch registry as a flake input?
 - `nix.treefmt` — Include treefmt-nix for code formatting (fourmolu, nixpkgs-fmt, cabal-gild)?
 - `nix.pre-commit` — Include pre-commit hooks via git-hooks.nix?
 

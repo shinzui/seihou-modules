@@ -14,7 +14,7 @@
   # seihou-managed: to move the toolchain, release a new nix-haskell-flake version and
   # `seihou run nix-haskell-flake`. Editing the rev here is a conflict at the next run.
   inputs = {
-    haskell-nix-dev.url = "github:shinzui/haskell-nix-dev/05579ed8151fe8fd5e79d23d6ef9f4608b08d35a";
+    haskell-nix-dev.url = "github:shinzui/haskell-nix-dev/206ecd25bcb4a07581210bdae3e6f43c8fd179d8";
     nixpkgs.follows = "haskell-nix-dev/nixpkgs";
     flake-parts.follows = "haskell-nix-dev/flake-parts";
     {{#if Eq nix.treefmt true}}
@@ -22,6 +22,19 @@
     {{/if}}
     {{#if Eq nix.pre-commit true}}
     pre-commit-hooks.follows = "haskell-nix-dev/pre-commit-hooks";
+    {{/if}}
+    {{#if Eq nix.haskell-nix true}}
+
+    # Shared Haskell patch registry (mori://shinzui/haskell-nix), consumed from
+    # ./flake.module.nix via `inputs.haskell-nix.lib.haskellExtension`. The one input the
+    # haskell-nix-dev pin does not decide: its revision is this project's choice
+    # (seihou var nix.haskell-nix-rev). Both follows keep it on the haskell-nix-dev above,
+    # so the lock still carries a single haskell-nix-dev and a single nixpkgs.
+    haskell-nix = {
+      url = "github:shinzui/haskell-nix{{#if IsSet nix.haskell-nix-rev}}/{{nix.haskell-nix-rev}}{{/if}}";
+      inputs.haskell-nix-dev.follows = "haskell-nix-dev";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     {{/if}}
   };
 

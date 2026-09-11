@@ -16,9 +16,9 @@ let MigrationOp =
 
 in      S.Module::{
         , name = "nix-haskell-flake"
-        , version = Some "0.17.0"
+        , version = Some "0.18.0"
         , description = Some
-            "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is decided by one rev-pinned haskell-nix-dev URL that the rest follow, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, and pre-commit-hooks."
+            "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is decided by one rev-pinned haskell-nix-dev URL that the rest follow, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, pre-commit-hooks, and the shared haskell-nix patch registry (paired with the same haskell-nix-dev)."
         , vars =
           [ S.VarDecl::{
             , name = "project.name"
@@ -119,6 +119,22 @@ in      S.Module::{
             , required = True
             }
           , S.VarDecl::{
+            , name = "nix.haskell-nix"
+            , type = "bool"
+            , default = Some "false"
+            , description = Some
+                "Add the shared haskell-nix patch registry (github:shinzui/haskell-nix) as a module-owned flake input, paired with this flake's haskell-nix-dev (`inputs.haskell-nix-dev.follows`, `inputs.nixpkgs.follows`) so the lock carries one haskell-nix-dev and one nixpkgs. Consume it from the unmanaged flake.module.nix via `inputs.haskell-nix.lib.haskellExtension` (see flake.module.nix.example), typically with nix.builtin-package = false. Unlike the rest of the module's inputs, haskell-nix is not decided by the haskell-nix-dev pin; see nix.haskell-nix-rev."
+            , required = True
+            }
+          , S.VarDecl::{
+            , name = "nix.haskell-nix-rev"
+            , type = "text"
+            , description = Some
+                "Optional haskell-nix revision to pin in the input URL (`github:shinzui/haskell-nix/<rev>`). A rev-pinned input cannot be moved by `nix flake update`, so shared-patch bumps happen only when you change this value. Leave unset to track master, then bump it with `nix flake update haskell-nix`. Only used when nix.haskell-nix is enabled."
+            , required = False
+            , validation = Some "[0-9a-f]{40}"
+            }
+          , S.VarDecl::{
             , name = "nix.builtin-package"
             , type = "bool"
             , default = Some "true"
@@ -173,6 +189,11 @@ in      S.Module::{
             , var = "nix.kafka"
             , text =
                 "Include Kafka client support (librdkafka for hw-kafka-client)?"
+            }
+          , S.Prompt::{
+            , var = "nix.haskell-nix"
+            , text =
+                "Include the shared haskell-nix patch registry as a flake input?"
             }
           , S.Prompt::{
             , var = "nix.treefmt"

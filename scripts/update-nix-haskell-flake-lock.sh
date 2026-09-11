@@ -65,17 +65,24 @@ import re, sys
 tpl, mode = sys.argv[1], sys.argv[2]
 lines = open(tpl).read().splitlines()
 
-out, skipping = [], 0
+# Conditions whose inputs are NOT module-owned: their revision is each project's
+# choice (e.g. nix.haskell-nix-rev), so they stay out of the canonical lock in both
+# modes — a branch-ref haskell-nix would also fail the no-op update check below.
+PROJECT_OWNED = ("nix.haskell-nix",)
+
+out, stack = [], []
 for line in lines:
     stripped = line.strip()
     if stripped.startswith("{{#if"):
-        # "all" keeps every conditional body (the superset); "minimal" drops them.
-        skipping += 1 if mode == "minimal" else 0
+        # "all" keeps every module-owned conditional body (the superset); "minimal"
+        # drops them all.
+        stack.append(mode == "minimal" or any(c in stripped for c in PROJECT_OWNED))
         continue
     if stripped.startswith("{{/if}}"):
-        skipping = max(0, skipping - 1)
+        if stack:
+            stack.pop()
         continue
-    if skipping:
+    if any(stack):
         continue
     out.append(line)
 
