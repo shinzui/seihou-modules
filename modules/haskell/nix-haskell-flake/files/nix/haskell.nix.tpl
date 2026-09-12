@@ -44,12 +44,12 @@
         {{#if IsSet nix.pg-extensions}}
         # Postgres rebuilt with the requested extensions (e.g. pg_partman),
         # so their .control/.sql land in share and CREATE EXTENSION works.
-        # pkgs.postgresql.dev below still supplies the matching libpq headers.
-        (pkgs.postgresql.withPackages (pgp: [ {{nix.pg-extensions}} ]))
+        # pkgs.{{nix.pg-package}}.dev below still supplies the matching libpq headers.
+        (pkgs.{{nix.pg-package}}.withPackages (pgp: [ {{nix.pg-extensions}} ]))
         {{#else}}
-        pkgs.postgresql
+        pkgs.{{nix.pg-package}}
         {{/if}}
-        pkgs.postgresql.dev
+        pkgs.{{nix.pg-package}}.dev
         pkgs.openssl.dev
         pkgs.jq
         {{/if}}

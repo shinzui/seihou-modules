@@ -16,7 +16,7 @@ let MigrationOp =
 
 in      S.Module::{
         , name = "nix-haskell-flake"
-        , version = Some "0.20.0"
+        , version = Some "0.21.0"
         , description = Some
             "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is decided by one rev-pinned haskell-nix-dev URL that the rest follow, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, pre-commit-hooks, and the shared haskell-nix patch registry (paired with the same haskell-nix-dev)."
         , vars =
@@ -61,7 +61,7 @@ in      S.Module::{
             , name = "nix.postgresql"
             , type = "bool"
             , description = Some
-                "Include postgresql (and jq) in the dev shell with local DB setup in the shellHook"
+                "Include postgresql (and jq) in the dev shell with local DB setup in the shellHook. The postgresql package/major version is chosen by nix.pg-package (default `postgresql`)."
             , required = True
             }
           , S.VarDecl::{
@@ -72,10 +72,18 @@ in      S.Module::{
             , required = False
             }
           , S.VarDecl::{
+            , name = "nix.pg-package"
+            , type = "text"
+            , default = Some "postgresql"
+            , description = Some
+                "nixpkgs attribute for the PostgreSQL package used in the dev shell — the server, client (initdb/pg_ctl/psql), and libpq `.dev` all come from it. Defaults to `postgresql` (nixpkgs' default major version). Set it to pin a specific major version, e.g. `postgresql_18`, so an existing local `./db` cluster keeps working across nixpkgs bumps that move the default. `nix.pg-extensions` builds against this same package, so headers and extensions stay on one major version. Only used when nix.postgresql is enabled."
+            , required = False
+            }
+          , S.VarDecl::{
             , name = "nix.pg-extensions"
             , type = "text"
             , description = Some
-                "Optional space-separated PostgreSQL extension attributes to build into the dev-shell postgresql via `withPackages`, e.g. `pgp.pg_partman pgp.postgis`. Each item is spliced verbatim into `pkgs.postgresql.withPackages (pgp: [ … ])`, so include the `pgp.` prefix. Leave unset for a plain postgres. The extension-bearing server shares the same major version as `pkgs.postgresql.dev`, so libpq headers still resolve. Only used when nix.postgresql is enabled."
+                "Optional space-separated PostgreSQL extension attributes to build into the dev-shell postgresql via `withPackages`, e.g. `pgp.pg_partman pgp.postgis`. Each item is spliced verbatim into `pkgs.<nix.pg-package>.withPackages (pgp: [ … ])`, so include the `pgp.` prefix. Leave unset for a plain postgres. The extension-bearing server shares the same major version as `pkgs.<nix.pg-package>.dev`, so libpq headers still resolve. Only used when nix.postgresql is enabled."
             , required = False
             }
           , S.VarDecl::{

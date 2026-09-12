@@ -2,7 +2,7 @@
 , repoDescription = Some "Composable Seihou modules for bootstrapping projects"
 , modules =
   [ { name = "nix-haskell-flake"
-    , version = Some "0.20.0"
+    , version = Some "0.21.0"
     , path = "modules/haskell/nix-haskell-flake"
     , description = Some "Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal); one rev-pinned base-flake URL that every other input follows, so a module version locks identically everywhere. Optional process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt, pre-commit, and the paired haskell-nix patch registry"
     , tags = [ "haskell", "nix", "flake", "devshell" ]
