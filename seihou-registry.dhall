@@ -2,7 +2,7 @@
 , repoDescription = Some "Composable Seihou modules for bootstrapping projects"
 , modules =
   [ { name = "nix-haskell-flake"
-    , version = Some "0.19.0"
+    , version = Some "0.20.0"
     , path = "modules/haskell/nix-haskell-flake"
     , description = Some "Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal); one rev-pinned base-flake URL that every other input follows, so a module version locks identically everywhere. Optional process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt, pre-commit, and the paired haskell-nix patch registry"
     , tags = [ "haskell", "nix", "flake", "devshell" ]
@@ -72,9 +72,9 @@
     , tags = [ "haskell", "service", "keiro", "effectful", "event-sourcing", "bootstrap" ]
     }
   , { name = "fix-nix-haskell-flake-customizations"
-    , version = Some "0.1.0"
+    , version = Some "0.2.0"
     , path = "blueprints/fix-nix-haskell-flake-customizations"
-    , description = Some "Agent-driven, in-place remediation of a repo that already consumes the nix-haskell-flake seihou module: upgrades the module to its latest version (seihou migrate + seihou run --force) and relocates every local edit made directly to the seihou-managed nix/haskell.nix (extra dev-shell packages, etc.) into the unmanaged, upgrade-safe flake.module.nix via haskellProject.extraDevPackages, git-tracking that file so Nix actually sees it, and proving dev-shell parity with nix print-dev-env; reviews and verifies but never commits"
+    , description = Some "Agent-driven, in-place remediation of a repo that already consumes the nix-haskell-flake seihou module: upgrades the module to its latest version (seihou migrate + seihou run --force) and relocates every local edit made directly to a seihou-managed file into its unmanaged, upgrade-safe home — extra dev-shell tools in nix/haskell.nix move to flake.module.nix via haskellProject.extraDevPackages, custom .envrc exports move to .envrc.local, and extra process-compose processes move to process-compose.override.yaml — git-tracking the files Nix needs to see and proving dev-shell parity with nix print-dev-env; reviews and verifies but never commits"
     , tags = [ "haskell", "nix", "flake", "flake-parts", "seihou", "migration", "devshell" ]
     }
   ]
