@@ -30,6 +30,16 @@
     # define it here instead:
     #
     #   packages.default = (pkgs.haskell.packages.ghc9124.override { … }).my-package;
+    #
+    # With `nix.haskell-nix = true` the module owns a rev-pinned `inputs.haskell-nix`
+    # (the shared patch registry — do NOT add it to flake.nix by hand). Compose its
+    # extension ahead of your own overrides:
+    #
+    #   packages.default = (pkgs.haskell.packages.ghc9124.override {
+    #     overrides = pkgs.lib.composeExtensions
+    #       (inputs.haskell-nix.lib.haskellExtension pkgs.haskell.lib.compose pkgs)
+    #       (hself: _hsuper: { my-package = hself.callCabal2nix "my-package" ./. { }; });
+    #   }).my-package;
 
     # Override formatter details without editing the managed nix/treefmt.nix
     # (flake-parts merges treefmt.* options across modules):
@@ -40,5 +50,11 @@
   # A brand-new flake input must be added to flake.nix's top-level `inputs`
   # (a Nix requirement — inputs cannot be declared from an imported module).
   # That is the one edit that conflicts on a future migration; resolve it with
-  # "accept new" and re-add the input line.
+  # "accept new" and re-add the input line. (haskell-nix is module-owned — set
+  # nix.haskell-nix = true instead of adding it here.)
+  #
+  # This file is only for flake-parts customizations. Two sibling unmanaged files
+  # handle non-flake edits, and neither belongs here:
+  #   • .envrc.local                  — custom direnv exports (gitignored; NOT git-added)
+  #   • process-compose.override.yaml — extra process-compose processes (auto-merged)
 }

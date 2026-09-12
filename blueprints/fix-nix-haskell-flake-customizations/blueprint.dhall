@@ -4,9 +4,9 @@ let S =
 
 in  S.Blueprint::{
     , name = "fix-nix-haskell-flake-customizations"
-    , version = Some "0.1.0"
+    , version = Some "0.2.0"
     , description = Some
-        "Agent-driven, in-place remediation of a repo that already consumes the nix-haskell-flake seihou module: upgrades the module to its latest version (seihou migrate + seihou run --force) and relocates every local edit made directly to the seihou-managed nix/haskell.nix (extra dev-shell packages, etc.) into the unmanaged, upgrade-safe flake.module.nix via haskellProject.extraDevPackages, git-tracking that file so Nix actually sees it, and proving dev-shell parity with nix print-dev-env. Reviews and verifies but never commits."
+        "Agent-driven, in-place remediation of a repo that already consumes the nix-haskell-flake seihou module: upgrades the module to its latest version (seihou migrate + seihou run --force) and relocates every local edit made directly to a seihou-managed file into its unmanaged, upgrade-safe home — extra dev-shell tools in nix/haskell.nix move to flake.module.nix via haskellProject.extraDevPackages, custom .envrc exports move to .envrc.local, and extra process-compose processes move to process-compose.override.yaml — git-tracking the files Nix needs to see and proving dev-shell parity with nix print-dev-env. Reviews and verifies but never commits."
     , prompt = ./prompt.md as Text
     , vars = [] : List S.VarDecl.Type
     , prompts = [] : List S.Prompt.Type

@@ -5,16 +5,23 @@ You are remediating **this** repository, which already consumes the
 you fix both, in place:
 
 1. The module is pinned to an **old version**, so it has a pending upgrade.
-2. Local edits were made **directly to seihou-managed files** — almost always
+2. Local edits were made **directly to seihou-managed files** — most often
    `nix/haskell.nix` (extra dev-shell packages added inline to `baseDevPackages`,
-   a tweaked `shellHook`, a secondary GHC, etc.). Because those files are
-   regenerated on every `seihou run`, each edit resurfaces as a conflict on
-   every upgrade and risks being silently lost.
+   a tweaked `shellHook`, a secondary GHC, etc.), but also `.envrc` (custom
+   `export`s / direnv logic) and `process-compose.yaml` (extra processes).
+   Because those files are regenerated on every `seihou run`, each edit
+   resurfaces as a conflict on every upgrade and risks being silently lost.
 
 The fix is to **upgrade the module** and **relocate every local edit out of the
-managed files into the unmanaged, upgrade-safe `flake.module.nix`**, so
-`nix/haskell.nix` returns to pristine managed content and the customization
-survives all future template upgrades without conflict.
+managed files into its unmanaged, upgrade-safe home**, so the managed files
+return to pristine content and the customization survives all future template
+upgrades without conflict. Each managed file has a dedicated home:
+
+| Local edit in…            | Relocate to (unmanaged)          | Mechanism                             |
+| ------------------------- | -------------------------------- | ------------------------------------- |
+| `nix/haskell.nix` (tools) | `flake.module.nix`               | `haskellProject.extraDevPackages`     |
+| `.envrc` (env exports)    | `.envrc.local`                   | sourced last, after `eval "$shellHook"` |
+| `process-compose.yaml`    | `process-compose.override.yaml`  | auto-merged over the base at load     |
 
 This is a blueprint, not a mechanical transform. Each repo has different local
 edits. Your job is to **read what this repo actually changed**, carry **every**
@@ -33,7 +40,18 @@ customization across losing none, and **prove** the dev shell is unchanged.
   copy of the repo in the Nix store, which excludes untracked files, so it
   returns `false` and your customization is **silently dropped** with no error.
   You **must** `git add` (or `git add -N`) `flake.module.nix` before it takes
-  effect. Always verify with `nix print-dev-env` afterward — never assume.
+  effect. Always verify with `nix print-dev-env` afterward — never assume. The
+  same rule keeps `flake.lock` tracked: the module derives the whole lock from
+  one rev-pinned base flake, and an untracked `flake.lock` is invisible to Nix,
+  so `use flake` silently re-resolves every input to its latest upstream (the
+  generated `.envrc` guards against exactly this — do not defeat it).
+- **`.envrc.local` is the exception — it must NOT be git-tracked.** It is read
+  by direnv directly, not evaluated by Nix, and the module gitignores both
+  `.envrc` and `.envrc.local`. It takes effect the moment it exists (the managed
+  `.envrc` runs `source_env_if_exists .envrc.local` and `watch_file`s it);
+  `git add` is neither needed nor wanted. Likewise `process-compose.override.yaml`
+  is merged by process-compose at load time, independent of Nix — track it only
+  so a teammate gets it, never for it to take effect.
 - **Preserve every customization.** Do not drop a single extra dev-shell tool,
   shellHook line, secondary GHC, or package tweak. When unsure, carry it over
   and note it.
@@ -73,6 +91,31 @@ So **extra dev-shell tools belong in `flake.module.nix`**, set as
 `haskellProject.extraDevPackages`, not inline in `baseDevPackages`. That is the
 canonical, conflict-free home and where you move things to.
 
+The module ships two more unmanaged extension points for edits that do not
+belong in a flake-parts module:
+
+- **`.envrc.local`** — the managed `.envrc` ends with
+  `source_env_if_exists .envrc.local`, sourced *after* `eval "$shellHook"`, so
+  it can read anything the dev shell exported (e.g.
+  `export MY_URL="${PG_CONNECTION_STRING}"`). Project-specific direnv exports
+  and logic that used to be hand-added to `.envrc` move here. Use direnv/bash
+  syntax, not a static `KEY=VALUE` dotenv file. It is gitignored and read by
+  direnv, not Nix (see Critical rules).
+- **`process-compose.override.yaml`** — process-compose auto-merges a sibling
+  override file over the generated `process-compose.yaml` with no extra flags
+  (maps merge by key, lists append, scalars replace). Extra processes hand-added
+  to `process-compose.yaml` move here.
+
+One input is **module-owned, not consumer-added**: the shared Haskell patch
+registry `haskell-nix`. Do **not** add it to `flake.nix` by hand — set
+`nix.haskell-nix = true` (a module variable) and the template emits the
+rev-pinned `inputs.haskell-nix` for you, kept on the same `haskell-nix-dev` and
+`nixpkgs` as everything else. Consume it from `flake.module.nix` via
+`inputs.haskell-nix.lib.haskellExtension` (see the reference file). A brand-new
+input the module does *not* own still has to go in `flake.nix`'s top-level
+`inputs` by hand (a Nix requirement), which is the one edit that conflicts on a
+future migration.
+
 ## How to proceed
 
 ### 1. Assess current state
@@ -81,17 +124,23 @@ From the repo root, establish the facts before changing anything:
 
 - `seihou status` — confirm `nix-haskell-flake` is applied, note its current
   version, and read the per-file column: files marked **`modified by user`** are
-  the local edits you must preserve. Expect `nix/haskell.nix`.
+  the local edits you must preserve. Expect `nix/haskell.nix`, and check
+  `.envrc` and `process-compose.yaml` too — each has its own relocation home
+  (see the table above). Note that `flake.lock` and `flake.nix` also commonly
+  show as modified after a stale pin; those are managed and are simply
+  regenerated by the upgrade, not relocated.
 - `seihou migrate nix-haskell-flake --dry-run` — see the target version and
   whether the migration has file-layout ops (usually **0 ops**; these upgrades
   are content-only) or conflicts.
 - `seihou diff` — the precise set of managed files that differ from the manifest
   baseline (the human edits).
 - For each `modified by user` file, capture the **exact** local delta. Back up
-  the current content (e.g. `cp nix/haskell.nix /tmp/haskell.nix.local.bak`) so
-  you can diff and re-apply after regeneration. Identify precisely which lines
+  the current content (e.g. `cp nix/haskell.nix /tmp/haskell.nix.local.bak`,
+  `cp .envrc /tmp/envrc.local.bak`, `cp process-compose.yaml /tmp/pc.local.bak`)
+  so you can diff and re-apply after regeneration. Identify precisely which lines
   are the user's additions versus generated template content — commonly a few
-  extra `pkgs.<tool>` entries in `baseDevPackages`, with a comment.
+  extra `pkgs.<tool>` entries in `baseDevPackages` with a comment, a custom
+  `export` in `.envrc`, or an added process block in `process-compose.yaml`.
 
 ### 2. Record the pre-change dev shell (baseline for parity)
 
@@ -116,11 +165,21 @@ entries is the meaningful signal that a C library is actually wired in.
   touch show `[unchanged]`/`[modified]`. Confirm the only conflicts are the
   files you backed up in step 1.
 - Note any **new variables** the newer module version introduces (e.g.
-  `nix.builtin-package`, `nix.redis`, `nix.clickhouse`, `nix.pg-database`, `ghc.secondary`)
-  and their resolved defaults, so regeneration does not silently drop a block
-  you rely on. `nix.builtin-package` defaults to `true` and keeps the
-  `packages.default = callCabal2nix …` build; verify it resolves the way this
-  repo needs.
+  `nix.builtin-package`, `nix.redis`, `nix.clickhouse`, `nix.kafka`,
+  `nix.pg-database`, `nix.pg-extensions`, `nix.haskell-nix`,
+  `nix.fourmolu-ghc-opts`, `ghc.secondary`) and their resolved defaults, so
+  regeneration does not silently drop a block you rely on, or silently add one
+  you do not want. Two defaults bite most often:
+  - `nix.builtin-package` defaults to `true` and keeps the
+    `packages.default = callCabal2nix project.name self` build. A **dev-shell-only**
+    repo, or a **multi-package** repo with no single cabal file matching
+    `project.name` at the root, wants this **`false`** — otherwise regeneration
+    emits a `packages.default` the repo cannot build (or that collides with a
+    project-defined one). Pass `--var nix.builtin-package=false` on the `run`
+    below when that is the case.
+  - `nix.haskell-nix` defaults to `false`. Set it `true` only if the repo builds
+    on the shared patch registry; it makes the module add the rev-pinned
+    `inputs.haskell-nix` for you (never add that input by hand).
 - `seihou run nix-haskell-flake --force` — regenerate all managed files at the
   new version. This overwrites your inline edits in `nix/haskell.nix` (that is
   intended — you are about to move them to their proper home). Afterward
@@ -138,13 +197,25 @@ entries is the meaningful signal that a C library is actually wired in.
     false via `seihou run … --var nix.builtin-package=false` and define
     `packages.default` in `flake.module.nix` (see the reference), to avoid a
     duplicate `packages.default` flake-parts evaluation error.
-  - **shellHook / other managed-file tweaks** that have no `flake.module.nix`
-    option: prefer a real module option if one exists; otherwise flag it for the
-    human — some edits legitimately belong upstream in the module, not in a
-    consumer repo.
-- Restore `nix/haskell.nix` to pristine managed content by removing the inline
-  edit (the `--force` regen already did this; confirm `seihou status` shows
-  `nix/haskell.nix` as `unchanged`).
+  - **Custom `.envrc` exports / direnv logic** → a new (or extended)
+    `.envrc.local`. Keep the repo's own `export`s and hooks; drop nothing that
+    was hand-added. Because `.envrc.local` is sourced after `eval "$shellHook"`,
+    it may reference dev-shell exports (`PG_CONNECTION_STRING`, `PGHOST`, …). Do
+    **not** git-add it (see Critical rules).
+  - **Extra `process-compose.yaml` processes** → `process-compose.override.yaml`
+    (copy `process-compose.override.yaml.example` if present). The override is
+    merged over the base, so include only the added/changed processes, keyed to
+    match; `depends_on` may reference base processes (`postgres`, etc.).
+  - **shellHook / other managed-file tweaks** that have no dedicated home:
+    prefer a real module option or one of the unmanaged homes if one fits;
+    otherwise flag it for the human — some edits legitimately belong upstream in
+    the module, not in a consumer repo. (A `shellHook` that only exports env can
+    often move to `.envrc.local` instead.)
+- The `--force` regen already restored every managed file to pristine content;
+  confirm `seihou status` shows `nix/haskell.nix`, `.envrc`, and
+  `process-compose.yaml` as `unchanged` (the only expected non-`unchanged`
+  entries are your new unmanaged files: `flake.module.nix`, `.envrc.local`,
+  `process-compose.override.yaml`).
 
 ### 5. Make the new file visible to Nix, then verify parity
 
@@ -157,7 +228,13 @@ git add flake.module.nix
 Without this, Nix ignores the file and the relocated customization vanishes
 from the dev shell with no error (see Critical rules). `git add -N` is the
 minimum (intent-to-add makes it visible for evaluation); a normal `git add` is
-fine and expected since a human commits next.
+fine and expected since a human commits next. Also confirm `flake.lock` is still
+tracked (`git ls-files --error-unmatch flake.lock`).
+
+Do **not** `git add .envrc.local` — it is gitignored and read by direnv, not
+Nix, so it takes effect as soon as it exists. `process-compose.override.yaml`
+similarly needs no staging to work, though you may `git add` it so a teammate
+receives it.
 
 Then re-capture the dev shell and **diff against the step-2 baseline**:
 
@@ -180,11 +257,27 @@ no eval error):
 nix eval --accept-flake-config .#devShells.<system>.default --apply 'd: d.name'
 ```
 
+If you relocated `.envrc` exports, verify each one is present in the loaded
+environment (direnv sources `.envrc.local` after the shellHook):
+
+```
+direnv exec . sh -c 'echo "$MY_VAR"'
+```
+
+If you relocated process-compose processes, confirm the merge resolves — the
+added process must appear in the effective config:
+
+```
+process-compose config --no-server 2>/dev/null | grep <process-name>
+```
+
 ### 6. Hand off
 
-When `nix/haskell.nix` is back to `unchanged`, `flake.module.nix` holds every
-relocated customization and is git-tracked, and the dev-shell store paths match
-the baseline, summarize for the human reviewer:
+When every managed file (`nix/haskell.nix`, `.envrc`, `process-compose.yaml`) is
+back to `unchanged`, each relocated customization sits in its unmanaged home
+(`flake.module.nix` git-tracked; `.envrc.local` and any
+`process-compose.override.yaml` present), and the dev-shell store paths match the
+baseline, summarize for the human reviewer:
 
 - the module version bump (old → new) and whether the migration had ops;
 - each customization you relocated and where it landed;
