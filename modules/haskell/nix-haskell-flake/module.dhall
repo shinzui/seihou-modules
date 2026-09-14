@@ -16,9 +16,9 @@ let MigrationOp =
 
 in      S.Module::{
         , name = "nix-haskell-flake"
-        , version = Some "0.22.0"
+        , version = Some "0.23.0"
         , description = Some
-            "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is decided by one rev-pinned haskell-nix-dev URL that the rest follow, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, pre-commit-hooks, and the shared haskell-nix patch registry (paired with the same haskell-nix-dev). The generated flake.module.nix.example includes a ready-to-uncomment, Linux-guarded dockerTools.buildLayeredImage block for building an OCI image of the project's executable."
+            "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is decided by one rev-pinned haskell-nix-dev URL that the rest follow, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, pre-commit-hooks, and the shared haskell-nix patch registry (paired with the same haskell-nix-dev). The generated flake.module.nix.example includes a ready-to-uncomment, Linux-guarded dockerTools.buildLayeredImage block for building an OCI image of the project's executable. Optional nix.redpanda adds macOS-only redpanda-local-* scripts for a private, non-colliding Redpanda cluster on Apple Container (reusing the redpanda-container flake), for tests that need a broker of their own instead of the shared machine-wide one."
         , vars =
           [ S.VarDecl::{
             , name = "project.name"
@@ -111,6 +111,67 @@ in      S.Module::{
             , required = True
             }
           , S.VarDecl::{
+            , name = "nix.redpanda"
+            , type = "bool"
+            , default = Some "false"
+            , description = Some
+                "Generate nix/redpanda.nix: opt-in, macOS-only lifecycle scripts (redpanda-local-{up,down,status,logs,purge}) for a PRIVATE Redpanda cluster on Apple Container, whose names and host ports do not collide with the shared machine-wide cluster or other projects' private clusters. The default dev flow still targets the shared cluster; use this only when a test needs its own broker. Reuses the redpanda-container flake (added as a module-owned input) — on non-Darwin systems the module contributes nothing. Independent of nix.kafka (which only adds the librdkafka client library)."
+            , required = True
+            }
+          , S.VarDecl::{
+            , name = "nix.redpanda-console"
+            , type = "bool"
+            , default = Some "false"
+            , description = Some
+                "Also run Redpanda Console for the project-local cluster (adds a second container, bound to redpanda.console-port). Only used when nix.redpanda is enabled."
+            , required = True
+            }
+          , S.VarDecl::{
+            , name = "redpanda.kafka-port"
+            , type = "int"
+            , default = Some "39092"
+            , description = Some
+                "Host port for the project-local Redpanda Kafka API. Defaults to a high block (39092) distinct from the shared cluster's 9092. Change it when running two private clusters at once, or when it clashes with something else on the host. Only used when nix.redpanda is enabled."
+            , required = False
+            , validation = Some "[0-9]+"
+            }
+          , S.VarDecl::{
+            , name = "redpanda.admin-port"
+            , type = "int"
+            , default = Some "39644"
+            , description = Some
+                "Host port for the project-local Redpanda Admin API (readiness probe). Defaults to 39644 (vs the shared cluster's 9644). Only used when nix.redpanda is enabled."
+            , required = False
+            , validation = Some "[0-9]+"
+            }
+          , S.VarDecl::{
+            , name = "redpanda.schema-registry-port"
+            , type = "int"
+            , default = Some "38081"
+            , description = Some
+                "Host port for the project-local Redpanda Schema Registry. Defaults to 38081 (vs the shared cluster's 8081). Only used when nix.redpanda is enabled."
+            , required = False
+            , validation = Some "[0-9]+"
+            }
+          , S.VarDecl::{
+            , name = "redpanda.proxy-port"
+            , type = "int"
+            , default = Some "38082"
+            , description = Some
+                "Host port for the project-local Redpanda HTTP (pandaproxy) endpoint. Defaults to 38082 (vs the shared cluster's 8082). Only used when nix.redpanda is enabled."
+            , required = False
+            , validation = Some "[0-9]+"
+            }
+          , S.VarDecl::{
+            , name = "redpanda.console-port"
+            , type = "int"
+            , default = Some "38080"
+            , description = Some
+                "Host port for the project-local Redpanda Console. Defaults to 38080 (vs the shared cluster's 8080). Only used when nix.redpanda and nix.redpanda-console are enabled."
+            , required = False
+            , validation = Some "[0-9]+"
+            }
+          , S.VarDecl::{
             , name = "nix.treefmt"
             , type = "bool"
             , default = Some "true"
@@ -191,6 +252,16 @@ in      S.Module::{
                 "Include Kafka client support (librdkafka for hw-kafka-client)?"
             }
           , S.Prompt::{
+            , var = "nix.redpanda"
+            , text =
+                "Add project-local Redpanda scripts on Apple Container (macOS only)?"
+            }
+          , S.Prompt::{
+            , var = "nix.redpanda-console"
+            , text = "Also run Redpanda Console for the project-local cluster?"
+            , when = Some "Eq nix.redpanda true"
+            }
+          , S.Prompt::{
             , var = "nix.haskell-nix"
             , text =
                 "Include the shared haskell-nix patch registry as a flake input?"
@@ -227,6 +298,12 @@ in      S.Module::{
             , src = "nix/pre-commit.nix.tpl"
             , dest = "nix/pre-commit.nix"
             , when = Some "Eq nix.pre-commit true"
+            }
+          , S.Step::{
+            , strategy = "template"
+            , src = "nix/redpanda.nix.tpl"
+            , dest = "nix/redpanda.nix"
+            , when = Some "Eq nix.redpanda true"
             }
           , S.Step::{
             , strategy = "template"

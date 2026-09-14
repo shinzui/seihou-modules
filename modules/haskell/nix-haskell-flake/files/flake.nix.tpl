@@ -37,6 +37,17 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     {{/if}}
+    {{#if Eq nix.redpanda true}}
+
+    # Project-local Redpanda on Apple Container (macOS), consumed by
+    # ./nix/redpanda.nix as a source (its scripts.nix / defaults.nix are imported
+    # as files, so this flake's Apple-Silicon-only outputs are never evaluated on
+    # Linux). Rev-pinned by the module; nixpkgs follows to keep one nixpkgs.
+    redpanda-container = {
+      url = "github:shinzui/redpanda-container/c2ccecf589b93e3430b758165de7d2a2bb92f328";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    {{/if}}
   };
 
   # The haskell-nix-dev base flake's binary cache, so the first `nix develop` downloads
@@ -63,6 +74,9 @@
           {{/if}}
           {{#if Eq nix.pre-commit true}}
           ./nix/pre-commit.nix
+          {{/if}}
+          {{#if Eq nix.redpanda true}}
+          ./nix/redpanda.nix
           {{/if}}
         ]
         # Your project-specific customizations. seihou never generates, touches,
