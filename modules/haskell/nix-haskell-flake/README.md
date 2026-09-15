@@ -1,8 +1,8 @@
 # nix-haskell-flake
 
-> Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects, consuming the `haskell-nix-dev` base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is decided by one rev-pinned `haskell-nix-dev` URL that the rest `follows`, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported `nix/*.nix` modules and user customizations go in an unmanaged `flake.module.nix`, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt-nix, pre-commit-hooks, and the shared `haskell-nix` patch registry (paired with the same `haskell-nix-dev`).
+> Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects, consuming the `haskell-nix-dev` base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is decided by one rev-pinned `haskell-nix-dev` URL that the rest `follows`, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported `nix/*.nix` modules and user customizations go in an unmanaged `flake.module.nix`, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt-nix, pre-commit-hooks with a commit-message newline-escape guard, and the shared `haskell-nix` patch registry (paired with the same `haskell-nix-dev`).
 
-**Version:** `0.19.0`
+**Version:** `0.24.0`
 
 ## Overview
 
@@ -43,6 +43,11 @@ The generated `.envrc` explicitly watches `nix/haskell.nix`, the optional
 treefmt and pre-commit modules, and the optional unmanaged `flake.module.nix`
 before `use flake`. This prevents nix-direnv from retaining an obsolete dev
 shell or pre-commit wrapper after an imported module changes.
+
+When pre-commit support is enabled, the generated hook configuration also installs a
+`commit-msg` hook that rejects literal `\n` escape sequences. This catches commit commands
+that pass an escaped multi-line body to `git commit -m` instead of supplying real line
+breaks. The existing treefmt hook continues to run at the ordinary `pre-commit` stage.
 
 ## Reproducible locks
 

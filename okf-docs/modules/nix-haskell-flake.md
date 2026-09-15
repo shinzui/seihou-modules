@@ -4,8 +4,8 @@ title: nix-haskell-flake
 description: Nix flake for Haskell projects consuming the haskell-nix-dev base flake
   (prebuilt GHC/HLS/cabal); one rev-pinned base-flake URL that every other input follows,
   so a module version locks identically everywhere. Optional process-compose, PostgreSQL,
-  socket-only Redis, ClickHouse, treefmt, pre-commit, and the paired haskell-nix patch
-  registry
+  socket-only Redis, ClickHouse, treefmt, pre-commit with a commit-message newline-escape
+  guard, and the paired haskell-nix patch registry
 resource: seihou://seihou-modules/modules/haskell/nix-haskell-flake
 tags:
 - haskell
@@ -15,14 +15,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.8.0.0
-version: 0.21.0
+version: 0.24.0
 ---
 
 # nix-haskell-flake
 
-Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal); one rev-pinned base-flake URL that every other input follows, so a module version locks identically everywhere. Optional process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt, pre-commit, and the paired haskell-nix patch registry
+Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal); one rev-pinned base-flake URL that every other input follows, so a module version locks identically everywhere. Optional process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt, pre-commit with a commit-message newline-escape guard, and the paired haskell-nix patch registry
 
-**Version:** 0.21.0
+**Version:** 0.24.0
 
 ## Dependencies
 
