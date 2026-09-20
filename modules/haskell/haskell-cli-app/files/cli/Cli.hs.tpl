@@ -1,26 +1,30 @@
 -- | Top-level CLI entry point for {{project.name}}.
 --
---   This is a starter scaffold: it wires up `optparse-applicative` with a
---   single `hello` subcommand. Replace `runCommand` with your real
+--   This is a starter scaffold: it wires up @optparse-applicative@ with a
+--   single @hello@ subcommand. Replace @runCommand@ with your real
 --   subcommand parser when you grow past the bootstrap.
 module {{project.namespace}}.Cli
-  ( runCli
-  ) where
+  ( Command (..),
+    Options (..),
+    parserInfo,
+    runCli,
+  )
+where
 
-import Data.Foldable (traverse_)
-import qualified Data.Text as T
-import qualified Data.Text.IO as TIO
+import {{project.namespace}} (greet)
+import Data.Text (Text)
+import Data.Text.IO qualified as TIO
 import Options.Applicative
 
 -- | A subcommand of the {{project.name}} CLI.
 data Command
-  = Hello (Maybe T.Text)
+  = Hello (Maybe Text)
   deriving stock (Show, Eq)
 
--- | Top-level CLI options, parsed from argv. The field is named `cmd`
---   rather than `command` so the auto-generated field selector does not
---   clash with `Options.Applicative.command` (the subparser builder used
---   in `commandParser` below).
+-- | Top-level CLI options, parsed from argv. The field is named @cmd@
+--   rather than @command@ so the auto-generated field selector does not
+--   clash with @Options.Applicative.command@ (the subparser builder used
+--   in @commandParser@ below).
 data Options = Options
   { cmd :: Command
   }
@@ -29,9 +33,10 @@ data Options = Options
 -- | Parse argv and dispatch to the chosen subcommand.
 runCli :: IO ()
 runCli = do
-  Options{cmd} <- execParser parserInfo
+  Options {cmd} <- execParser parserInfo
   runCommand cmd
 
+-- | Complete parser metadata consumed by both the executable and parser tests.
 parserInfo :: ParserInfo Options
 parserInfo =
   info
@@ -56,6 +61,4 @@ commandParser =
     )
 
 runCommand :: Command -> IO ()
-runCommand (Hello mName) =
-  let target = maybe (T.pack "{{project.name}}") id mName
-   in traverse_ TIO.putStrLn [T.pack "Hello, " <> target <> T.pack "!"]
+runCommand (Hello mName) = TIO.putStrLn (greet mName)

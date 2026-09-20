@@ -16,9 +16,9 @@ let MigrationOp =
 
 in      S.Module::{
         , name = "nix-haskell-flake"
-        , version = Some "0.24.0"
+        , version = Some "0.25.0"
         , description = Some
-            "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is decided by one rev-pinned haskell-nix-dev URL that the rest follow, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, pre-commit-hooks with a commit-message newline-escape guard, and the shared haskell-nix patch registry (paired with the same haskell-nix-dev). The generated flake.module.nix.example includes a ready-to-uncomment, Linux-guarded dockerTools.buildLayeredImage block for building an OCI image of the project's executable. Optional nix.redpanda adds macOS-only redpanda-local-* scripts for a private, non-colliding Redpanda cluster on Apple Container (reusing the redpanda-container flake), for tests that need a broker of their own instead of the shared machine-wide one."
+            "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is decided by one rev-pinned haskell-nix-dev URL that the rest follow, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules, dependent Seihou modules can add managed package wiring through nix.package-module, and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, pre-commit-hooks with a commit-message newline-escape guard, and the shared haskell-nix patch registry (paired with the same haskell-nix-dev). The generated flake.module.nix.example includes a ready-to-uncomment, Linux-guarded dockerTools.buildLayeredImage block for building an OCI image of the project's executable. Optional nix.redpanda adds macOS-only redpanda-local-* scripts for a private, non-colliding Redpanda cluster on Apple Container (reusing the redpanda-container flake), for tests that need a broker of their own instead of the shared machine-wide one."
         , vars =
           [ S.VarDecl::{
             , name = "project.name"
@@ -115,7 +115,7 @@ in      S.Module::{
             , type = "bool"
             , default = Some "false"
             , description = Some
-                "Generate nix/redpanda.nix: opt-in, macOS-only lifecycle scripts (redpanda-local-{up,down,status,logs,purge}) for a PRIVATE Redpanda cluster on Apple Container, whose names and host ports do not collide with the shared machine-wide cluster or other projects' private clusters. The default dev flow still targets the shared cluster; use this only when a test needs its own broker. Reuses the redpanda-container flake (added as a module-owned input) — on non-Darwin systems the module contributes nothing. Independent of nix.kafka (which only adds the librdkafka client library)."
+                "Generate nix/redpanda.nix: opt-in, macOS-only lifecycle scripts (redpanda-local-{up,down,status,logs,purge}) for a PRIVATE Redpanda cluster on Apple Container, whose names and host ports do not collide with the shared machine-wide cluster or other projects' private clusters. The default dev flow still targets the shared cluster; use this only when a test needs its own broker. Reuses the always-locked redpanda-container input — on non-Darwin systems the generated module contributes nothing and the input is never built. Independent of nix.kafka (which only adds the librdkafka client library)."
             , required = True
             }
           , S.VarDecl::{
@@ -171,7 +171,7 @@ in      S.Module::{
             , type = "bool"
             , default = Some "true"
             , description = Some
-                "Include treefmt-nix and generate the nix/treefmt.nix flake-parts module (wires `nix fmt` and a formatting check)"
+                "Generate and import the nix/treefmt.nix flake-parts module (wires `nix fmt` and a formatting check). The treefmt-nix input remains in the canonical lock when disabled but is not evaluated or built."
             , required = True
             }
           , S.VarDecl::{
@@ -179,7 +179,7 @@ in      S.Module::{
             , type = "bool"
             , default = Some "true"
             , description = Some
-                "Include git-hooks.nix and generate the nix/pre-commit.nix flake-parts module"
+                "Generate and import the nix/pre-commit.nix flake-parts module. The pre-commit-hooks input remains in the canonical lock when disabled but is not evaluated or built."
             , required = True
             }
           , S.VarDecl::{
@@ -187,7 +187,7 @@ in      S.Module::{
             , type = "bool"
             , default = Some "false"
             , description = Some
-                "Add the shared haskell-nix patch registry (github:shinzui/haskell-nix) as a module-owned flake input, paired with this flake's haskell-nix-dev (`inputs.haskell-nix-dev.follows`, `inputs.nixpkgs.follows`) so the lock carries one haskell-nix-dev and one nixpkgs. Consume it from the unmanaged flake.module.nix via `inputs.haskell-nix.lib.haskellExtension` (see flake.module.nix.example), typically with nix.builtin-package = false. Its revision is pinned by the module next to haskell-nix-dev and moves with nix-haskell-flake releases."
+                "Enable consumption of the shared haskell-nix patch registry (github:shinzui/haskell-nix), paired with this flake's haskell-nix-dev (`inputs.haskell-nix-dev.follows`, `inputs.nixpkgs.follows`) so the lock carries one haskell-nix-dev and one nixpkgs. The input is always present in the canonical lock so feature toggles never rewrite it, but it is only evaluated or built when project wiring consumes it. Use it from the unmanaged flake.module.nix via `inputs.haskell-nix.lib.haskellExtension` (see flake.module.nix.example), typically with nix.builtin-package = false. Its revision moves only with nix-haskell-flake releases."
             , required = True
             }
           , S.VarDecl::{
@@ -197,6 +197,14 @@ in      S.Module::{
             , description = Some
                 "Emit a `packages.default = callCabal2nix project.name self` build in nix/haskell.nix. Set False for projects that define their own package build in the unmanaged flake.module.nix (e.g. a haskell-nix overlay supplying patched private dependencies); leaving it True there produces a duplicate `packages.default` and a flake-parts evaluation error."
             , required = True
+            }
+          , S.VarDecl::{
+            , name = "nix.package-module"
+            , type = "text"
+            , description = Some
+                "Optional project-relative path to a Seihou-managed flake-parts module that defines package/check outputs for a composed scaffold, e.g. nix/haskell-cli-app.nix. The generated flake imports it alongside nix/haskell.nix while preserving flake.module.nix as the unmanaged user extension point. Leave unset for the built-in single-root package output or when flake.module.nix owns all custom package wiring."
+            , required = False
+            , validation = Some "[A-Za-z0-9][A-Za-z0-9_/-]*[.]nix"
             }
           , S.VarDecl::{
             , name = "nix.fourmolu-ghc-opts"

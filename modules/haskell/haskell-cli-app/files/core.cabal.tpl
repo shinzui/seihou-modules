@@ -3,15 +3,16 @@ name: {{project.name}}-core
 version: 0.1.0.0
 synopsis: {{project.description}}
 description:
-  {{#if IsSet project.description-long}}{{project.description-long}}{{#else}}{{project.description}}{{/if}}
+  {{#if IsSet project.description-long}}{{project.description-long}}{{#else}}{{project.name}}-core contains the reusable domain logic for {{project.description}}{{/if}}
 
+category: {{project.category}}
 license: BSD-3-Clause
-license-file: ../LICENSE
+license-file: LICENSE
 author: {{project.author}}
 maintainer: {{project.maintainer}}
 copyright: (c) {{project.copyright-year}} {{project.author}}
 build-type: Simple
-extra-doc-files: ../CHANGELOG.md
+extra-doc-files: CHANGELOG.md
 
 common common-options
   ghc-options:
@@ -25,6 +26,7 @@ common common-options
     -Wmissing-export-lists
     -Wpartial-fields
     -Wmissing-deriving-strategies
+    -Wunused-packages
 
   default-language: GHC2024
   default-extensions:
@@ -37,10 +39,11 @@ library
   import: common-options
   hs-source-dirs: src
   exposed-modules:
+    {{project.namespace}}
     {{project.namespace}}.Prelude
 
   build-depends:
     base >=4.20 && <5,
-    generic-lens,
+    generic-lens >=2.2 && <2.4,
     lens ^>=5.3,
     text ^>=2.1,

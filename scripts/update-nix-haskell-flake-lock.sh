@@ -17,11 +17,10 @@
 #   1. resolves the target haskell-nix-dev rev (--rev, else latest master) and
 #      haskell-nix rev (--haskell-nix-rev, else latest master),
 #   2. rewrites both revs in files/flake.nix.tpl,
-#   3. renders the SUPERSET flake (every optional input switched on) and locks it,
-#      so projects with any combination of toggles find their nodes present,
+#   3. renders the canonical inputs block (all module-owned inputs are always
+#      locked; feature toggles only control imports and generated files),
 #   4. asserts `nix flake update` on that flake is a no-op (the pin really sticks),
-#   5. asserts a minimal project (treefmt and pre-commit off) reusing the lock
-#      keeps the identical haskell-nix-dev/nixpkgs pins,
+#   5. asserts a minimal feature configuration reproduces the identical lock,
 #   6. writes files/flake.lock.
 #
 # Usage:
@@ -75,7 +74,9 @@ out, stack = [], []
 for line in lines:
     stripped = line.strip()
     if stripped.startswith("{{#if"):
-        # "all" keeps every conditional body (the superset); "minimal" drops them.
+        # Output-module conditionals are irrelevant to the extracted inputs block.
+        # Keep both modes for the exact-lock assertion below and for compatibility
+        # with older templates where inputs were conditional.
         stack.append(mode == "minimal")
         continue
     if stripped.startswith("{{/if}}"):
@@ -143,12 +144,12 @@ assert out.count("github:shinzui/haskell-nix/" + sys.argv[3]) == 1, \
 open(sys.argv[4], "w").write(out)
 PY
 
-# --- 3. lock the superset render ---------------------------------------------
+# --- 3. lock the canonical inputs render -------------------------------------
 mkdir -p "$WORK/superset"
 render_inputs "$WORK/flake.nix.tpl" all > "$WORK/superset/flake.nix"
 git -C "$WORK/superset" init -q .
 git -C "$WORK/superset" add flake.nix
-echo "locking the superset flake …"
+echo "locking the canonical flake …"
 nix flake lock "$WORK/superset" >/dev/null
 
 for node in haskell-nix-dev nixpkgs flake-parts treefmt-nix pre-commit-hooks haskell-nix; do
@@ -170,7 +171,7 @@ if ! diff -q <(lock_pins "$WORK/superset.lock.before") <(lock_pins "$WORK/supers
 fi
 echo "ok: 'nix flake update' is a no-op against the canonical lock"
 
-# --- 5. a minimal project must reuse the same shared pins ---------------------
+# --- 5. a minimal feature set must reproduce the exact lock -------------------
 mkdir -p "$WORK/minimal"
 render_inputs "$WORK/flake.nix.tpl" minimal > "$WORK/minimal/flake.nix"
 cp "$WORK/superset/flake.lock" "$WORK/minimal/flake.lock"
@@ -182,7 +183,12 @@ for node in haskell-nix-dev nixpkgs; do
   b="$(lock_pins "$WORK/minimal/flake.lock"  | awk -v n="$node" '$1==n{print $2}')"
   [ "$a" = "$b" ] || { echo "FAIL: minimal project got a different '$node' ($b != $a)" >&2; exit 1; }
 done
-echo "ok: a toggles-off project reuses the identical haskell-nix-dev/nixpkgs pins"
+if ! cmp -s "$WORK/superset/flake.lock" "$WORK/minimal/flake.lock"; then
+  echo "FAIL: feature toggles changed the canonical lock" >&2
+  diff -u "$WORK/superset/flake.lock" "$WORK/minimal/flake.lock" >&2 || true
+  exit 1
+fi
+echo "ok: feature toggles reproduce the exact canonical lock"
 
 # --- 6. publish or check ------------------------------------------------------
 if [ "$CHECK" = 1 ]; then

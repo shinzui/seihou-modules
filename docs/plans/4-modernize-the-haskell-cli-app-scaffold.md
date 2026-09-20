@@ -36,12 +36,15 @@ file layout.
   9.12.4, GHC 9.14.1, Cabal checks, Hackage releases, and current in-repository CLI projects.
 - [x] (2026-09-20 16:39 PDT) Create this ExecPlan, scan the local ADR corpus, and record the
   implementation decisions and validation contract.
-- [ ] Implement the 0.3.0 module templates, package metadata, real core-to-CLI behavior, tests,
-  multi-package Nix build module, dependency bindings, and single formatter ownership.
-- [ ] Render a fresh project and prove Cabal build/test/check/sdist, executable behavior, Nix
-  build/check, formatting, both GHC shells, and absence of unused-package warnings.
-- [ ] Verify a 0.2.0-to-0.3.0 Seihou update path, document any required recovery behavior, and
-  decide whether a migration operation is needed.
+- [x] (2026-09-20 16:52 PDT) Implement the 0.3.0 module templates, package metadata, real
+  core-to-CLI behavior, tests, multi-package Nix build module, dependency bindings, and single
+  formatter ownership; add the managed package-module seam in `nix-haskell-flake` 0.25.0.
+- [x] (2026-09-20 16:55 PDT) Render a fresh project and prove Cabal test/check/sdist,
+  executable behavior, explicit Nix package builds and full flake checks, formatter cleanliness,
+  GHC 9.12.4 and GHC 9.14.1 builds, and absence of unused-package warnings.
+- [x] (2026-09-20 16:53 PDT) Exercise a real local 0.2.0-to-0.3.0 Seihou update. No destructive
+  file migration is needed; reconfiguration supplies the new dependency bindings and defaulted
+  variables, transfers `fourmolu.yaml` ownership, and leaves all 25 resulting files unchanged.
 - [ ] Synchronize module, registry, Mori, recipe, root catalog, and generated OKF documentation;
   run repository validation and inspect the final diff.
 - [ ] Distill durable decisions into the ADR corpus if warranted, complete this plan's outcomes,
@@ -71,6 +74,22 @@ file layout.
 - Observation: no existing ADR governs the generic Haskell CLI scaffold. The two local ADRs
   concern Redis development sockets and separation of Keiro project seeds from domain
   implementation, so neither constrains this work.
+- Observation: the base module's canonical lock was a superset of conditional inputs, so a first
+  Nix command pruned disabled `haskell-nix` and Redpanda nodes and modified a file described as
+  deterministic and managed.
+  Evidence: the first generated project emitted a lock update removing the entire `haskell-nix`
+  subtree. After making module-owned inputs unconditional, `nix flake lock` preserves SHA-256
+  `bfa08ebe5903ceeb1cd5e820cca40167906b74f8de602f99f0764bdb7b231cce` for both the default and
+  all-feature-disabled renders.
+- Observation: the generated `cabal.project`, core prelude, new core module, CLI source, and test
+  source needed formatter normalization.
+  Evidence: an initial `nix fmt -- --ci .` changed six managed source/config files; a fresh render
+  after template corrections reports 13 files formatted with zero changes.
+- Observation: Seihou's local-origin upgrade fixture required `--reconfigure` after the dependency
+  edge gained three bindings; the non-interactive test also required `--json` to accept the plan.
+  Evidence: a plain local `seihou update --dry-run` reported missing dependency variables, while
+  `seihou update --reconfigure --force --json ...` applied 0.2.0 -> 0.3.0 with seven files created,
+  nine updated, zero conflicts, and formatter ownership transferred to `nix-haskell-flake`.
 
 
 ## Decision Log
@@ -80,7 +99,7 @@ file layout.
   the generated example does not honor the boundary, so the core will gain a small public
   greeting function and the CLI will call it.
   Date: 2026-09-20
-- Decision: consume `nix-haskell-flake` 0.24.0 through the existing dependency name, bind
+- Decision: consume `nix-haskell-flake` 0.25.0 through the existing dependency name, bind
   `nix.builtin-package=false`, and bind `ghc.secondary=ghc9141` while retaining `ghc9124` as the
   primary editor shell.
   Rationale: the generic root package output cannot build a Cabal workspace. GHC 9.14.1 is the
@@ -88,11 +107,19 @@ file layout.
   making it secondary provides current-compiler validation without degrading the default editor
   experience. CLI and config overrides remain higher priority than dependency bindings.
   Date: 2026-09-20
-- Decision: let `haskell-cli-app` generate the project-specific `flake.module.nix` that builds
-  both Cabal packages recursively and exposes core, CLI, default, and test-check outputs.
+- Decision: keep every module-owned flake input in the generated `inputs` set regardless of
+  feature toggles; toggles control generated files and imports rather than lock membership.
+  Rationale: the shipped lock already carries the full graph, and unused inputs are neither
+  evaluated nor built. Unconditional membership makes the advertised canonical lock exact for
+  every configuration and prevents the first Nix command from dirtying generated projects.
+  Date: 2026-09-20
+- Decision: add an optional `nix.package-module` import seam to `nix-haskell-flake` 0.25.0 and let
+  `haskell-cli-app` generate `nix/haskell-cli-app.nix` through that seam.
   Rationale: the latest base module intentionally disables its single-root output when
-  `nix.builtin-package=false`. A working scaffold must provide the package-specific replacement;
-  merely removing the broken output would leave `nix build` unusable.
+  `nix.builtin-package=false`. A working scaffold must provide the package-specific replacement,
+  but generating `flake.module.nix` would take over the base module's deliberately unmanaged user
+  extension point. A separate managed import lets composed modules own build wiring while users
+  retain conflict-free `flake.module.nix` customizations.
   Date: 2026-09-20
 - Decision: add a default-on Tasty test suite in the CLI package and expose parser data plus
   `parserInfo` for pure `execParserPure` tests.
@@ -110,10 +137,10 @@ file layout.
   Rationale: both sources are byte-identical today, and duplicate ownership produces a Seihou
   overwrite warning. The environment module already owns formatter installation and config.
   Date: 2026-09-20
-- Decision: do not create an ADR initially.
-  Rationale: the chosen changes repair one scaffold's internal integration and do not yet create
-  a cross-module architectural rule. The completion distillation pass will revisit this if the
-  implementation reveals a durable project-wide constraint.
+- Decision: record an ADR for the managed package-module seam during the documentation milestone.
+  Rationale: preserving `flake.module.nix` as an unmanaged user extension while allowing composed
+  Seihou modules to own package outputs is now a durable cross-module contract, not merely an
+  internal CLI implementation detail.
   Date: 2026-09-20
 
 
@@ -156,14 +183,15 @@ or multi-package Nix outputs.
 ## Plan of Work
 
 Milestone 1 replaces the broken starter internals while preserving its public two-package shape.
-Update `module.dhall` to version 0.3.0, bind the current Nix module for a workspace build and the
+Update `nix-haskell-flake` to 0.25.0 with an optional managed package-module import, then update
+the CLI `module.dhall` to version 0.3.0 and bind the Nix module for a workspace build and the
 GHC 9.14.1 secondary shell, add category and test variables, remove duplicate formatter ownership,
 and generate all new source, test, package-local metadata, and Nix files. Update `core.cabal.tpl`
 and `cli.cabal.tpl` with PVP-style upper bounds, local metadata paths, a category, the real
 inter-package dependency, and a default-on test suite. Add a root core module exporting
 `greet :: Maybe Text -> Text`; simplify `Cli.hs.tpl` to call it; expose `Command`, `Options`, and
 `parserInfo`; and add a Tasty test driver that verifies default and explicit greeting subjects plus
-pure argument parsing. Add `flake.module.nix.tpl` that recursively defines the two local packages
+pure argument parsing. Add `nix/haskell-cli-app.nix.tpl` that recursively defines the two local packages
 in the selected GHC package set, exposes both package outputs, chooses the CLI package as default,
 and runs its tests as a flake check. This milestone is accepted when a direct template render has
 the intended files and `seihou validate-module` succeeds.
@@ -201,7 +229,7 @@ Create a throwaway directory with `mktemp -d`, render the project using the work
 and supply deterministic variables. If Seihou's installed cache cannot consume the working tree
 directly, install the checkout into an isolated temporary Seihou configuration or render through a
 temporary registry clone; do not replace the user's persistent installed module silently. The
-render must show `nix-haskell-flake` 0.24.0 and `haskell-cli-app` 0.3.0, no warning that
+render must show `nix-haskell-flake` 0.25.0 and `haskell-cli-app` 0.3.0, no warning that
 `fourmolu.yaml` was overwritten, `nix.builtin-package=false`, and `ghc.secondary=ghc9141`.
 
 In the generated project run:
@@ -216,7 +244,7 @@ nix build .#default --no-link
 nix build .#audit-cli-core --no-link
 nix build .#audit-cli-cli --no-link
 nix flake check
-nix fmt -- --check
+nix fmt -- --ci .
 nix develop .#ghc9124 --command cabal run audit-cli -- hello --name world
 ```
 
@@ -265,11 +293,11 @@ build caches inside that temporary directory; they can be left for the operating
 file cleanup rather than recursively deleting an ambiguous path.
 
 Seihou's manifest protects hand-edited generated files. A 0.2.0 consumer may already contain a
-user-authored `flake.module.nix`, even though the old CLI module did not generate one. The 0.3.0
-update must surface that as a conflict rather than overwrite it. If testing proves a migration is
-needed, add only operations whose targets are exact and recoverable; never delete a user's existing
-custom Nix module to install the new workspace build. Removing `fourmolu.yaml` from the CLI module
-must transfer fresh-project ownership to `nix-haskell-flake` without deleting the physical file.
+user-authored `flake.module.nix`; the 0.3.0 module must leave it untouched and install its workspace
+build under `nix/haskell-cli-app.nix` instead. If testing proves a migration is needed, add only
+operations whose targets are exact and recoverable; never delete a user's existing custom Nix
+module. Removing `fourmolu.yaml` from the CLI module must transfer fresh-project ownership to
+`nix-haskell-flake` without deleting the physical file.
 
 If a milestone fails, inspect the generated files and command output, patch the source templates,
 create a fresh render, and rerun the milestone. Do not edit the generated test project as the final
@@ -294,10 +322,11 @@ depend directly on `lens` or `generic-lens` unless its source imports those pack
 package depends on `generic-lens >=2.2 && <2.4`, `lens ^>=5.3`, and `text ^>=2.1`. The test suite
 uses `tasty ^>=1.5`, `tasty-hunit ^>=0.10`, and `optparse-applicative >=0.18 && <0.20`.
 
-The generated `flake.module.nix` uses the flake-parts `perSystem` interface supplied by
+The generated `nix/haskell-cli-app.nix` uses the flake-parts `perSystem` interface supplied by
 `nix-haskell-flake`. It must build the two local package directories through a recursive override
 of `pkgs.haskell.packages."{{ghc.version}}"`, expose `packages.<name>-core`,
 `packages.<name>-cli`, and `packages.default`, and expose a `checks.<name>-cli-test` derivation made
 with `pkgs.haskell.lib.doCheck`. The dependency edge supplies `nix.builtin-package=false` so this
-workspace output does not collide with the base module's single-root output, and supplies
+workspace output does not collide with the base module's single-root output,
+`nix.package-module=nix/haskell-cli-app.nix` so the managed file is imported, and
 `ghc.secondary=ghc9141` so the second compiler shell exists by default.

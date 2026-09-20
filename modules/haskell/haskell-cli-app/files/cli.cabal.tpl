@@ -3,15 +3,16 @@ name: {{project.name}}-cli
 version: 0.1.0.0
 synopsis: Command-line interface for {{project.name}}
 description:
-  {{#if IsSet project.description-long}}{{project.description-long}}{{#else}}{{project.description}}{{/if}}
+  {{#if IsSet project.description-long}}{{project.description-long}}{{#else}}{{project.name}}-cli provides the command-line interface for {{project.description}}{{/if}}
 
+category: {{project.category}}, CLI
 license: BSD-3-Clause
-license-file: ../LICENSE
+license-file: LICENSE
 author: {{project.author}}
 maintainer: {{project.maintainer}}
 copyright: (c) {{project.copyright-year}} {{project.author}}
 build-type: Simple
-extra-doc-files: ../CHANGELOG.md
+extra-doc-files: CHANGELOG.md
 
 common common-options
   ghc-options:
@@ -25,6 +26,7 @@ common common-options
     -Wmissing-export-lists
     -Wpartial-fields
     -Wmissing-deriving-strategies
+    -Wunused-packages
 
   default-language: GHC2024
   default-extensions:
@@ -40,12 +42,31 @@ library
     {{project.namespace}}.Cli
 
   build-depends:
+    {{project.name}}-core ^>=0.1.0.0,
     base >=4.20 && <5,
-    {{project.name}}-core,
-    generic-lens,
-    lens ^>=5.3,
-    optparse-applicative >=0.18,
+    optparse-applicative >=0.18 && <0.20,
     text ^>=2.1,
+{{#if Eq project.tests true}}
+
+test-suite {{project.name}}-cli-test
+  import: common-options
+  type: exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is: Spec.hs
+  ghc-options:
+    -threaded
+    -rtsopts
+    -with-rtsopts=-N
+
+  build-depends:
+    {{project.name}}-cli ^>=0.1.0.0,
+    {{project.name}}-core ^>=0.1.0.0,
+    base >=4.20 && <5,
+    optparse-applicative >=0.18 && <0.20,
+    tasty ^>=1.5,
+    tasty-hunit ^>=0.10,
+    text ^>=2.1,
+{{/if}}
 
 executable {{project.name}}
   import: common-options
@@ -57,5 +78,5 @@ executable {{project.name}}
     -with-rtsopts=-N
 
   build-depends:
+    {{project.name}}-cli ^>=0.1.0.0,
     base >=4.20 && <5,
-    {{project.name}}-cli,

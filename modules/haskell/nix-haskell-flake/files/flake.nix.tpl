@@ -19,35 +19,27 @@
     haskell-nix-dev.url = "github:shinzui/haskell-nix-dev/206ecd25bcb4a07581210bdae3e6f43c8fd179d8";
     nixpkgs.follows = "haskell-nix-dev/nixpkgs";
     flake-parts.follows = "haskell-nix-dev/flake-parts";
-    {{#if Eq nix.treefmt true}}
     treefmt-nix.follows = "haskell-nix-dev/treefmt-nix";
-    {{/if}}
-    {{#if Eq nix.pre-commit true}}
     pre-commit-hooks.follows = "haskell-nix-dev/pre-commit-hooks";
-    {{/if}}
-    {{#if Eq nix.haskell-nix true}}
 
     # Shared Haskell patch registry (mori://shinzui/haskell-nix), consumed from
-    # ./flake.module.nix via `inputs.haskell-nix.lib.haskellExtension`. Rev-pinned by the
-    # module alongside haskell-nix-dev, so it moves only with a nix-haskell-flake release;
-    # both follows keep the lock to a single haskell-nix-dev and a single nixpkgs.
+    # ./flake.module.nix when nix.haskell-nix is enabled. Keeping every module-owned input
+    # present makes the shipped lock exact for every feature combination; unused inputs are
+    # locked but never built. Both follows keep the graph to one haskell-nix-dev and nixpkgs.
     haskell-nix = {
       url = "github:shinzui/haskell-nix/7b696dc80f8aaccaf1783fda0ab6a7f978a67134";
       inputs.haskell-nix-dev.follows = "haskell-nix-dev";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    {{/if}}
-    {{#if Eq nix.redpanda true}}
 
     # Project-local Redpanda on Apple Container (macOS), consumed by
-    # ./nix/redpanda.nix as a source (its scripts.nix / defaults.nix are imported
-    # as files, so this flake's Apple-Silicon-only outputs are never evaluated on
-    # Linux). Rev-pinned by the module; nixpkgs follows to keep one nixpkgs.
+    # ./nix/redpanda.nix only when nix.redpanda is enabled. Its scripts.nix and
+    # defaults.nix are imported as files, so Apple-Silicon-only outputs are never
+    # evaluated on Linux. Rev-pinned by the module; nixpkgs follows to keep one nixpkgs.
     redpanda-container = {
       url = "github:shinzui/redpanda-container/c2ccecf589b93e3430b758165de7d2a2bb92f328";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    {{/if}}
   };
 
   # The haskell-nix-dev base flake's binary cache, so the first `nix develop` downloads
@@ -69,6 +61,9 @@
       imports =
         [
           ./nix/haskell.nix
+          {{#if IsSet nix.package-module}}
+          ./{{nix.package-module}}
+          {{/if}}
           {{#if Eq nix.treefmt true}}
           ./nix/treefmt.nix
           {{/if}}

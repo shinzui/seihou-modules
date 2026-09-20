@@ -1,12 +1,12 @@
 let S =
-      https://raw.githubusercontent.com/shinzui/seihou-schema/b83079d377f22c77292ad5ccf88d1061a58f0c1c/package.dhall
-        sha256:1d46697ed3e7ca1b0d9922020e2da034ae6e33f7b482ee454c68d94b536e8c2a
+      https://raw.githubusercontent.com/shinzui/seihou-schema/2b4035b7e720a9b30642a8a27551592175732ee5/package.dhall
+        sha256:21716b4aee783d8eb8b12c754050880fa710e881ecda85925f855ef34cc34a55
 
 in  S.Module::{
     , name = "haskell-cli-app"
-    , version = Some "0.2.0"
+    , version = Some "0.3.0"
     , description = Some
-        "Bootstrap a Haskell CLI app as two packages (core library + CLI exe) under GHC 9.12.4 / GHC2024, with lens + generic-lens, a BSD-3 license, and the project author's standard warning set. Depends on nix-haskell-flake for the dev shell."
+        "Bootstrap a tested two-package Haskell CLI app (reusable core library + CLI executable) under GHC2024, with GHC 9.12.4 as the HLS-backed default and GHC 9.14.1 as a secondary build shell. Generates valid package-local distribution metadata and workspace-aware Nix package/check outputs on the latest nix-haskell-flake."
     , vars =
       [ S.VarDecl::{
         , name = "project.name"
@@ -39,6 +39,14 @@ in  S.Module::{
         , validation = Some "[A-Z][A-Za-z0-9]*"
         }
       , S.VarDecl::{
+        , name = "project.category"
+        , type = "text"
+        , default = Some "Development"
+        , description = Some
+            "Hackage category written into both generated .cabal files"
+        , required = True
+        }
+      , S.VarDecl::{
         , name = "project.author"
         , type = "text"
         , default = Some "Nadeem Bitar"
@@ -59,6 +67,14 @@ in  S.Module::{
         , description = Some "Copyright year written into LICENSE"
         , required = True
         , validation = Some "[0-9]{4}"
+        }
+      , S.VarDecl::{
+        , name = "project.tests"
+        , type = "bool"
+        , default = Some "true"
+        , description = Some
+            "Whether to generate the tasty suite that tests core behavior and pure CLI parsing"
+        , required = True
         }
       ]
     , exports =
@@ -83,6 +99,10 @@ in  S.Module::{
         , text = "Top-level Haskell module namespace? (single PascalCase segment, e.g. Rei)"
         }
       , S.Prompt::{
+        , var = "project.category"
+        , text = "Hackage category?"
+        }
+      , S.Prompt::{
         , var = "project.author"
         , text = "Author name?"
         }
@@ -94,11 +114,19 @@ in  S.Module::{
         , var = "project.copyright-year"
         , text = "Copyright year?"
         }
+      , S.Prompt::{
+        , var = "project.tests"
+        , text = "Generate the tasty test-suite scaffold? (yes/no)"
+        }
       ]
     , dependencies =
       [ S.Dependency::{
         , module = "nix-haskell-flake"
-        , vars = [] : List { name : Text, value : Text }
+        , vars =
+          [ { name = "nix.builtin-package", value = "false" }
+          , { name = "ghc.secondary", value = "ghc9141" }
+          , { name = "nix.package-module", value = "nix/haskell-cli-app.nix" }
+          ]
         }
       ]
     , steps =
@@ -119,6 +147,11 @@ in  S.Module::{
         }
       , S.Step::{
         , strategy = "template"
+        , src = "core/Lib.hs.tpl"
+        , dest = "{{project.name}}-core/src/{{project.namespace}}.hs"
+        }
+      , S.Step::{
+        , strategy = "template"
         , src = "cli.cabal.tpl"
         , dest = "{{project.name}}-cli/{{project.name}}-cli.cabal"
         }
@@ -134,18 +167,44 @@ in  S.Module::{
         }
       , S.Step::{
         , strategy = "template"
+        , src = "cli/Spec.hs.tpl"
+        , dest = "{{project.name}}-cli/test/Spec.hs"
+        , when = Some "Eq project.tests true"
+        }
+      , S.Step::{
+        , strategy = "template"
+        , src = "nix/haskell-cli-app.nix.tpl"
+        , dest = "nix/haskell-cli-app.nix"
+        }
+      , S.Step::{
+        , strategy = "template"
         , src = "LICENSE.tpl"
         , dest = "LICENSE"
         }
       , S.Step::{
-        , strategy = "copy"
-        , src = "fourmolu.yaml"
-        , dest = "fourmolu.yaml"
+        , strategy = "template"
+        , src = "LICENSE.tpl"
+        , dest = "{{project.name}}-core/LICENSE"
+        }
+      , S.Step::{
+        , strategy = "template"
+        , src = "LICENSE.tpl"
+        , dest = "{{project.name}}-cli/LICENSE"
         }
       , S.Step::{
         , strategy = "template"
         , src = "CHANGELOG.md.tpl"
         , dest = "CHANGELOG.md"
+        }
+      , S.Step::{
+        , strategy = "template"
+        , src = "CHANGELOG.md.tpl"
+        , dest = "{{project.name}}-core/CHANGELOG.md"
+        }
+      , S.Step::{
+        , strategy = "template"
+        , src = "CHANGELOG.md.tpl"
+        , dest = "{{project.name}}-cli/CHANGELOG.md"
         }
       , S.Step::{
         , strategy = "template"
