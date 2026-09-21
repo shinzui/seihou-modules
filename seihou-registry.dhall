@@ -2,9 +2,9 @@
 , repoDescription = Some "Composable Seihou modules for bootstrapping projects"
 , modules =
   [ { name = "nix-haskell-flake"
-    , version = Some "0.24.0"
+    , version = Some "0.25.0"
     , path = "modules/haskell/nix-haskell-flake"
-    , description = Some "Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal); one rev-pinned base-flake URL that every other input follows, so a module version locks identically everywhere. Optional process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt, pre-commit with a commit-message newline-escape guard, and the paired haskell-nix patch registry"
+    , description = Some "Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, local services, treefmt, and pre-commit hooks"
     , tags = [ "haskell", "nix", "flake", "devshell" ]
     }
   , { name = "haskell-keiro-project"
@@ -14,9 +14,9 @@
     , tags = [ "haskell", "keiro", "service", "bootstrap" ]
     }
   , { name = "haskell-cli-app"
-    , version = Some "0.2.0"
+    , version = Some "0.3.0"
     , path = "modules/haskell/haskell-cli-app"
-    , description = Some "Haskell CLI app bootstrap: two cabal packages (core library + CLI exe) on GHC 9.12 / GHC2024, with lens + generic-lens, BSD-3 license, and a nix-haskell-flake dev shell"
+    , description = Some "Tested Haskell CLI bootstrap: reusable core plus CLI packages on GHC2024, GHC 9.12.4/9.14.1 shells, current bounded dependencies, valid package-local distribution metadata, and workspace-aware Nix package/check outputs"
     , tags = [ "haskell", "cli", "bootstrap", "ghc2024" ]
     }
   , { name = "haskell-library"
@@ -54,7 +54,7 @@
   , { name = "haskell-cli-app-repo"
     , version = Some "0.1.0"
     , path = "recipes/haskell-cli-app-repo"
-    , description = Some "Bootstrap a two-package Haskell CLI app (core library + CLI exe) in a fresh git repo: applies haskell-cli-app (which pulls in nix-haskell-flake) and then git-init last so the initial commit captures the full scaffold"
+    , description = Some "Bootstrap a tested two-package Haskell CLI app in a fresh git repo: real core-to-CLI behavior, parser tests, GHC 9.12.4/9.14.1 shells, working Nix package/check outputs, then git-init last so the initial commit captures the full scaffold"
     , tags = [ "haskell", "cli", "git", "bootstrap" ]
     }
   ]

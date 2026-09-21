@@ -1,12 +1,13 @@
 -- | Tests for the starter core behavior and command-line parser.
 module Main (main) where
 
-import {{project.namespace}} (greet)
-import {{project.namespace}}.Cli
 import Data.Text qualified as T
 import Options.Applicative
 import Test.Tasty
 import Test.Tasty.HUnit
+
+import {{project.namespace}} (greet)
+import {{project.namespace}}.Cli
 
 main :: IO ()
 main = defaultMain tests

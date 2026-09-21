@@ -11,13 +11,15 @@ generation logic, just a named bundle. `haskell-cli-app-repo` is the one-name ha
 for "new Haskell CLI project in a fresh repo." After running it you end up with:
 
 - A two-package cabal layout scaffolded by `haskell-cli-app`:
-  - `<project>-core/` — the library, with a project-wide `<Namespace>.Prelude` that
-    re-exports `lens` and `generic-lens`.
-  - `<project>-cli/` — a library exposing `<Namespace>.Cli.runCli` plus an executable
-    named `<project>` whose `Main` just delegates to it.
+  - `<project>-core/` — reusable starter behavior plus a project-wide
+    `<Namespace>.Prelude` that re-exports `lens` and `generic-lens`.
+  - `<project>-cli/` — an exported pure parser, a CLI that calls the core package, an
+    executable named `<project>`, and a default-on Tasty suite.
 - A flake-parts Nix dev shell (`flake.nix` stub + `nix/*.nix` modules, `flake.lock`,
   `flake.module.nix.example`, `.envrc`, optional treefmt-nix and pre-commit-hooks)
-  supplied by `haskell-cli-app`'s dependency on `nix-haskell-flake`.
+  supplied by `haskell-cli-app`'s dependency on `nix-haskell-flake`. The flake builds both
+  packages, exposes the CLI executable as its default package, and runs the suite in
+  `nix flake check`.
 - An initialized git repo (`git init -b master`) with a single `Initial commit`
   containing everything above, plus an optional GitHub remote created via
   `gh repo create` when `git.createGithub=true`.
@@ -52,17 +54,17 @@ Required values you will be asked for (or must supply via `--var`):
 
 Optional with sensible defaults:
 
-- `project.description-long`, `project.author`, `project.maintainer`,
-  `project.copyright-year`
+- `project.description-long`, `project.category`, `project.author`, `project.maintainer`,
+  `project.copyright-year`, `project.tests`
 - `nix.redis` (default `false`), `nix.clickhouse` (default `false`),
-  `nix.treefmt` (default `true`), `nix.pre-commit` (default `true`),
-  `nix.builtin-package` (default `true`)
+  `nix.treefmt` (default `true`), `nix.pre-commit` (default `true`)
 - `git.defaultBranch`, `git.initialCommit`, `git.createGithub`,
   `git.githubVisibility`
 
 Optional with no default (leave unset unless you need them):
 
-- `ghc.version` (default `ghc9124`), `ghc.secondary` — pin/cross-test GHC.
+- `ghc.version` (default `ghc9124`); this scaffold binds `ghc.secondary=ghc9141` for
+  current-stable cross-testing and `nix.builtin-package=false` for workspace package outputs.
 - `nix.pg-database` — Postgres DB name when it must differ from `project.name`
   (only used when `nix.postgresql=true`).
 - `nix.fourmolu-ghc-opts` — override fourmolu's GHC options (only used when
@@ -70,16 +72,17 @@ Optional with no default (leave unset unless you need them):
 
 ## Generated Files
 
-The full plan (with both `nix.treefmt` and `nix.pre-commit` enabled) produces 18
+The full plan (with tests, `nix.treefmt`, and `nix.pre-commit` enabled) produces 25
 files:
 
 - From `nix-haskell-flake`: `flake.nix`, `flake.lock`, `nix/haskell.nix`,
-  `nix/treefmt.nix`, `nix/pre-commit.nix`, `flake.module.nix.example`, `.envrc`, plus
-  `.gitignore` patches.
+  `nix/treefmt.nix`, `nix/pre-commit.nix`, `flake.module.nix.example`, `fourmolu.yaml`,
+  `.envrc`, plus `.gitignore` patches.
 - From `haskell-cli-app`: `cabal.project`, `<project>-core/<project>-core.cabal`,
-  `<project>-core/src/<Namespace>/Prelude.hs`,
+  `<project>-core/src/<Namespace>.hs`, `<project>-core/src/<Namespace>/Prelude.hs`,
   `<project>-cli/<project>-cli.cabal`, `<project>-cli/app/Main.hs`,
-  `<project>-cli/src/<Namespace>/Cli.hs`, `LICENSE`, `fourmolu.yaml`, `CHANGELOG.md`,
+  `<project>-cli/src/<Namespace>/Cli.hs`, `<project>-cli/test/Spec.hs`,
+  `nix/haskell-cli-app.nix`, root and package-local `LICENSE`/`CHANGELOG.md` files, and
   `README.md`.
 - From `git-init`: a `.gitignore` patch.
 
@@ -107,7 +110,10 @@ Once generated, build and try the binary:
 cd acme-tool
 nix develop      # or `direnv allow` if you use direnv
 cabal build all
+cabal test all
 cabal run acme-tool -- hello --name world
+nix build
+nix flake check
 ```
 
 Stay local-only without pushing to GitHub:

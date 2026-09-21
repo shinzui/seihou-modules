@@ -1,9 +1,9 @@
 {
   description = "{{project.description}}";
 
-  # Every module-owned input is decided by the module's pins: the haskell-nix-dev revision
-  # below (and, with nix.haskell-nix, the haskell-nix revision). Everything else `follows`
-  # them, so this project's flake.lock is a pure function of those revs — every project on
+  # Every module-owned input is decided by the module's pins: the haskell-nix-dev,
+  # haskell-nix, and redpanda-container revisions below. Everything else `follows` them,
+  # so this project's flake.lock is a pure function of those revs — every project on
   # this nix-haskell-flake version locks to byte-identical pins and shares one store closure
   # instead of each re-resolving `master` on its own schedule.
   #
@@ -22,10 +22,11 @@
     treefmt-nix.follows = "haskell-nix-dev/treefmt-nix";
     pre-commit-hooks.follows = "haskell-nix-dev/pre-commit-hooks";
 
-    # Shared Haskell patch registry (mori://shinzui/haskell-nix), consumed from
-    # ./flake.module.nix when nix.haskell-nix is enabled. Keeping every module-owned input
-    # present makes the shipped lock exact for every feature combination; unused inputs are
-    # locked but never built. Both follows keep the graph to one haskell-nix-dev and nixpkgs.
+    # Shared Haskell patch registry (mori://shinzui/haskell-nix), available to
+    # ./flake.module.nix when project-specific package wiring needs it. Keeping every
+    # module-owned input present makes the shipped lock exact for every feature combination;
+    # unused inputs are locked but never built. Both follows keep the graph to one
+    # haskell-nix-dev and nixpkgs.
     haskell-nix = {
       url = "github:shinzui/haskell-nix/7b696dc80f8aaccaf1783fda0ab6a7f978a67134";
       inputs.haskell-nix-dev.follows = "haskell-nix-dev";

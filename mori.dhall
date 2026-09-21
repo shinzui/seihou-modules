@@ -29,9 +29,9 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "nix-haskell-flake"
-        , version = Some "0.24.0"
+        , version = Some "0.25.0"
         , description = Some
-            "Nix flake for Haskell projects with toggleable process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt-nix, and pre-commit-hooks including a commit-message newline-escape guard"
+            "Nix flake for Haskell projects with exact managed locks, a managed package-module seam for composed scaffolds, an unmanaged user extension point, and toggleable local services, treefmt-nix, and pre-commit hooks"
         , modulePath = "modules/haskell/nix-haskell-flake"
         , tags = [ "haskell", "nix", "flake", "devshell" ]
         , requiredVars =
@@ -57,9 +57,9 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "haskell-cli-app"
-        , version = Some "0.1.0"
+        , version = Some "0.3.0"
         , description = Some
-            "Haskell CLI app bootstrap: two cabal packages (core library + CLI exe) on GHC 9.12.4 / GHC2024, with lens + generic-lens, BSD-3 license, and a nix-haskell-flake dev shell"
+            "Tested Haskell CLI bootstrap: reusable core plus CLI packages on GHC2024, GHC 9.12.4/9.14.1 shells, current bounded dependencies, valid package-local distribution metadata, and workspace-aware Nix package/check outputs"
         , modulePath = "modules/haskell/haskell-cli-app"
         , tags = [ "haskell", "cli", "bootstrap", "ghc2024" ]
         , dependencies = [ "nix-haskell-flake" ]

@@ -2,10 +2,9 @@
 type: SeihouModule
 title: nix-haskell-flake
 description: Nix flake for Haskell projects consuming the haskell-nix-dev base flake
-  (prebuilt GHC/HLS/cabal); one rev-pinned base-flake URL that every other input follows,
-  so a module version locks identically everywhere. Optional process-compose, PostgreSQL,
-  socket-only Redis, ClickHouse, treefmt, pre-commit with a commit-message newline-escape
-  guard, and the paired haskell-nix patch registry
+  (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an
+  optional managed package-module import for composed scaffolds, an unmanaged user
+  extension point, local services, treefmt, and pre-commit hooks
 resource: seihou://seihou-modules/modules/haskell/nix-haskell-flake
 tags:
 - haskell
@@ -14,15 +13,15 @@ tags:
 - devshell
 status: stable
 generated:
-  by: seihou-okf-extension/0.8.0.0
-version: 0.24.0
+  by: seihou-okf-extension/0.9.0.0
+version: 0.25.0
 ---
 
 # nix-haskell-flake
 
-Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal); one rev-pinned base-flake URL that every other input follows, so a module version locks identically everywhere. Optional process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt, pre-commit with a commit-message newline-escape guard, and the paired haskell-nix patch registry
+Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, local services, treefmt, and pre-commit hooks
 
-**Version:** 0.24.0
+**Version:** 0.25.0
 
 ## Dependencies
 
@@ -42,17 +41,18 @@ This module has no dependencies.
 - `nix.redis` — boolean, required, default `false`. Include Redis in the dev shell. The shellHook exports REDIS_SOCKET and REDIS_LOG beneath the project's local redis/ directory and, when nix.process-compose is enabled, process-compose.yaml gains a socket-only `redis` process with TCP disabled.
 - `nix.clickhouse` — boolean, required, default `false`. Include clickhouse in the dev shell with a local, rootless server. The shellHook exports CLICKHOUSE_HOME (a per-project data dir) plus CLICKHOUSE_TCP_PORT/CLICKHOUSE_HTTP_PORT, and — when nix.process-compose is enabled — process-compose.yaml gains a `clickhouse` process that runs `clickhouse-server` against that data dir with a `SELECT 1` readiness probe. The server uses clickhouse's embedded default config; override ports via the env vars if two projects clash.
 - `nix.kafka` — boolean, required, default `false`. Include librdkafka (rdkafka + rdkafka.dev) in the dev shell for hw-kafka-client-based projects. The shellHook exports CPATH, LIBRARY_PATH, and PKG_CONFIG_PATH so GHC's linker, the C preprocessor, and pkg-config resolve `-lrdkafka`. This adds the client library only; run your own Kafka-compatible broker (e.g. redpanda) as needed.
-- `nix.redpanda` — boolean, required, default `false`. Generate nix/redpanda.nix: opt-in, macOS-only lifecycle scripts (redpanda-local-{up,down,status,logs,purge}) for a PRIVATE Redpanda cluster on Apple Container, whose names and host ports do not collide with the shared machine-wide cluster or other projects' private clusters. The default dev flow still targets the shared cluster; use this only when a test needs its own broker. Reuses the redpanda-container flake (added as a module-owned input) — on non-Darwin systems the module contributes nothing. Independent of nix.kafka (which only adds the librdkafka client library).
+- `nix.redpanda` — boolean, required, default `false`. Generate nix/redpanda.nix: opt-in, macOS-only lifecycle scripts (redpanda-local-{up,down,status,logs,purge}) for a PRIVATE Redpanda cluster on Apple Container, whose names and host ports do not collide with the shared machine-wide cluster or other projects' private clusters. The default dev flow still targets the shared cluster; use this only when a test needs its own broker. Reuses the always-locked redpanda-container input — on non-Darwin systems the generated module contributes nothing and the input is never built. Independent of nix.kafka (which only adds the librdkafka client library).
 - `nix.redpanda-console` — boolean, required, default `false`. Also run Redpanda Console for the project-local cluster (adds a second container, bound to redpanda.console-port). Only used when nix.redpanda is enabled.
 - `redpanda.kafka-port` — integer, optional, default `39092`. Host port for the project-local Redpanda Kafka API. Defaults to a high block (39092) distinct from the shared cluster's 9092. Change it when running two private clusters at once, or when it clashes with something else on the host. Only used when nix.redpanda is enabled.
 - `redpanda.admin-port` — integer, optional, default `39644`. Host port for the project-local Redpanda Admin API (readiness probe). Defaults to 39644 (vs the shared cluster's 9644). Only used when nix.redpanda is enabled.
 - `redpanda.schema-registry-port` — integer, optional, default `38081`. Host port for the project-local Redpanda Schema Registry. Defaults to 38081 (vs the shared cluster's 8081). Only used when nix.redpanda is enabled.
 - `redpanda.proxy-port` — integer, optional, default `38082`. Host port for the project-local Redpanda HTTP (pandaproxy) endpoint. Defaults to 38082 (vs the shared cluster's 8082). Only used when nix.redpanda is enabled.
 - `redpanda.console-port` — integer, optional, default `38080`. Host port for the project-local Redpanda Console. Defaults to 38080 (vs the shared cluster's 8080). Only used when nix.redpanda and nix.redpanda-console are enabled.
-- `nix.treefmt` — boolean, required, default `true`. Include treefmt-nix and generate the nix/treefmt.nix flake-parts module (wires `nix fmt` and a formatting check)
-- `nix.pre-commit` — boolean, required, default `true`. Include git-hooks.nix and generate the nix/pre-commit.nix flake-parts module
-- `nix.haskell-nix` — boolean, required, default `false`. Add the shared haskell-nix patch registry (github:shinzui/haskell-nix) as a module-owned flake input, paired with this flake's haskell-nix-dev (`inputs.haskell-nix-dev.follows`, `inputs.nixpkgs.follows`) so the lock carries one haskell-nix-dev and one nixpkgs. Consume it from the unmanaged flake.module.nix via `inputs.haskell-nix.lib.haskellExtension` (see flake.module.nix.example), typically with nix.builtin-package = false. Its revision is pinned by the module next to haskell-nix-dev and moves with nix-haskell-flake releases.
+- `nix.treefmt` — boolean, required, default `true`. Generate and import the nix/treefmt.nix flake-parts module (wires `nix fmt` and a formatting check). The treefmt-nix input remains in the canonical lock when disabled but is not evaluated or built.
+- `nix.pre-commit` — boolean, required, default `true`. Generate and import the nix/pre-commit.nix flake-parts module. The pre-commit-hooks input remains in the canonical lock when disabled but is not evaluated or built.
+- `nix.haskell-nix` — boolean, optional, default `false`. Deprecated compatibility input. The shared haskell-nix patch registry is now always present in the canonical lock and available as inputs.haskell-nix, so this Boolean no longer changes generated output. Existing saved configurations may retain it; new projects should leave it unset and consume the input from flake.module.nix when needed.
 - `nix.builtin-package` — boolean, required, default `true`. Emit a `packages.default = callCabal2nix project.name self` build in nix/haskell.nix. Set False for projects that define their own package build in the unmanaged flake.module.nix (e.g. a haskell-nix overlay supplying patched private dependencies); leaving it True there produces a duplicate `packages.default` and a flake-parts evaluation error.
+- `nix.package-module` — text, optional, matching `[A-Za-z0-9][A-Za-z0-9_/-]*[.]nix`. Optional project-relative path to a Seihou-managed flake-parts module that defines package/check outputs for a composed scaffold, e.g. nix/haskell-cli-app.nix. The generated flake imports it alongside nix/haskell.nix while preserving flake.module.nix as the unmanaged user extension point. Leave unset for the built-in single-root package output or when flake.module.nix owns all custom package wiring.
 - `nix.fourmolu-ghc-opts` — text, optional. Optional override for fourmolu's GHC options (the language extensions it must be told about, since it cannot auto-detect "manual" extensions). Leave unset to use treefmt-nix's defaults (BangPatterns, PatternSynonyms, TypeApplications). Set it when those defaults don't fit — e.g. a project that uses `pattern` as an identifier (lens-generated fields) must drop PatternSynonyms, or one using CPP must add it. Value is the space-separated, double-quoted, bare extension names spliced into a Nix list, e.g. `"BangPatterns" "TypeApplications" "CPP"` (no -X prefix; treefmt-nix adds it). Only used when nix.treefmt is enabled.
 
 ## Exports
@@ -72,7 +72,6 @@ This module has no dependencies.
 - `nix.kafka` — Include Kafka client support (librdkafka for hw-kafka-client)?
 - `nix.redpanda` — Add project-local Redpanda scripts on Apple Container (macOS only)?
 - `nix.redpanda-console` — Also run Redpanda Console for the project-local cluster? — when `Eq nix.redpanda true`
-- `nix.haskell-nix` — Include the shared haskell-nix patch registry as a flake input?
 - `nix.treefmt` — Include treefmt-nix for code formatting (fourmolu, nixpkgs-fmt, cabal-gild)?
 - `nix.pre-commit` — Include pre-commit hooks via git-hooks.nix?
 

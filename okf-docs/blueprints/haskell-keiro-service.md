@@ -16,7 +16,7 @@ tags:
 - bootstrap
 status: stable
 generated:
-  by: seihou-okf-extension/0.8.0.0
+  by: seihou-okf-extension/0.9.0.0
 version: 0.3.0
 ---
 

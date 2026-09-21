@@ -42,10 +42,12 @@ library
     {{project.namespace}}.Cli
 
   build-depends:
-    {{project.name}}-core ^>=0.1.0.0,
     base >=4.20 && <5,
     optparse-applicative >=0.18 && <0.20,
     text ^>=2.1,
+
+  build-depends:
+    {{project.name}}-core ^>=0.1.0.0
 {{#if Eq project.tests true}}
 
 test-suite {{project.name}}-cli-test
@@ -59,13 +61,15 @@ test-suite {{project.name}}-cli-test
     -with-rtsopts=-N
 
   build-depends:
-    {{project.name}}-cli ^>=0.1.0.0,
-    {{project.name}}-core ^>=0.1.0.0,
     base >=4.20 && <5,
     optparse-applicative >=0.18 && <0.20,
     tasty ^>=1.5,
     tasty-hunit ^>=0.10,
     text ^>=2.1,
+
+  build-depends:
+    {{project.name}}-cli ^>=0.1.0.0,
+    {{project.name}}-core ^>=0.1.0.0,
 {{/if}}
 
 executable {{project.name}}
@@ -78,5 +82,7 @@ executable {{project.name}}
     -with-rtsopts=-N
 
   build-depends:
-    {{project.name}}-cli ^>=0.1.0.0,
-    base >=4.20 && <5,
+    base >=4.20 && <5
+
+  build-depends:
+    {{project.name}}-cli ^>=0.1.0.0

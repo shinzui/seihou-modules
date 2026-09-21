@@ -1,9 +1,9 @@
 ---
 type: SeihouRecipe
 title: haskell-cli-app-repo
-description: 'Bootstrap a two-package Haskell CLI app (core library + CLI exe) in
-  a fresh git repo: applies haskell-cli-app (which pulls in nix-haskell-flake) and
-  then git-init last so the initial commit captures the full scaffold'
+description: 'Bootstrap a tested two-package Haskell CLI app in a fresh git repo:
+  real core-to-CLI behavior, parser tests, GHC 9.12.4/9.14.1 shells, working Nix package/check
+  outputs, then git-init last so the initial commit captures the full scaffold'
 resource: seihou://seihou-modules/recipes/haskell-cli-app-repo
 tags:
 - haskell
@@ -12,13 +12,13 @@ tags:
 - bootstrap
 status: stable
 generated:
-  by: seihou-okf-extension/0.8.0.0
+  by: seihou-okf-extension/0.9.0.0
 version: 0.1.0
 ---
 
 # haskell-cli-app-repo
 
-Bootstrap a two-package Haskell CLI app (core library + CLI exe) in a fresh git repo: applies haskell-cli-app (which pulls in nix-haskell-flake) and then git-init last so the initial commit captures the full scaffold
+Bootstrap a tested two-package Haskell CLI app in a fresh git repo: real core-to-CLI behavior, parser tests, GHC 9.12.4/9.14.1 shells, working Nix package/check outputs, then git-init last so the initial commit captures the full scaffold
 
 **Version:** 0.1.0
 

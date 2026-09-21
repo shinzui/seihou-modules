@@ -1,8 +1,8 @@
 # nix-haskell-flake
 
-> Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects, consuming the `haskell-nix-dev` base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is decided by one rev-pinned `haskell-nix-dev` URL that the rest `follows`, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported `nix/*.nix` modules and user customizations go in an unmanaged `flake.module.nix`, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, socket-only Redis, ClickHouse, treefmt-nix, pre-commit-hooks with a commit-message newline-escape guard, and the shared `haskell-nix` patch registry (paired with the same `haskell-nix-dev`).
+> Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects on the `haskell-nix-dev` base flake (prebuilt GHC/HLS/cabal toolchains). Module-owned inputs are rev-pinned or follow that base, producing one exact lock across feature combinations. Base wiring and dependent scaffold package outputs live in managed `nix/*.nix` modules, while user customizations stay in an unmanaged `flake.module.nix`. Includes toggleable local services, treefmt-nix, and pre-commit hooks.
 
-**Version:** `0.24.0`
+**Version:** `0.25.0`
 
 ## Overview
 
@@ -15,11 +15,11 @@ The generated `flake.nix` is a thin, stable **stub**: it declares inputs, calls
 `nix/*.nix` modules, and the toolchain itself lives in the `haskell-nix-dev` base flake
 (`github:shinzui/haskell-nix-dev`) — so:
 
-- The generated flake has **exactly one pin of its own** — a rev-pinned `haskell-nix-dev`
-  URL — and every other module-owned input (`nixpkgs`, `flake-parts`, `treefmt-nix`,
-  `pre-commit-hooks`) `follows` it. The whole locked graph is therefore a pure function of
-  that one rev, so two projects on the same module version get **byte-identical pins and one
-  shared store closure**. See [Reproducible locks](#reproducible-locks).
+- Toolchain inputs follow one rev-pinned `haskell-nix-dev`; the shared `haskell-nix` registry
+  and `redpanda-container` are also rev-pinned by the module. Every module-owned input is always
+  declared, while feature toggles control imports and generated files. Two projects on the same
+  module version therefore get **byte-identical locks and one shared store closure** without a
+  first-run lock rewrite. See [Reproducible locks](#reproducible-locks).
 - Each devShell is built from the base flake's `lib.${system}.mkDevShell` (GHC + `cabal` + HLS;
   HLS prebuilt from the base flake's cache once published, rather than compiled from source).
 - The project's own package is built with `callCabal2nix` against the followed nixpkgs.
@@ -31,16 +31,18 @@ flake.nix                  # seihou-managed stub: inputs + mkFlake + imports
 flake.lock                 # seihou-managed seed; derivable from flake.nix (see below)
 nix/
   haskell.nix              # seihou-managed: devShells (mkDevShell) + package (callCabal2nix)
+  <package-module>.nix     # optional, managed by a dependent scaffold module
   treefmt.nix              # seihou-managed: treefmt-nix flake-parts module   (nix.treefmt)
   pre-commit.nix           # seihou-managed: git-hooks flake-parts module     (nix.pre-commit)
+  redpanda.nix             # optional project-local Redpanda scripts          (nix.redpanda)
 flake.module.nix.example   # template you copy to flake.module.nix (see "Extending")
 process-compose.yaml       # (nix.process-compose)
 .envrc                     # watches imported modules, then loads the dev shell
 .gitignore
 ```
 
-The generated `.envrc` explicitly watches `nix/haskell.nix`, the optional
-treefmt and pre-commit modules, and the optional unmanaged `flake.module.nix`
+The generated `.envrc` explicitly watches `nix/haskell.nix`, an optional configured package
+module, the treefmt/pre-commit/Redpanda modules, and the optional unmanaged `flake.module.nix`
 before `use flake`. This prevents nix-direnv from retaining an obsolete dev
 shell or pre-commit wrapper after an imported module changes.
 
@@ -55,15 +57,17 @@ The point of this module is that every project it generates resolves to the **sa
 HLS, cabal and nixpkgs — one store closure, one warm cache — while still letting each project
 add inputs of its own.
 
-### One pin, everything else follows
+### Pinned module inputs, shared toolchain follows
 
 ```nix
 inputs = {
-  haskell-nix-dev.url = "github:shinzui/haskell-nix-dev/<rev>";   # the only pin
+  haskell-nix-dev.url = "github:shinzui/haskell-nix-dev/<rev>";   # shared toolchain pin
   nixpkgs.follows          = "haskell-nix-dev/nixpkgs";
   flake-parts.follows      = "haskell-nix-dev/flake-parts";
   treefmt-nix.follows      = "haskell-nix-dev/treefmt-nix";       # (nix.treefmt)
   pre-commit-hooks.follows = "haskell-nix-dev/pre-commit-hooks";  # (nix.pre-commit)
+  haskell-nix.url = "github:shinzui/haskell-nix/<rev>";
+  redpanda-container.url = "github:shinzui/redpanda-container/<rev>";
 };
 ```
 
@@ -74,15 +78,15 @@ Two properties fall out of this, and together they are the whole guarantee:
   it. Run it in a generated project and `git diff flake.lock` comes back empty. A branch ref
   (`github:shinzui/haskell-nix-dev`) has the opposite behaviour: it is re-resolved to whatever
   `master` is that day, silently moving one project off the shared toolchain.
-- **Nothing else is pinned here at all.** The remaining inputs `follows` the base flake, so
-  their revs are read out of *that* flake's `flake.lock` at the pinned rev. There is no second
-  place for them to drift and no per-input bump to keep in sync — see the base flake's
-  "Re-exported inputs" section.
+- **Toolchain inputs follow the base.** `nixpkgs`, flake-parts, treefmt-nix, and
+  pre-commit-hooks read their revisions from the pinned base flake. The separately pinned
+  `haskell-nix` and `redpanda-container` revisions move only with a module release.
 
 The shipped `flake.lock` is therefore a **seed, not the source of truth**: it saves the first
 `nix flake lock` a network round trip, and `nix flake lock` would reproduce it from `flake.nix`
-alone. It is generated with every optional input switched on, so a project with any
-combination of `nix.treefmt` / `nix.pre-commit` finds its nodes already present.
+alone. All module-owned inputs remain declared even when their feature is disabled, so every
+feature combination reproduces the exact shipped lock. Disabled inputs are locked but are not
+evaluated or built.
 
 ### `git add flake.lock` — immediately
 
@@ -113,8 +117,9 @@ require a new input belongs in the unmanaged `flake.module.nix` instead.
 
 ### The shared `haskell-nix` patch registry
 
-The most common extra input is module-owned: set `nix.haskell-nix = true` rather than
-adding it by hand. The generated input is paired with this flake's `haskell-nix-dev`:
+The most common extra input is already module-owned and always available as
+`inputs.haskell-nix`; do not add it by hand. It is paired with this flake's
+`haskell-nix-dev`:
 
 ```nix
 haskell-nix = {
@@ -129,8 +134,10 @@ two `follows` keep one `haskell-nix-dev` and one `nixpkgs` in the lock. Its revi
 module's second pin: `update-nix-haskell-flake-lock.sh` moves it to the latest `haskell-nix`
 together with `haskell-nix-dev`, and the shipped `flake.lock` carries its nodes. Like the
 `haskell-nix-dev` pin it cannot be moved by `nix flake update`; projects take new shared
-patches by moving to a newer module version. Consume it from `flake.module.nix` with `inputs.haskell-nix.lib.haskellExtension` (see
-`flake.module.nix.example`), usually with `nix.builtin-package = false`.
+patches by moving to a newer module version. Consume it from `flake.module.nix` with
+`inputs.haskell-nix.lib.haskellExtension` (see `flake.module.nix.example`), usually with
+`nix.builtin-package = false`. The old `nix.haskell-nix` Boolean remains accepted only so
+saved configurations upgrade cleanly; it no longer changes generated output.
 
 ### Moving the toolchain
 
@@ -172,6 +179,11 @@ extra inputs should carry their own rev. Check the result with
 `flake.nix` and everything under `nix/` are **seihou-managed**: they are regenerated by
 `seihou run` and by module migrations. Editing them means accepting a conflict the next time
 this module upgrades.
+
+Dependent Seihou modules that need package-specific build outputs bind `nix.package-module` to
+a project-relative `.nix` file they own, such as `nix/haskell-cli-app.nix`. The generated flake
+imports that managed module after `nix/haskell.nix`. This is the compositional seam for scaffold
+logic; it deliberately does not generate or claim `flake.module.nix`.
 
 To customize **without conflicts**, copy the example to an unmanaged module:
 
@@ -224,9 +236,10 @@ your input line. Everything else stays clean.
 | `nix.postgresql` | `bool` | — | yes | — | Include postgresql (and `jq`) in the dev shell with local DB setup in the shellHook |
 | `nix.redis` | `bool` | `false` | yes | — | Include `redis-server` and `redis-cli` in the dev shell. The shellHook exports `REDIS_SOCKET` and `REDIS_LOG` beneath the project-local `redis/` directory; when `nix.process-compose` is on, `process-compose.yaml` gains a socket-only `redis` process with TCP disabled. |
 | `nix.clickhouse` | `bool` | `false` | yes | — | Include `clickhouse` in the dev shell with a local, rootless server. The shellHook exports `CLICKHOUSE_HOME` (per-project data dir) and `CLICKHOUSE_TCP_PORT`/`CLICKHOUSE_HTTP_PORT`; when `nix.process-compose` is on, `process-compose.yaml` gains a `clickhouse` process running `clickhouse-server` with a `SELECT 1` readiness probe. Uses clickhouse's embedded default config; override the ports if two projects clash. |
-| `nix.haskell-nix` | `bool` | `false` | yes | — | Add the shared `haskell-nix` patch registry as a module-owned input, paired with this flake's `haskell-nix-dev` (`inputs.haskell-nix-dev.follows`, `inputs.nixpkgs.follows`). Consume it from `flake.module.nix` via `inputs.haskell-nix.lib.haskellExtension`, typically with `nix.builtin-package = false`. See [The shared haskell-nix patch registry](#the-shared-haskell-nix-patch-registry). |
-| `nix.treefmt` | `bool` | `true` | yes | — | Include treefmt-nix and generate the `nix/treefmt.nix` flake-parts module (wires `nix fmt` and a formatting check) |
-| `nix.pre-commit` | `bool` | `true` | yes | — | Include git-hooks.nix and generate the `nix/pre-commit.nix` flake-parts module |
+| `nix.haskell-nix` | `bool` | `false` | no | — | Deprecated compatibility input; `inputs.haskell-nix` is always locked and available, so this value no longer changes output. |
+| `nix.treefmt` | `bool` | `true` | yes | — | Generate/import `nix/treefmt.nix`. The input stays locked when disabled but is not evaluated or built. |
+| `nix.pre-commit` | `bool` | `true` | yes | — | Generate/import `nix/pre-commit.nix`. The input stays locked when disabled but is not evaluated or built. |
+| `nix.package-module` | `text` | — | no | `[A-Za-z0-9][A-Za-z0-9_/-]*[.]nix` | Project-relative managed flake-parts module supplied by a dependent scaffold. Leave unset for the built-in root package or unmanaged custom wiring. |
 | `nix.fourmolu-ghc-opts` | `text` | — | no | — | Optional override for fourmolu's GHC options (the language extensions it must be told about, since it can't auto-detect "manual" ones). Leave unset to use treefmt-nix's defaults (`BangPatterns`, `PatternSynonyms`, `TypeApplications`). Set it when those don't fit — e.g. a project that uses `pattern` as an identifier (lens-generated fields) must drop `PatternSynonyms`, or one using CPP must add it. Value is the space-separated, double-quoted, bare extension names spliced into a Nix list, e.g. `"BangPatterns" "TypeApplications" "CPP"` (no `-X` prefix; treefmt-nix adds it). Only used when `nix.treefmt` is enabled. |
 
 ## Prompts
@@ -241,12 +254,12 @@ The following values are asked interactively (unless supplied via `--var`):
 - **`nix.postgresql`** — Include PostgreSQL with local database setup?
 - **`nix.redis`** — Include Redis with a local socket-only server?
 - **`nix.clickhouse`** — Include ClickHouse with a local server?
-- **`nix.haskell-nix`** — Include the shared haskell-nix patch registry as a flake input?
 - **`nix.treefmt`** — Include treefmt-nix for code formatting (fourmolu, nixpkgs-fmt, cabal-gild)?
 - **`nix.pre-commit`** — Include pre-commit hooks via git-hooks.nix?
 
-`ghc.secondary` has no prompt — supply it with `--var ghc.secondary=<attr>` when you want a
-second devShell. Likewise `nix.fourmolu-ghc-opts` has no prompt — supply it with
+`ghc.secondary`, `nix.package-module`, and the deprecated `nix.haskell-nix` input have no
+prompts. Supply `ghc.secondary` or `nix.package-module` through a dependency binding or `--var`
+when needed. Likewise `nix.fourmolu-ghc-opts` has no prompt — supply it with
 `--var nix.fourmolu-ghc-opts='"BangPatterns" "TypeApplications" "CPP"'` when the default
 fourmolu extensions don't suit the project.
 
@@ -268,8 +281,8 @@ When run, this module writes:
 - `nix/pre-commit.nix` — strategy: `template`
   - Applied when: `Eq nix.pre-commit true`
 - `flake.module.nix.example` — strategy: `template` (copy to `flake.module.nix` to customize)
-- `flake.lock` — strategy: `copy`; the canonical seed lock, generated with every optional
-  input on so any toggle combination finds its nodes. Derivable from `flake.nix` — see
+- `flake.lock` — strategy: `copy`; the exact canonical lock. Every module-owned input remains
+  declared so feature toggles reproduce it byte-for-byte. Derivable from `flake.nix` — see
   [Reproducible locks](#reproducible-locks)
 - `process-compose.yaml` — strategy: `template`
   - Applied when: `Eq nix.process-compose true`
@@ -280,6 +293,9 @@ When run, this module writes:
   untracked (Nix ignores an untracked lock and would re-resolve every input), and ends with
   `source_env_if_exists .envrc.local` so project-specific `export`s live in an unmanaged,
   gitignored `.envrc.local` instead of the managed `.envrc`
+- `fourmolu.yaml` — strategy: `copy`; the single shared formatter configuration owned by this
+  environment module; preserves explicit import groups so generated local imports do not move
+  based on the namespace's alphabetical position
 - `.gitignore` — strategy: `template`, patch `append-line-if-absent`
   - Appends `.envrc`, `.envrc.local`, Haskell build artifacts (`dist`, `dist-*`, `cabal-dev`,
     `.direnv`, `cabal.project.local`, `result`, `result-*`), (when `nix.pre-commit`)
@@ -307,6 +323,7 @@ that the socket path is too long.
 
 | From | To | Effect |
 |------|----|--------|
+| `0.24.0` | `0.25.0` | Adds optional `nix.package-module` managed imports, makes all module-owned inputs unconditional so every feature combination preserves the exact canonical lock, and preserves explicit Fourmolu import groups so generated local imports remain stable for every namespace. `nix.haskell-nix` becomes a deprecated no-op compatibility input. No migration operations; regeneration is sufficient. |
 | `0.19.0` | `0.20.0` | `.envrc` ends with `source_env_if_exists .envrc.local` (and watches it); `.gitignore` also ignores `.envrc.local`. Project-specific `export`s move out of the managed `.envrc` into an unmanaged `.envrc.local`. No migration ops — regenerating `.envrc`/`.gitignore` is enough. |
 | `0.10.0` | `0.11.0` | Retire the top-level `treefmt.nix` (its config moved into `nix/treefmt.nix`). |
 | `0.15.0` | `0.16.0` | `nix/treefmt.nix` switches the `.cabal` formatter from `cabal-fmt` to [`cabal-gild`](https://github.com/tfausak/cabal-gild). No migration ops — regenerating the file is enough. |
@@ -333,16 +350,14 @@ accept the new
 `flake.nix`, drop the hand-written `haskell-nix` lines, and re-lock. Projects that leave
 `nix.haskell-nix` off regenerate an identical `flake.nix`.
 
-The `0.17.0` pin change needs no `seihou migrate` step either: `seihou update
-nix-haskell-flake` regenerates `flake.nix` and `.envrc`, and the copied `flake.lock` carries the
-canonical pins. What to expect per project:
+The `0.25.0` update needs no file move or deletion. `seihou update nix-haskell-flake`
+regenerates `flake.nix`, `.envrc`, and the canonical lock. What to expect per project:
 
-- **Default projects** (`nix.treefmt` and `nix.pre-commit` both on, the defaults) get the
-  canonical lock verbatim. `nixpkgs` does not move in this release, so the GHC/HLS/cabal
-  closure is untouched — no rebuild.
-- **Projects with a toggle off** will have `nix flake lock` prune the unused nodes from the
-  superset lock on the next `nix develop`, showing `flake.lock` as locally modified. Harmless;
-  commit it.
+- **Every feature combination** gets the canonical lock verbatim. Inputs for disabled features
+  remain locked but are not evaluated or built, and `nix flake lock` leaves the file unchanged.
+- **Dependent scaffolds** may bind `nix.package-module`; direct users normally leave it unset.
+- **Existing `nix.haskell-nix` settings** may remain in saved configuration but no longer change
+  output because the registry input is always available.
 - **Projects with inputs of their own** in `flake.nix`: the regenerated stub drops them, so
   re-add them (rev-pinned) after the update and re-lock. See
   [Adding inputs of your own](#adding-inputs-of-your-own).
@@ -384,15 +399,14 @@ move them:
 ./scripts/update-nix-haskell-flake-lock.sh --check      # CI: is the shipped pair current?
 ```
 
-It rewrites both revs in the template, renders the **superset** flake (every optional input on),
-locks it, and only then writes both files — after asserting two things that the whole
+It rewrites both revs in the template, renders the canonical inputs graph, locks it, and only
+then writes both files — after asserting two things that the whole
 guarantee rests on:
 
 1. `nix flake update` against the freshly generated lock is a **no-op**, i.e. every
    module-owned input really is decided by the one rev.
-2. A **minimal** project (both toggles off) reusing that lock keeps the identical
-   `haskell-nix-dev` and `nixpkgs` pins, i.e. pruning the optional nodes does not disturb the
-   shared closure.
+2. A minimal feature configuration reproduces the **exact same lock**, proving that feature
+   toggles cannot add or prune module-owned nodes.
 
 The script does not bump the module version or commit. After running it: bump `version` in
 `module.dhall` and in `seihou-registry.dhall`, add a row to the Migrations table above saying

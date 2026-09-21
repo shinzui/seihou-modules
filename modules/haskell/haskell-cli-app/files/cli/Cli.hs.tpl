@@ -11,10 +11,11 @@ module {{project.namespace}}.Cli
   )
 where
 
-import {{project.namespace}} (greet)
 import Data.Text (Text)
 import Data.Text.IO qualified as TIO
 import Options.Applicative
+
+import {{project.namespace}} (greet)
 
 -- | A subcommand of the {{project.name}} CLI.
 data Command

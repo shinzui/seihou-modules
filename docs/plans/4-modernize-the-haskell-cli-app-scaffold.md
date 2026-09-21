@@ -45,10 +45,11 @@ file layout.
 - [x] (2026-09-20 16:53 PDT) Exercise a real local 0.2.0-to-0.3.0 Seihou update. No destructive
   file migration is needed; reconfiguration supplies the new dependency bindings and defaulted
   variables, transfers `fourmolu.yaml` ownership, and leaves all 25 resulting files unchanged.
-- [ ] Synchronize module, registry, Mori, recipe, root catalog, and generated OKF documentation;
-  run repository validation and inspect the final diff.
-- [ ] Distill durable decisions into the ADR corpus if warranted, complete this plan's outcomes,
-  and commit the working milestones with ExecPlan trailers.
+- [x] (2026-09-20 17:03 PDT) Synchronize module, registry, Mori, recipe, root catalog, and
+  generated OKF documentation; validate the registry and inspect the final diff.
+- [x] (2026-09-20 17:10 PDT) Record ADR 3 for the managed package-module seam, complete this
+  plan's outcomes, and commit the implementation and documentation milestones with ExecPlan
+  trailers.
 
 
 ## Surprises & Discoveries
@@ -90,6 +91,18 @@ file layout.
   Evidence: a plain local `seihou update --dry-run` reported missing dependency variables, while
   `seihou update --reconfigure --force --json ...` applied 0.2.0 -> 0.3.0 with seven files created,
   nine updated, zero conflicts, and formatter ownership transferred to `nix-haskell-flake`.
+- Observation: formatter cleanliness initially depended on the generated project name and
+  namespace. A-leading names happened to place local imports/dependencies where Fourmolu and
+  cabal-gild wanted them, while R-leading names were rewritten.
+  Evidence: `audit-cli` formatted cleanly while a fresh `readme-cli` render changed three files.
+  Separating variable Cabal dependencies into repeated (Cabal-valid) `build-depends` fields and
+  setting Fourmolu `import-grouping: preserve` made both fresh renders report zero changes; the
+  final Nix flake check rebuilt and tested the R-leading fixture successfully.
+- Observation: making `haskell-nix` an unconditional module-owned input left the historical
+  `nix.haskell-nix` toggle without an effect.
+  Evidence: source search found no remaining template condition using the variable. It is now an
+  optional, deprecated compatibility input with no prompt so saved configurations still update
+  without implying that new projects must enable the already-available input.
 
 
 ## Decision Log
@@ -142,11 +155,43 @@ file layout.
   Seihou modules to own package outputs is now a durable cross-module contract, not merely an
   internal CLI implementation detail.
   Date: 2026-09-20
+- Decision: preserve explicit Haskell import groups in the shared formatter configuration and
+  isolate generated internal Cabal dependencies from alphabetically sorted external dependencies.
+  Rationale: template placeholders cannot choose a fixed position that is sorted for every valid
+  project name or namespace. Stable groups make formatting idempotent without weakening dependency
+  bounds or requiring a post-generation formatter mutation.
+  Date: 2026-09-20
 
 
 ## Outcomes & Retrospective
 
-(To be filled during and after implementation.)
+`haskell-cli-app` 0.3.0 now produces the two-package project it previously described but did not
+actually exercise. The generated CLI calls its core package, exports a pure parser, and ships a
+default-on three-case Tasty suite. Both Cabal packages pass `cabal check`, their source archives
+contain package-local `LICENSE` and `CHANGELOG.md` files with no parent traversal, and the declared
+dependencies are bounded to verified releases without unused-package warnings.
+
+`nix-haskell-flake` 0.25.0 supplies the missing composition seam. The CLI module owns a managed
+workspace package module while `flake.module.nix` remains user-owned, as recorded by
+[ADR 3](../adr/3-separate-managed-scaffold-nix-wiring-from-user-extensions.md). The default Nix
+package now builds the executable, both named package outputs evaluate/build, and `nix flake check`
+runs the suite plus treefmt and pre-commit. Module-owned inputs are unconditional and the canonical
+lock remains SHA-256 `bfa08ebe5903ceeb1cd5e820cca40167906b74f8de602f99f0764bdb7b231cce`
+under default and feature-disabled configurations. The obsolete `nix.haskell-nix` toggle remains
+only as a non-prompted compatibility input.
+
+Fresh A-leading and R-leading fixtures both report zero formatter changes, avoiding the earlier
+name-dependent import/dependency ordering. The final fixture passes under GHC 9.12.4 through the
+full Nix check and under GHC 9.14.1 through the secondary shell. A real local 0.2.0 project updated
+to 0.3.0 with `--reconfigure`, adding seven files and updating nine with zero conflicts; no
+destructive migration operation was needed, and shared formatter ownership transferred cleanly.
+
+The registry reports seven modules, two recipes, and three blueprints with every version in sync.
+Mori resolves the CLI and Nix templates as 0.3.0 and 0.25.0, respectively, and the regenerated OKF
+bundle exposes the new variables, dependency bindings, and generation steps. The modernization
+also corrected the stale root catalog, stale Mori CLI version, duplicate formatter ownership,
+invalid Cabal metadata paths, missing tests, broken root Nix build, unstable generated formatting,
+and first-run lock rewrites found during the audit.
 
 
 ## Context and Orientation

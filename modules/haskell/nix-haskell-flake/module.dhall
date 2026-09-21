@@ -18,7 +18,7 @@ in      S.Module::{
         , name = "nix-haskell-flake"
         , version = Some "0.25.0"
         , description = Some
-            "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is decided by one rev-pinned haskell-nix-dev URL that the rest follow, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules, dependent Seihou modules can add managed package wiring through nix.package-module, and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, pre-commit-hooks with a commit-message newline-escape guard, and the shared haskell-nix patch registry (paired with the same haskell-nix-dev). The generated flake.module.nix.example includes a ready-to-uncomment, Linux-guarded dockerTools.buildLayeredImage block for building an OCI image of the project's executable. Optional nix.redpanda adds macOS-only redpanda-local-* scripts for a private, non-colliding Redpanda cluster on Apple Container (reusing the redpanda-container flake), for tests that need a broker of their own instead of the shared machine-wide one."
+            "Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is rev-pinned or follows that base, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules, dependent Seihou modules can add managed package wiring through nix.package-module, and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, and pre-commit-hooks with a commit-message newline-escape guard; the always-locked shared haskell-nix patch registry is available to custom wiring. The generated flake.module.nix.example includes a ready-to-uncomment, Linux-guarded dockerTools.buildLayeredImage block for building an OCI image of the project's executable. Optional nix.redpanda adds macOS-only redpanda-local-* scripts for a private, non-colliding Redpanda cluster on Apple Container (reusing the always-locked redpanda-container input), for tests that need a broker of their own instead of the shared machine-wide one."
         , vars =
           [ S.VarDecl::{
             , name = "project.name"
@@ -187,8 +187,8 @@ in      S.Module::{
             , type = "bool"
             , default = Some "false"
             , description = Some
-                "Enable consumption of the shared haskell-nix patch registry (github:shinzui/haskell-nix), paired with this flake's haskell-nix-dev (`inputs.haskell-nix-dev.follows`, `inputs.nixpkgs.follows`) so the lock carries one haskell-nix-dev and one nixpkgs. The input is always present in the canonical lock so feature toggles never rewrite it, but it is only evaluated or built when project wiring consumes it. Use it from the unmanaged flake.module.nix via `inputs.haskell-nix.lib.haskellExtension` (see flake.module.nix.example), typically with nix.builtin-package = false. Its revision moves only with nix-haskell-flake releases."
-            , required = True
+                "Deprecated compatibility input. The shared haskell-nix patch registry is now always present in the canonical lock and available as inputs.haskell-nix, so this Boolean no longer changes generated output. Existing saved configurations may retain it; new projects should leave it unset and consume the input from flake.module.nix when needed."
+            , required = False
             }
           , S.VarDecl::{
             , name = "nix.builtin-package"
@@ -263,11 +263,6 @@ in      S.Module::{
             , var = "nix.redpanda-console"
             , text = "Also run Redpanda Console for the project-local cluster?"
             , when = Some "Eq nix.redpanda true"
-            }
-          , S.Prompt::{
-            , var = "nix.haskell-nix"
-            , text =
-                "Include the shared haskell-nix patch registry as a flake input?"
             }
           , S.Prompt::{
             , var = "nix.treefmt"
