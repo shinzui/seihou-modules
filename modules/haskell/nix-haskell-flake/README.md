@@ -323,6 +323,7 @@ that the socket path is too long.
 
 | From | To | Effect |
 |------|----|--------|
+| `0.25.0` | `0.26.0` | Moves only the shared `haskell-nix` registry pin from `7b696dc` to `018d1e3`, publishing the coherent Keiro 0.18 GitHub/Hackage channels. The `haskell-nix-dev` and nixpkgs pins remain unchanged, so this is not a toolchain rebuild. No migration operations; regeneration is sufficient. |
 | `0.24.0` | `0.25.0` | Adds optional `nix.package-module` managed imports, makes all module-owned inputs unconditional so every feature combination preserves the exact canonical lock, and preserves explicit Fourmolu import groups so generated local imports remain stable for every namespace. `nix.haskell-nix` becomes a deprecated no-op compatibility input. No migration operations; regeneration is sufficient. |
 | `0.19.0` | `0.20.0` | `.envrc` ends with `source_env_if_exists .envrc.local` (and watches it); `.gitignore` also ignores `.envrc.local`. Project-specific `export`s move out of the managed `.envrc` into an unmanaged `.envrc.local`. No migration ops — regenerating `.envrc`/`.gitignore` is enough. |
 | `0.10.0` | `0.11.0` | Retire the top-level `treefmt.nix` (its config moved into `nix/treefmt.nix`). |
@@ -361,6 +362,11 @@ regenerates `flake.nix`, `.envrc`, and the canonical lock. What to expect per pr
 - **Projects with inputs of their own** in `flake.nix`: the regenerated stub drops them, so
   re-add them (rev-pinned) after the update and re-lock. See
   [Adding inputs of your own](#adding-inputs-of-your-own).
+
+The `0.26.0` update changes only the always-locked shared `haskell-nix` registry revision. It
+publishes the Keiro 0.18 family while retaining `haskell-nix-dev` `206ecd2` and nixpkgs `d5dfd8e`.
+Projects need only run `seihou update nix-haskell-flake`; no migration or toolchain rebuild is
+introduced by this module release.
 
 Afterwards, verify the guarantee holds — this should print no diff:
 
