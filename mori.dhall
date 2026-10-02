@@ -20,12 +20,27 @@ in  Schema.Project::{
     , templates =
       [ Schema.SeihouTemplate::{
         , name = "git-init"
-        , version = Some "0.1.0"
+        , version = Some "0.2.0"
         , description = Some
-            "Initialize a local git repository (default branch master), append .claude/, .agents/, and .seihou/manifest.json.tmp to .gitignore, and optionally create a GitHub repo via `gh repo create` (defaults to private) under a configured org or username"
+            "Initialize a local git repository (default branch master), append .claude/, .agents/, and .seihou/manifest.json.tmp to .gitignore, and optionally create a GitHub repo via `gh repo create` (defaults to private) under a configured org or username, optionally granting an organization team access (git.githubTeam / git.githubTeamPermission)"
         , modulePath = "modules/git/git-init"
         , tags = [ "git", "github", "bootstrap" ]
         , requiredVars = [ "git.defaultBranch" ]
+        }
+      , Schema.SeihouTemplate::{
+        , name = "repo-dir"
+        , version = Some "0.1.0"
+        , description = Some
+            "Create <repo.parentDir>/<repo.name> and run git-init inside it to make a git repo with a matching GitHub repo; the owner comes from git.githubOwner, so per-context config selects the user or organization"
+        , modulePath = "modules/git/repo-dir"
+        , tags = [ "git", "github", "bootstrap" ]
+        , requiredVars =
+          [ "repo.parentDir"
+          , "repo.name"
+          , "git.githubOwner"
+          , "git.githubVisibility"
+          , "git.defaultBranch"
+          ]
         }
       , Schema.SeihouTemplate::{
         , name = "nix-haskell-flake"

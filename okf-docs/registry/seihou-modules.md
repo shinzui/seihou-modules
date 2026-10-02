@@ -24,6 +24,7 @@ Every artifact below is published by the `seihou-modules` registry and documente
 - [haskell-cli-app](/modules/haskell-cli-app.md)
 - [haskell-library](/modules/haskell-library.md)
 - [git-init](/modules/git-init.md)
+- [repo-dir](/modules/repo-dir.md)
 - [nix-bun-flake](/modules/nix-bun-flake.md)
 - [fumadocs](/modules/fumadocs.md)
 
@@ -31,6 +32,7 @@ Every artifact below is published by the `seihou-modules` registry and documente
 
 - [haskell-library-repo](/recipes/haskell-library-repo.md)
 - [haskell-cli-app-repo](/recipes/haskell-cli-app-repo.md)
+- [github-repo](/recipes/github-repo.md)
 
 ## Blueprints
 

@@ -3,7 +3,8 @@ type: SeihouModule
 title: git-init
 description: Initialize a local git repo (default branch master), seed .gitignore
   with .claude/, .agents/, and .seihou/manifest.json.tmp, and optionally create a
-  private GitHub repo via `gh` under a configured org or username
+  private GitHub repo via `gh` under a configured org or username, optionally granting
+  an organization team access
 resource: seihou://seihou-modules/modules/git/git-init
 tags:
 - git
@@ -13,14 +14,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.9.0.0
-version: 0.1.0
+version: 0.2.0
 ---
 
 # git-init
 
-Initialize a local git repo (default branch master), seed .gitignore with .claude/, .agents/, and .seihou/manifest.json.tmp, and optionally create a private GitHub repo via `gh` under a configured org or username
+Initialize a local git repo (default branch master), seed .gitignore with .claude/, .agents/, and .seihou/manifest.json.tmp, and optionally create a private GitHub repo via `gh` under a configured org or username, optionally granting an organization team access
 
-**Version:** 0.1.0
+**Version:** 0.2.0
 
 ## Dependencies
 
@@ -34,6 +35,8 @@ This module has no dependencies.
 - `git.githubOwner` — text, optional. GitHub org or username under which the repo should be created. Required when `git.createGithub` is true. Recommended to set via `seihou config set git.githubOwner <value> --global` so it is reused across projects.
 - `git.repoName` — text, optional, matching `[A-Za-z0-9._-]+`. Name of the GitHub repo to create. Required when `git.createGithub` is true. Typically the same as the project name / current directory name.
 - `git.githubVisibility` — text, optional, default `private`, matching `private|public|internal`. Visibility of the GitHub repo: `private`, `public`, or `internal`. Defaults to `private`. Only used when `git.createGithub` is true.
+- `git.githubTeam` — text, optional, matching `[A-Za-z0-9._-]+`. Slug of an organization team to grant access to the new repo (e.g. `tan-engineers`). Only valid when `git.githubOwner` is an organization. Leave unset to skip. Recommended to set per context: `seihou config set git.githubTeam <slug> --context <ctx>`.
+- `git.githubTeamPermission` — text, optional, default `push`, matching `pull|triage|push|maintain|admin`. Permission granted to `git.githubTeam`: `pull`, `triage`, `push`, `maintain`, or `admin`. Defaults to `push`. Only used when `git.githubTeam` is set.
 
 ## Exports
 
@@ -47,6 +50,8 @@ No exports declared.
 - `git.githubOwner` — GitHub org or username? (tip: set globally with `seihou config set git.githubOwner <value> --global`) — when `Eq git.createGithub true`
 - `git.repoName` — GitHub repo name? — when `Eq git.createGithub true`
 - `git.githubVisibility` — GitHub repo visibility? (choices: `private`, `public`, `internal`) — when `Eq git.createGithub true`
+- `git.githubTeam` — Organization team to grant access? (slug; tip: set per context with `seihou config set git.githubTeam <slug> --context <ctx>`) — when `Eq git.createGithub true`
+- `git.githubTeamPermission` — Team permission? (choices: `pull`, `triage`, `push`, `maintain`, `admin`) — when `Eq git.createGithub true && IsSet git.githubTeam`
 
 ## Generation steps
 
@@ -59,3 +64,4 @@ No exports declared.
 - `gh repo create {{git.githubOwner}}/{{git.repoName}} --private --source=. --remote=origin --push` — when `Eq git.createGithub true && Eq git.githubVisibility "private"`
 - `gh repo create {{git.githubOwner}}/{{git.repoName}} --public --source=. --remote=origin --push` — when `Eq git.createGithub true && Eq git.githubVisibility "public"`
 - `gh repo create {{git.githubOwner}}/{{git.repoName}} --internal --source=. --remote=origin --push` — when `Eq git.createGithub true && Eq git.githubVisibility "internal"`
+- `gh api -X PUT /orgs/{{git.githubOwner}}/teams/{{git.githubTeam}}/repos/{{git.githubOwner}}/{{git.repoName}} -f permission={{git.githubTeamPermission}} --silent` — when `Eq git.createGithub true && IsSet git.githubTeam`

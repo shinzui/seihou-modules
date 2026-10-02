@@ -4,9 +4,9 @@ let S =
 
 in  S.Module::{
     , name = "git-init"
-    , version = Some "0.1.0"
+    , version = Some "0.2.0"
     , description = Some
-        "Initialize a local git repository (default branch master), append .claude/, .agents/, and .seihou/manifest.json.tmp to .gitignore, and optionally create a GitHub repo via `gh repo create` (defaults to private) under a configured org or username. The owner is read from the `git.githubOwner` variable, which is most useful when set globally via `seihou config set git.githubOwner <org-or-user> --global`."
+        "Initialize a local git repository (default branch master), append .claude/, .agents/, and .seihou/manifest.json.tmp to .gitignore, and optionally create a GitHub repo via `gh repo create` (defaults to private) under a configured org or username, optionally granting an organization team access to the new repo. The owner and team are read from the `git.githubOwner` and `git.githubTeam` variables, which are most useful when set per context or globally, e.g. `seihou config set git.githubOwner <org-or-user> --context <ctx>`."
     , vars =
       [ S.VarDecl::{
         , name = "git.defaultBranch"
@@ -57,6 +57,23 @@ in  S.Module::{
         , required = False
         , validation = Some "private|public|internal"
         }
+      , S.VarDecl::{
+        , name = "git.githubTeam"
+        , type = "text"
+        , description = Some
+            "Slug of an organization team to grant access to the new repo (e.g. `tan-engineers`). Only valid when `git.githubOwner` is an organization. Leave unset to skip. Recommended to set per context: `seihou config set git.githubTeam <slug> --context <ctx>`."
+        , required = False
+        , validation = Some "[A-Za-z0-9._-]+"
+        }
+      , S.VarDecl::{
+        , name = "git.githubTeamPermission"
+        , type = "text"
+        , default = Some "push"
+        , description = Some
+            "Permission granted to `git.githubTeam`: `pull`, `triage`, `push`, `maintain`, or `admin`. Defaults to `push`. Only used when `git.githubTeam` is set."
+        , required = False
+        , validation = Some "pull|triage|push|maintain|admin"
+        }
       ]
     , prompts =
       [ S.Prompt::{
@@ -90,6 +107,20 @@ in  S.Module::{
         , when =
             Some "Eq git.createGithub true"
         , choices = Some [ "private", "public", "internal" ]
+        }
+      , S.Prompt::{
+        , var = "git.githubTeam"
+        , text =
+            "Organization team to grant access? (slug; tip: set per context with `seihou config set git.githubTeam <slug> --context <ctx>`)"
+        , when =
+            Some "Eq git.createGithub true"
+        }
+      , S.Prompt::{
+        , var = "git.githubTeamPermission"
+        , text = "Team permission?"
+        , when =
+            Some "Eq git.createGithub true && IsSet git.githubTeam"
+        , choices = Some [ "pull", "triage", "push", "maintain", "admin" ]
         }
       ]
     , steps =
@@ -128,6 +159,12 @@ in  S.Module::{
         , when =
             Some
               "Eq git.createGithub true && Eq git.githubVisibility \"internal\""
+        }
+      , S.Command::{
+        , run =
+            "gh api -X PUT /orgs/{{git.githubOwner}}/teams/{{git.githubTeam}}/repos/{{git.githubOwner}}/{{git.repoName}} -f permission={{git.githubTeamPermission}} --silent"
+        , when =
+            Some "Eq git.createGithub true && IsSet git.githubTeam"
         }
       ]
     , removal = None S.Removal.Type

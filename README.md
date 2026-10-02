@@ -66,7 +66,8 @@ commands, and an optional removal procedure.
 | [`haskell-library`](modules/haskell/haskell-library) | 0.2.0 | Single-package Haskell library on GHC 9.12 / GHC2024, `lens` + `generic-lens`, BSD-3, optional `tasty` suite |
 | [`haskell-cli-app`](modules/haskell/haskell-cli-app) | 0.3.0 | Tested two-package CLI with real core integration, GHC 9.12.4/9.14.1 shells, valid package metadata, and working Nix package/check outputs |
 | [`haskell-keiro-project`](modules/haskell/haskell-keiro-project) | 0.1.0 | Six-package Keiro service bootstrap: Nix shell, workspace manifest, `just` recipes, implementation brief |
-| [`git-init`](modules/git/git-init) | 0.1.0 | `git init -b master`, seed `.gitignore`, optional private GitHub repo via `gh repo create` |
+| [`git-init`](modules/git/git-init) | 0.2.0 | `git init -b master`, seed `.gitignore`, optional private GitHub repo via `gh repo create`, optional org-team access grant |
+| [`repo-dir`](modules/git/repo-dir) | 0.1.0 | Create `<parentDir>/<name>` and run `git-init` inside it with a matching GitHub repo; owner from the active context's `git.githubOwner` |
 | [`nix-bun-flake`](modules/typescript/nix-bun-flake) | 0.2.0 | Nix flake for Bun + TypeScript: oxlint, oxfmt, `just`, optional git-hooks.nix |
 | [`fumadocs`](modules/typescript/fumadocs) | 0.1.2 | Fumadocs site on TanStack Start + Vite, layered on `nix-bun-flake`, with mermaid diagrams and a zoom/pan widget |
 
@@ -79,6 +80,7 @@ generation logic.
 |---|---|---|
 | [`haskell-library-repo`](recipes/haskell-library-repo) | 0.1.0 | `haskell-library` + `git-init`, so the initial commit captures the full scaffold |
 | [`haskell-cli-app-repo`](recipes/haskell-cli-app-repo) | 0.1.0 | Tested two-package CLI scaffold plus `git-init`, with working Nix builds/checks in the initial commit |
+| [`github-repo`](recipes/github-repo) | 0.1.0 | Prompt for a location and folder name, create it, and make it a git repo with a matching GitHub repo under the context's owner |
 
 ### Blueprints
 

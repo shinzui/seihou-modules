@@ -26,10 +26,16 @@
     , tags = [ "haskell", "library", "bootstrap", "ghc2024" ]
     }
   , { name = "git-init"
-    , version = Some "0.1.0"
+    , version = Some "0.2.0"
     , path = "modules/git/git-init"
-    , description = Some "Initialize a local git repo (default branch master), seed .gitignore with .claude/, .agents/, and .seihou/manifest.json.tmp, and optionally create a private GitHub repo via `gh` under a configured org or username"
+    , description = Some "Initialize a local git repo (default branch master), seed .gitignore with .claude/, .agents/, and .seihou/manifest.json.tmp, and optionally create a private GitHub repo via `gh` under a configured org or username, optionally granting an organization team access"
     , tags = [ "git", "github", "bootstrap", "gitignore" ]
+    }
+  , { name = "repo-dir"
+    , version = Some "0.1.0"
+    , path = "modules/git/repo-dir"
+    , description = Some "Create <repo.parentDir>/<repo.name> and bootstrap it by running git-init inside it with a matching GitHub repo; the GitHub user or organization comes from git.githubOwner, so per-context config picks the owner"
+    , tags = [ "git", "github", "bootstrap", "context" ]
     }
   , { name = "nix-bun-flake"
     , version = Some "0.2.0"
@@ -56,6 +62,12 @@
     , path = "recipes/haskell-cli-app-repo"
     , description = Some "Bootstrap a tested two-package Haskell CLI app in a fresh git repo: real core-to-CLI behavior, parser tests, GHC 9.12.4/9.14.1 shells, working Nix package/check outputs, then git-init last so the initial commit captures the full scaffold"
     , tags = [ "haskell", "cli", "git", "bootstrap" ]
+    }
+  , { name = "github-repo"
+    , version = Some "0.1.0"
+    , path = "recipes/github-repo"
+    , description = Some "Prompt for a parent directory and folder name, create the folder, and run git-init inside it so it becomes a git repo with a matching GitHub repo under the context's git.githubOwner"
+    , tags = [ "git", "github", "bootstrap", "context" ]
     }
   ]
 , blueprints =
