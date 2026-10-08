@@ -36,6 +36,7 @@ Every artifact below is published by the `seihou-modules` registry and documente
 
 ## Blueprints
 
+- [upgrade-fumadocs](/blueprints/upgrade-fumadocs.md)
 - [upgrade-haskell-flake-parts](/blueprints/upgrade-haskell-flake-parts.md)
 - [haskell-keiro-service](/blueprints/haskell-keiro-service.md)
 - [fix-nix-haskell-flake-customizations](/blueprints/fix-nix-haskell-flake-customizations.md)

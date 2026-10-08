@@ -71,7 +71,13 @@
     }
   ]
 , blueprints =
-  [ { name = "upgrade-haskell-flake-parts"
+  [ { name = "upgrade-fumadocs"
+    , version = Some "0.1.0"
+    , path = "blueprints/upgrade-fumadocs"
+    , description = Some "Upgrade existing Fumadocs sites to the shared Bun flake-parts modules while preserving custom content, package-manager workflows, fonts, CI gates, and Seihou ownership"
+    , tags = [ "typescript", "fumadocs", "nix", "flake-parts", "migration" ]
+    }
+  , { name = "upgrade-haskell-flake-parts"
     , version = Some "0.1.0"
     , path = "blueprints/upgrade-haskell-flake-parts"
     , description = Some "Agent-driven, in-place migration of a shinzui Haskell project's Nix flake to the thin flake-parts structure on the haskell-nix-dev base flake (GHC 9.12.4 via mkDevShell, wiring split into nix/{haskell,treefmt,pre-commit}.nix, package build and custom checks moved to an unmanaged flake.module.nix), preserving every custom input/overlay/dev-tool/hook/check; reviews and builds but never commits"

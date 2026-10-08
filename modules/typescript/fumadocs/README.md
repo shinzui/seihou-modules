@@ -83,6 +83,7 @@ Maintainers can exercise actual module composition and the static output with:
 
 ```bash
 python3 scripts/test-fumadocs-bootstrap.py
+python3 scripts/test-fumadocs-adoption.py
 ```
 
 Existing sites can set `docs.starter-content=false` to keep their documentation

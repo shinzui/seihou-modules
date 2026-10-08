@@ -112,6 +112,13 @@ in  Schema.Project::{
         , requiredVars = [ "project.name", "project.description", "docs.site-name", "docs.github-user" ]
         }
       , Schema.SeihouTemplate::{
+        , name = "upgrade-fumadocs"
+        , version = Some "0.1.0"
+        , description = Some "Migrate customized Fumadocs sites to the current shared Bun flake-parts modules with content preservation and static-output validation"
+        , modulePath = "blueprints/upgrade-fumadocs"
+        , tags = [ "typescript", "fumadocs", "nix", "migration" ]
+        }
+      , Schema.SeihouTemplate::{
         , name = "haskell-keiro-service"
         , version = Some "0.3.0"
         , description = Some
