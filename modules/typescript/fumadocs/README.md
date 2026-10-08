@@ -2,7 +2,7 @@
 
 > Fumadocs documentation site on TanStack Start + Vite, layered on `nix-bun-flake`'s dev shell: a static-SPA docs app with self-hosted custom fonts, `beautiful-mermaid` diagrams, and an interactive zoom/pan/expand widget for every diagram.
 
-**Version:** `0.1.0`
+**Version:** `0.2.1`
 
 ## Overview
 
@@ -32,9 +32,62 @@ This module **depends on `nix-bun-flake`**, which provides the reproducible Nix 
 module then overrides `package.json`, `tsconfig.json`, `justfile`, `.oxlintrc.json`, and
 `.oxfmtrc.json` with Fumadocs-appropriate versions (the last two extend the ignore lists
 with the generated `.source`, `.output`, `.nitro`, and `routeTree.gen.ts` paths).
+Formatting also excludes the dependency-owned `nix/tooling-sources.json` metadata,
+which is maintained by the shared toolchain updater.
 
-Node-shebang binaries (`vite`, `fumadocs-mdx`) run under Bun: `bun run` aliases `node` to
-`bun` for the duration of a script, so no separate Node toolchain is needed in the dev shell.
+This release targets `nix-bun-flake` **0.3.0**: Bun **1.4.2**, TypeScript **7.0.2**,
+Oxlint **1.87.0**, Oxfmt **0.72.0**, and just **1.58.0**. TypeScript is supplied by
+Nix; the application manifest no longer installs a second compiler. `@types/bun`
+is pinned to **1.4.2**. Node-shebang application commands run explicitly under Bun
+with `bun --bun run`.
+
+Fumadocs Core/UI are pinned to **16.16.2** and MDX to **15.4.6**. The compatible
+TanStack releases are React Start **1.168.60**, React Router **1.170.41**, and
+static server functions **1.167.39**. Static search uses Fumadocs' default ZBSearch
+engine and its `staticClient`; the old Orama dependency and initializer are removed.
+The exported `/api/search` index still supports search on a static host.
+
+## Shared flake and upgrades
+
+The dependency generates a thin flake-parts `flake.nix`, the canonical `flake.lock`,
+and managed `nix/bun.nix`, `nix/tooling.nix`, and `nix/tooling-sources.json`. Hooks
+stay disabled by default, while their input remains locked. Fumadocs shares the
+same pinned input graph as standalone Bun projects; it does not generate its own
+flake or lock. `nix flake update` cannot move the module-owned revisions.
+
+Customize the shell through an unmanaged `flake.module.nix`, copied from
+`flake.module.nix.example`, using `perSystem.bunProject.extraDevPackages`. The
+module watches that file via direnv. Local environment exports belong in
+`.envrc.local`.
+
+For existing projects, install the new releases of both modules, then run:
+
+```bash
+seihou update nix-bun-flake
+seihou update fumadocs
+git add flake.nix flake.lock nix/
+nix develop
+just install
+just check
+```
+
+Your global Bun configuration may reject these freshly published releases under
+its minimum release age setting. For this upgrade, install the requested pins
+with `bun install --minimum-release-age 0`; this leaves the global setting unchanged.
+
+Review template conflicts during updates, especially in `package.json` and
+customized `flake.nix` files. Move shell customizations to `flake.module.nix` so
+later updates preserve them. Commit the regenerated `bun.lock` with the project.
+
+Maintainers can exercise actual module composition and the static output with:
+
+```bash
+python3 scripts/test-fumadocs-bootstrap.py
+```
+
+Existing sites can set `docs.starter-content=false` to keep their documentation
+outside scaffold generation and ownership. Starter content is retained when the
+module is removed, so authored documentation is not deleted.
 
 ## Variables
 
@@ -42,6 +95,7 @@ Node-shebang binaries (`vite`, `fumadocs-mdx`) run under Bun: `bun run` aliases 
 |------|------|---------|----------|------------|-------------|
 | `project.name` | `text` | — | yes | `[a-z][a-z0-9-]*` | Package name. Inherited from `nix-bun-flake` (it exports `project.name`). |
 | `project.description` | `text` | — | yes | — | One-line description (package.json + home page). Inherited from `nix-bun-flake`. |
+| `docs.starter-content` | `bool` | `true` | yes | — | Generate demo content; disable for adoption of an existing site. |
 | `docs.site-name` | `text` | — | yes | — | Site/nav title shown in the navbar and browser tab. |
 | `docs.github-user` | `text` | `shinzui` | yes | — | GitHub owner for the navbar + edit-on-GitHub links. |
 | `docs.github-branch` | `text` | `master` | yes | — | Branch used in edit-on-GitHub links. |
@@ -81,8 +135,8 @@ When run (after the `nix-bun-flake` dependency), this module writes:
 - `src/components/{mdx,mermaid,search,not-found}.tsx`
 - `src/styles/app.css` — strategy: `template`
 - `src/routes/{__root,index}.tsx`, `src/routes/docs/$.tsx`, `src/routes/docs/{$}[.]md.ts`, `src/routes/api/search.ts`
-- `content/docs/index.mdx` — strategy: `template`
-- `content/docs/diagram-demo.mdx`, `content/docs/meta.json` — strategy: `copy`
+- `content/docs/index.mdx` — strategy: `template`, when `docs.starter-content=true`
+- `content/docs/diagram-demo.mdx`, `content/docs/meta.json` — strategy: `copy`, when `docs.starter-content=true`
 - `.gitignore` — strategy: `template`, patch mode: `append-line-if-absent` (adds `.source`, `.output`, `.nitro`, `public/fonts`, …)
 
 ## Removal
@@ -94,9 +148,10 @@ seihou remove fumadocs
 ```
 
 Removal removes the Fumadocs-specific files it created (the app, components, styles, scripts,
-and demo content). Files it *overrode* from `nix-bun-flake` (`package.json`, `tsconfig.json`,
-`justfile`, `.oxlintrc.json`, `.oxfmtrc.json`) are also removed; re-run `nix-bun-flake` if you
-want the Bun-only versions back. Lines appended to `.gitignore` are left in place.
+excluding documentation content). Shared files it overrode from `nix-bun-flake`
+(`package.json`, `tsconfig.json`, `justfile`, `.oxlintrc.json`, `.oxfmtrc.json`) are
+not explicit removal steps; review shared ownership before regenerating Bun-only
+versions. Lines appended to `.gitignore` are left in place.
 
 ## Usage
 

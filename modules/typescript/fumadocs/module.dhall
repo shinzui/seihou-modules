@@ -4,11 +4,18 @@ let S =
 
 in  S.Module::{
     , name = "fumadocs"
-    , version = Some "0.1.2"
+    , version = Some "0.2.1"
     , description = Some
         "Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, beautiful-mermaid diagrams, and an interactive zoom/pan/expand widget for every diagram"
     , vars =
       [ S.VarDecl::{
+        , name = "docs.starter-content"
+        , type = "bool"
+        , default = Some "true"
+        , description = Some "Generate starter content for a new site; set false when adopting an existing documentation tree"
+        , required = True
+        }
+      , S.VarDecl::{
         , name = "project.name"
         , type = "text"
         , description = Some
@@ -196,16 +203,19 @@ in  S.Module::{
         , strategy = "template"
         , src = "content/index.mdx.tpl"
         , dest = "content/docs/index.mdx"
+        , when = Some "Eq docs.starter-content true"
         }
       , S.Step::{
         , strategy = "copy"
         , src = "content/diagram-demo.mdx"
         , dest = "content/docs/diagram-demo.mdx"
+        , when = Some "Eq docs.starter-content true"
         }
       , S.Step::{
         , strategy = "copy"
         , src = "content/meta.json"
         , dest = "content/docs/meta.json"
+        , when = Some "Eq docs.starter-content true"
         }
       , S.Step::{
         , strategy = "template"
@@ -238,9 +248,6 @@ in  S.Module::{
         , S.RemovalStep::{ action = "remove-file", dest = "src/routes/docs/\$.tsx" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/routes/docs/{\$}[.]md.ts" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/routes/api/search.ts" }
-        , S.RemovalStep::{ action = "remove-file", dest = "content/docs/index.mdx" }
-        , S.RemovalStep::{ action = "remove-file", dest = "content/docs/diagram-demo.mdx" }
-        , S.RemovalStep::{ action = "remove-file", dest = "content/docs/meta.json" }
         ]
       }
     }

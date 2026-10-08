@@ -69,7 +69,7 @@ commands, and an optional removal procedure.
 | [`git-init`](modules/git/git-init) | 0.2.0 | `git init -b master`, seed `.gitignore`, optional private GitHub repo via `gh repo create`, optional org-team access grant |
 | [`repo-dir`](modules/git/repo-dir) | 0.1.0 | Create `<parentDir>/<name>` and run `git-init` inside it with a matching GitHub repo; owner from the active context's `git.githubOwner` |
 | [`nix-bun-flake`](modules/typescript/nix-bun-flake) | 0.3.0 | Nix flake for Bun + TypeScript: oxlint, oxfmt, `just`, optional git-hooks.nix |
-| [`fumadocs`](modules/typescript/fumadocs) | 0.1.2 | Fumadocs site on TanStack Start + Vite, layered on `nix-bun-flake`, with mermaid diagrams and a zoom/pan widget |
+| [`fumadocs`](modules/typescript/fumadocs) | 0.2.1 | Fumadocs site on TanStack Start + Vite, layered on `nix-bun-flake`, with mermaid diagrams and a zoom/pan widget |
 
 ### Recipes
 

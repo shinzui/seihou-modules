@@ -95,6 +95,23 @@ in  Schema.Project::{
         , requiredVars = [ "project.name", "project.namespace", "project.description", "keiro.context" ]
         }
       , Schema.SeihouTemplate::{
+        , name = "nix-bun-flake"
+        , version = Some "0.3.0"
+        , description = Some "Shared Bun/TypeScript/Oxc flake-parts environment with revision-pinned locks and an unmanaged project extension"
+        , modulePath = "modules/typescript/nix-bun-flake"
+        , tags = [ "typescript", "bun", "nix", "flake-parts" ]
+        , requiredVars = [ "project.name", "project.description" ]
+        }
+      , Schema.SeihouTemplate::{
+        , name = "fumadocs"
+        , version = Some "0.2.1"
+        , description = Some "Current Fumadocs static documentation site on the shared Bun environment, with optional starter content for existing-site adoption"
+        , modulePath = "modules/typescript/fumadocs"
+        , tags = [ "typescript", "fumadocs", "docs" ]
+        , dependencies = [ "nix-bun-flake" ]
+        , requiredVars = [ "project.name", "project.description", "docs.site-name", "docs.github-user" ]
+        }
+      , Schema.SeihouTemplate::{
         , name = "haskell-keiro-service"
         , version = Some "0.3.0"
         , description = Some

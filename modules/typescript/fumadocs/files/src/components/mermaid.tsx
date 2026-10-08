@@ -114,24 +114,37 @@ export function Mermaid({ chart }: { chart: string }) {
     oy: number
   } | null>(null)
 
-  const [svg, setSvg] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [renderedDiagram, setRenderedDiagram] = useState<{
+    chart: string
+    isDark: boolean
+    svg: string | null
+    error: string | null
+  } | null>(null)
+  const currentDiagram =
+    renderedDiagram?.chart === chart && renderedDiagram.isDark === isDark ? renderedDiagram : null
+  const svg = currentDiagram?.svg ?? null
+  const error = currentDiagram?.error ?? null
   const [expanded, setExpanded] = useState(false)
 
   // Render the diagram whenever the source or the theme changes.
   useEffect(() => {
     let cancelled = false
-    setError(null)
-    setSvg(null)
-    ;(async () => {
+    void (async () => {
       try {
         const mod = await import("beautiful-mermaid")
         const theme = isDark ? DARK_THEME : LIGHT_THEME
         const rendered = await mod.renderMermaidSVG(chart, theme)
-        if (!cancelled) setSvg(stripFontImports(rendered))
+        if (!cancelled) {
+          setRenderedDiagram({ chart, isDark, svg: stripFontImports(rendered), error: null })
+        }
       } catch (e) {
         if (!cancelled) {
-          setError(e instanceof Error ? e.message : String(e))
+          setRenderedDiagram({
+            chart,
+            isDark,
+            svg: null,
+            error: e instanceof Error ? e.message : String(e),
+          })
         }
       }
     })()

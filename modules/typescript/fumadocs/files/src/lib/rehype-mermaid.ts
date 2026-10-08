@@ -40,7 +40,7 @@ export function rehypeMermaid() {
       (c): c is Element => c.type === "element" && c.tagName === "code",
     )
     if (!code) return false
-    const className = code.properties?.className
+    const className: unknown = code.properties?.className
     const classes = Array.isArray(className)
       ? className.map(String)
       : typeof className === "string"

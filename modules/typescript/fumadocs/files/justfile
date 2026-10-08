@@ -1,6 +1,6 @@
 # Task runner for this Fumadocs (TanStack Start + Vite) documentation site.
 # Tools (bun, oxlint, oxfmt, tsc) are provided by the Nix dev shell (nix-bun-flake).
-# Node-shebang bins (vite, fumadocs-mdx) run under Bun: `bun run` aliases node -> bun.
+# Node-shebang bins (vite, fumadocs-mdx) run under Bun: `bun --bun run` runs Node-shebang commands under Bun.
 
 # List available recipes
 default:
@@ -12,15 +12,15 @@ install:
 
 # Start the dev server (http://localhost:3000); copies fonts first
 dev:
-    bun run dev
+    bun --bun run dev
 
 # Build the static site into .output/public
 build:
-    bun run build
+    bun --bun run build
 
 # Generate the MDX source map, then type-check without emitting
 typecheck:
-    bun run typecheck
+    bun --bun run typecheck
 
 # Format sources in place (strips semicolons, sorts imports)
 format:
@@ -40,7 +40,7 @@ lint-fix:
 
 # Check internal/external links in the built site
 lint-links:
-    bun run lint:links
+    bun --bun run lint:links
 
 # Run all checks: typecheck, lint, formatting, and a production build
 check: typecheck lint format-check build

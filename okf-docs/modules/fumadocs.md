@@ -15,14 +15,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.9.0.0
-version: 0.1.2
+version: 0.2.1
 ---
 
 # fumadocs
 
 Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, beautiful-mermaid diagrams, and an interactive zoom/pan/expand widget for every diagram
 
-**Version:** 0.1.2
+**Version:** 0.2.1
 
 ## Dependencies
 
@@ -30,6 +30,7 @@ Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's
 
 ## Variables
 
+- `docs.starter-content` — boolean, required, default `true`. Generate starter content for a new site; set false when adopting an existing documentation tree
 - `project.name` — text, required, matching `[a-z][a-z0-9-]*`. Project name (package.json name). Re-declared so step `dest` paths and templates validate; the value is shared with `nix-bun-flake` via the dependency graph (it exports `project.name`).
 - `project.description` — text, required. One-line project description (package.json description, home page intro). Inherited from `nix-bun-flake`, which exports `project.description`.
 - `docs.site-name` — text, required. Human-readable site/nav title shown in the navbar and browser tab (e.g. "keiro runtime docs").
@@ -79,9 +80,9 @@ No exports declared.
 - `Copy` `src/routes/docs/splat.tsx` → `src/routes/docs/$.tsx`
 - `Copy` `src/routes/docs/md-route.ts` → `src/routes/docs/{$}[.]md.ts`
 - `Copy` `src/routes/api/search.ts` → `src/routes/api/search.ts`
-- `Template` `content/index.mdx.tpl` → `content/docs/index.mdx`
-- `Copy` `content/diagram-demo.mdx` → `content/docs/diagram-demo.mdx`
-- `Copy` `content/meta.json` → `content/docs/meta.json`
+- `Template` `content/index.mdx.tpl` → `content/docs/index.mdx` — when `Eq docs.starter-content true`
+- `Copy` `content/diagram-demo.mdx` → `content/docs/diagram-demo.mdx` — when `Eq docs.starter-content true`
+- `Copy` `content/meta.json` → `content/docs/meta.json` — when `Eq docs.starter-content true`
 - `Template` `gitignore-fumadocs.tpl` → `.gitignore` (appends one line to a file another module owns, if absent)
 
 ## Removal
@@ -108,6 +109,3 @@ No exports declared.
 - delete `src/routes/docs/$.tsx`
 - delete `src/routes/docs/{$}[.]md.ts`
 - delete `src/routes/api/search.ts`
-- delete `content/docs/index.mdx`
-- delete `content/docs/diagram-demo.mdx`
-- delete `content/docs/meta.json`

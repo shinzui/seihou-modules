@@ -15,14 +15,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.9.0.0
-version: 0.2.0
+version: 0.3.0
 ---
 
 # nix-bun-flake
 
 Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, and optional git-hooks.nix pre-commit checks
 
-**Version:** 0.2.0
+**Version:** 0.3.0
 
 ## Dependencies
 
@@ -48,6 +48,11 @@ This module has no dependencies.
 ## Generation steps
 
 - `Template` `flake.nix.tpl` → `flake.nix`
+- `Template` `nix/bun.nix.tpl` → `nix/bun.nix`
+- `Copy` `nix/tooling.nix` → `nix/tooling.nix`
+- `Copy` `nix/tooling-sources.json` → `nix/tooling-sources.json`
+- `Copy` `nix/pre-commit.nix` → `nix/pre-commit.nix` — when `Eq nix.pre-commit true`
+- `Copy` `flake.module.nix.example` → `flake.module.nix.example`
 - `Copy` `flake.lock` → `flake.lock`
 - `Template` `package.json.tpl` → `package.json`
 - `Copy` `tsconfig.json` → `tsconfig.json`
@@ -62,6 +67,11 @@ This module has no dependencies.
 
 - delete `flake.nix`
 - delete `flake.lock`
+- delete `nix/bun.nix`
+- delete `nix/tooling.nix`
+- delete `nix/tooling-sources.json`
+- delete `nix/pre-commit.nix`
+- delete `flake.module.nix.example`
 - delete `package.json`
 - delete `tsconfig.json`
 - delete `.oxlintrc.json`

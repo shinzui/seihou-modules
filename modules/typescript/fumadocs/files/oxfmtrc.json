@@ -27,6 +27,7 @@
     ".nitro",
     ".tanstack",
     "public/fonts",
-    "src/routeTree.gen.ts"
+    "src/routeTree.gen.ts",
+    "nix/tooling-sources.json"
   ]
 }
