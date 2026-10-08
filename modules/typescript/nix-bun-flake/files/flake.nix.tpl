@@ -1,62 +1,28 @@
 {
   description = "{{project.description}}";
 
-  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-  inputs.flake-utils.url = "github:numtide/flake-utils";
-  {{#if Eq nix.pre-commit true}}
-  inputs.pre-commit-hooks.url = "github:cachix/git-hooks.nix";
-  {{/if}}
+  # Module-owned revisions move with module releases. All inputs stay declared
+  # across feature toggles, so every project shares the shipped lock.
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/39ad350a0602fa0a58a544344e3e9187526ea45c";
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts/024633cd702b10285db5cb19b40ad48d2399ba60";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
+    pre-commit-hooks = {
+      url = "github:cachix/git-hooks.nix/a0e4241b51206fbcbf52fd322eb5f0cd80f153c4";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+  };
 
-  outputs = { self, nixpkgs, flake-utils{{#if Eq nix.pre-commit true}}, pre-commit-hooks{{/if}} }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = import nixpkgs { inherit system; };
-      in
-      {
-        checks = {
-          {{#if Eq nix.pre-commit true}}
-          pre-commit-check = pre-commit-hooks.lib.${system}.run {
-            src = ./.;
-            hooks = {
-              oxlint = {
-                enable = true;
-                name = "oxlint";
-                entry = "${pkgs.oxlint}/bin/oxlint";
-                files = "\\.(c|m)?(j|t)sx?$";
-                pass_filenames = false;
-              };
-              oxfmt = {
-                enable = true;
-                name = "oxfmt";
-                entry = "${pkgs.oxfmt}/bin/oxfmt --check";
-                files = "\\.(c|m)?(j|t)sx?$|\\.json$";
-                pass_filenames = true;
-              };
-            };
-          };
-          {{/if}}
-        };
-
-        devShells.default = pkgs.mkShell {
-          nativeBuildInputs = [
-            pkgs.bun
-            pkgs.just
-            pkgs.oxlint
-            pkgs.oxfmt
-            pkgs.typescript
-          ];
-
-          shellHook = ''
-            {{#if Eq nix.pre-commit true}}
-            ${self.checks.${system}.pre-commit-check.shellHook}
-            {{/if}}
-            export LANG=en_US.UTF-8
-
-            if [ ! -d node_modules ]; then
-              echo "Run 'just install' (bun install) to fetch dependencies."
-            fi
-          '';
-        };
-      }
-    );
+  outputs = inputs@{ flake-parts, nixpkgs, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      systems = [ "aarch64-darwin" "aarch64-linux" "x86_64-linux" ];
+      imports = [
+        ./nix/bun.nix
+        {{#if Eq nix.pre-commit true}}
+        ./nix/pre-commit.nix
+        {{/if}}
+      ] ++ nixpkgs.lib.optional (builtins.pathExists ./flake.module.nix) ./flake.module.nix;
+    };
 }

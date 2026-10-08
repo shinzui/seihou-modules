@@ -13,6 +13,6 @@
     "format:check": "oxfmt --check ."
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "1.4.2"
   }
 }

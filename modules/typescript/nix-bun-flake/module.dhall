@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "nix-bun-flake"
-    , version = Some "0.2.0"
+    , version = Some "0.3.0"
     , description = Some "Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, and optional git-hooks.nix pre-commit checks"
     , vars =
       [ S.VarDecl::{
@@ -48,6 +48,11 @@ in  S.Module::{
       ]
     , steps =
       [ S.Step::{ strategy = "template", src = "flake.nix.tpl", dest = "flake.nix" }
+      , S.Step::{ strategy = "template", src = "nix/bun.nix.tpl", dest = "nix/bun.nix" }
+      , S.Step::{ strategy = "copy", src = "nix/tooling.nix", dest = "nix/tooling.nix" }
+      , S.Step::{ strategy = "copy", src = "nix/tooling-sources.json", dest = "nix/tooling-sources.json" }
+      , S.Step::{ strategy = "copy", src = "nix/pre-commit.nix", dest = "nix/pre-commit.nix", when = Some "Eq nix.pre-commit true" }
+      , S.Step::{ strategy = "copy", src = "flake.module.nix.example", dest = "flake.module.nix.example" }
       , S.Step::{ strategy = "copy", src = "flake.lock", dest = "flake.lock" }
       , S.Step::{ strategy = "template", src = "package.json.tpl", dest = "package.json" }
       , S.Step::{ strategy = "copy", src = "tsconfig.json", dest = "tsconfig.json" }
@@ -73,6 +78,11 @@ in  S.Module::{
       , steps =
         [ S.RemovalStep::{ action = "remove-file", dest = "flake.nix" }
         , S.RemovalStep::{ action = "remove-file", dest = "flake.lock" }
+        , S.RemovalStep::{ action = "remove-file", dest = "nix/bun.nix" }
+        , S.RemovalStep::{ action = "remove-file", dest = "nix/tooling.nix" }
+        , S.RemovalStep::{ action = "remove-file", dest = "nix/tooling-sources.json" }
+        , S.RemovalStep::{ action = "remove-file", dest = "nix/pre-commit.nix" }
+        , S.RemovalStep::{ action = "remove-file", dest = "flake.module.nix.example" }
         , S.RemovalStep::{ action = "remove-file", dest = "package.json" }
         , S.RemovalStep::{ action = "remove-file", dest = "tsconfig.json" }
         , S.RemovalStep::{ action = "remove-file", dest = ".oxlintrc.json" }
