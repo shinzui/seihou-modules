@@ -323,6 +323,7 @@ that the socket path is too long.
 
 | From | To | Effect |
 |------|----|--------|
+| `0.30.0` | `0.31.0` | Moves the shared `mori://shinzui/haskell-nix` channel to `58a2c26c5be7cdf222fba6323939a67d3c62f193`, supplying the generated 462-package cohort, current Kioku/Shikumi patches and coherent CLI/WAI dependencies. Toolchain and nixpkgs pins remain fixed. Regenerate managed files; remove consumer Hackage replacements only after composing the shared extension and passing application checks. Linux and fresh-CI cache acceptance remain pending in the channel. |
 | `0.28.0` | `0.30.0` | Moves only the shared `mori://shinzui/haskell-nix` registry pin to `5cb50cab752945d1a0278c9347edaa5918f6d158`, selecting released Keiro 0.21.0.0 and Kioku 0.9.0.1 while retaining the Shibuya PGMQ adapter 0.16.1.0 correction. Supersedes the unpublished 0.29.0 preparation. Toolchain and nixpkgs pins remain unchanged; regeneration is sufficient. |
 | `0.27.0` | `0.28.0` | Moves only the shared `haskell-nix` registry pin to `4cf6b38`, selecting released Keiro 0.20.0.0, Kioku 0.9.0.0 and Kiroku Store 0.11.0.0. Toolchain and nixpkgs pins remain unchanged. No migration operations; regeneration is sufficient. |
 | `0.26.0` | `0.27.0` | Moves only the shared `haskell-nix` registry pin from `018d1e3` to `833edbe`, publishing the Keiro generation-3 family plus refreshed `baikai` and `shikumi` channels. The `haskell-nix-dev` and nixpkgs pins remain unchanged, so this is not a toolchain rebuild. No migration operations; regeneration is sufficient. |

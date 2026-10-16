@@ -13,7 +13,7 @@ tags:
 - migration
 status: stable
 generated:
-  by: seihou-okf-extension/0.9.0.0
+  by: seihou-okf-extension/0.10.1.0
 version: 0.1.0
 ---
 
