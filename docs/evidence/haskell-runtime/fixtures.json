@@ -3373,6 +3373,12 @@
         "receipt": "0.31.0-accepted.json",
         "attendance_edges": 1,
         "source_sha256": "389713af7defdc6c50135e66ec2b6c57e0802b9e889362ccf62e0e1d8e6b40b1"
+      },
+      {
+        "case": "no-declared-tests",
+        "status": "passed",
+        "receipt": "no-declared-tests-accepted.json",
+        "qualification": "Real library build; absence of declared suites is explicit, never a test pass."
       }
     ],
     "qualification": "Real installed Seihou CLI with bounded deterministic provider; no real model launched. Native builds use actual Nix/GHC/Cabal. Local origins are genuine, not claimed remote releases."
@@ -3386,12 +3392,13 @@
   },
   "archive": {
     "path": "fixtures.tar.gz",
-    "sha256": "06bbb8e501edaffd48b69adab4b1de15437134b431f772caefb472ff56b66d0b",
-    "bytes": 139313
+    "sha256": "7054da0ace1fb0525d43f05b5df82e6900c89a974f3efc37adaf7f562e4bdc38",
+    "bytes": 142893
   },
   "limits": [
     "Only native Apple Silicon runtime qualification.",
     "Provider is bounded deterministic test code, not a model-quality claim.",
     "No remote publication or persistent-service activation."
-  ]
+  ],
+  "checker_source_sha256": "de08f75636f0f331687b16a448b49dae1765a825585ed2ac04aceaa389da052e"
 }

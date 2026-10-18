@@ -6,9 +6,11 @@ import json
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
+import time
 
 from haskell_runtime_test_support import Commands, ROOT, SYSTEM, copy_modules, render, root_package, track
 
@@ -79,6 +81,31 @@ in S.Module::{ name = "authored-ignore", version = Some "0.1.0", steps =
     commands.run(['seihou', 'run', 'authored-ignore', '--no-commands'], project, 'shared-ignore-owner')
 
 
+def interrupted_checker(project, output):
+    assert json.loads(output.read_text())['accepted']
+    process = subprocess.Popen([sys.executable, str(CHECKER), '--project', str(project),
+                                '--inventory', '--output', str(output)],
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    try:
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline:
+            if json.loads(output.read_text()).get('accepted') is False:
+                break
+            time.sleep(.01)
+        else:
+            raise AssertionError('Stale acceptance survived a new validation attempt')
+        assert process.poll() is None
+        process.send_signal(signal.SIGINT)
+        stdout, stderr = process.communicate(timeout=30)
+        output.with_suffix('.interrupt.stdout').write_text(stdout)
+        output.with_suffix('.interrupt.stderr').write_text(stderr)
+        assert process.returncode != 0 and json.loads(output.read_text())['accepted'] is False
+    finally:
+        if process.poll() is None:
+            process.kill()
+            process.wait()
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output-dir', type=Path)
@@ -107,11 +134,16 @@ def main():
         (project / 'flake.module.nix').write_text(extension)
         (project / '.envrc.local').write_text('export AUTHORED_FIXTURE=preserved\n')
         (project / 'process-compose.override.yaml').write_text('processes: {}\n')
+        sql = project / 'db/migrations/001.sql'
+        sql.parent.mkdir(parents=True)
+        sql.write_text('select 1;\n')
         shared_owner(commands, project)
         copy_blueprint(project)
         track(commands, project)
+        commands.run(['git', 'add', '-f', 'db/migrations/001.sql'], project, 'track-authored-sql')
         before = destination / (version + '-before.json')
         checker(commands, project, None, before)
+        assert 'db/migrations/001.sql' in json.loads(before.read_text())['source_files']
         original = manifest(project)
         debug = ['seihou', 'agent', '--debug']
         commands.run(debug + ['run', 'upgrade-haskell-runtime', '--no-baseline'], project, 'debug-run', env=environment)
@@ -192,6 +224,12 @@ def main():
             checker(commands, project, before, accepted, success=False)
             assert json.loads(accepted.read_text())['accepted'] is False
             source.write_text(content)
+            sql.write_text('select 2;\n')
+            try:
+                error = checker(commands, project, before, accepted, success=False)
+                assert 'Authored source changed: db/migrations/001.sql' in error
+            finally:
+                sql.write_text('select 1;\n')
             if version == '0.31.0':
                 # A copied/wrong retained configuration is an adoption failure,
                 # including after a genuine migration attendance receipt.
@@ -208,6 +246,34 @@ def main():
                 os.environ['CABAL_CONFIG'] = inherited
         cases.append({'case': version, 'status': 'passed', 'receipt': accepted.name,
                       'attendance_edges': len(attendance(project)), 'source_sha256': hashlib.sha256((project / 'src/Demo.hs').read_bytes()).hexdigest()})
+    project = destination / 'no-declared-tests'
+    render(commands, project, 'fixture-library-only')
+    root_package(project, 'fixture-library-only')
+    cabal_file = project / 'fixture-library-only.cabal'
+    cabal_file.write_text(cabal_file.read_text().split('test-suite fixture-test')[0])
+    (project / 'flake.module.nix').write_text('{ ... }: { }\n')
+    track(commands, project)
+    before = destination / 'no-declared-tests-before.json'
+    accepted = destination / 'no-declared-tests-accepted.json'
+    checker(commands, project, None, before)
+    configuration = destination / 'no-declared-tests-cabal.config'
+    configuration.write_text('active-repositories: :none\nstore-dir: ' + str(destination / 'no-declared-tests-store') + '\n')
+    inherited = os.environ.get('CABAL_CONFIG')
+    os.environ['CABAL_CONFIG'] = str(configuration)
+    try:
+        checker(commands, project, before, accepted, native=True)
+        report = json.loads(accepted.read_text())
+        assert report['accepted'] and report['cabal_tests']['status'] == 'not-applicable'
+        assert report['cabal_test_targets'] == []
+        interrupted_checker(project, accepted)
+        checker(commands, project, before, accepted, native=True)
+    finally:
+        if inherited is None:
+            os.environ.pop('CABAL_CONFIG', None)
+        else:
+            os.environ['CABAL_CONFIG'] = inherited
+    cases.append({'case': 'no-declared-tests', 'status': 'passed', 'receipt': accepted.name,
+                  'qualification': 'Real library build; absence of declared suites is explicit, never a test pass.'})
     (destination / 'receipt.json').write_text(json.dumps({'status': 'passed', 'system': SYSTEM, 'cases': cases,
         'qualification': 'Real installed Seihou CLI with bounded deterministic provider; no real model launched. Native builds use actual Nix/GHC/Cabal. Local origins are genuine, not claimed remote releases.'}, indent=2) + '\n')
     print('Haskell adoption passed: ' + str(destination))

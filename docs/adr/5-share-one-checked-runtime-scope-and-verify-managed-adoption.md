@@ -36,7 +36,12 @@ legacy adoption while its original bytes remain checked.
 
 Seihou receipts record provider attendance. An independent checker compares actual identities,
 source hashes, ordered ignore patterns, application records and shared owners, then executes
-native builds/tests and applicable gates. A failed check revokes a prior accepted report.
+native builds/tests and applicable gates. A new validation attempt revokes a prior accepted report before its first external command;
+failures and interruptions leave it unaccepted. Cabal tests use explicit components from
+the generated plan, requiring every selected suite to report execution and PASS. A package
+without suites can otherwise short-circuit a mixed test command with exit zero. No-suite
+projects report explicit non-applicability. Owner-supported threaded-runtime arguments are
+scoped per suite, preserving non-threaded runners and all test cases.
 Normalize only documented equivalent engine serialization, including absent versus empty
 checkoutCommands; preserve real commands, origins and variables. Recovery restores only the
 migration's affected paths and consistent metadata, leaving unrelated work and service data.
@@ -47,7 +52,10 @@ The interface provides consistent development and production dependencies. It do
 establish arbitrary compilation speedups or equal Cabal unit IDs. Fresh source-complete Cabal
 comparison, full consumer suites, HLS protocol and cache retrieval require separate evidence.
 Runtime qualification is limited to configurations actually executed. Local candidates and
-independent stores do not imply remote release availability or hosted CI.
+independent stores do not imply remote release availability or hosted CI. Compare cache
+retrieval against its published metadata: independent local HLS builds can have different
+NAR content at identical derivation/output paths. The pilot retains that distinction;
+local protocol behavior and downloaded published bytes are separate observations.
 
 [Plan 6](../plans/6-upgrade-the-haskell-flake-module-and-migrate-existing-projects-to-retained-runtimes.md)
 records release pins, executable fixtures, real Mori adoption, costs and qualifications.

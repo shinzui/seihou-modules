@@ -17,7 +17,8 @@ MODULE_INPUTS = {'haskell-nix', 'haskell-nix-dev', 'nixpkgs', 'flake-parts', 'tr
 MIGRATION_PATHS = {'flake.nix', 'flake.lock', 'flake.module.nix', 'flake.module.nix.example', '.envrc', '.gitignore',
                    'nix/haskell.nix', 'nix/haskell-cli-app.nix', 'nix/treefmt.nix', 'nix/pre-commit.nix',
                    'nix/redpanda.nix', 'process-compose.yaml', 'cabal.project'}
-IGNORED_ROOTS = {'.git', '.seihou', '.dev', '.direnv', 'dist-newstyle', 'node_modules', 'db', 'redis', 'clickhouse', 'result'}
+IGNORED_ROOTS = {'.git', '.seihou', '.dev', '.direnv', 'dist-newstyle', 'node_modules', 'result'}
+SERVICE_ROOTS = {'db', 'redis', 'clickhouse'}
 
 
 def digest(data):
@@ -47,11 +48,14 @@ def source_inventory(project):
     if result.returncode:
         raise ValueError('Inventory requires a Git checkout; initialize or rehearse in an isolated checkout first.')
     names = set(result.stdout.decode().split('\0')) - {''}
+    tracked = set(subprocess.check_output(['git', 'ls-files', '--cached', '-z'], cwd=project).decode().split('\0'))
     names |= {p for p in ['.envrc.local', 'process-compose.override.yaml', 'process-compose.override.yml'] if os.path.lexists(project / p)}
     values = {}
     for name in sorted(names):
         first = name.split('/')[0]
         if first in IGNORED_ROOTS or first.startswith('.runtime-test') or name in MIGRATION_PATHS:
+            continue
+        if first in SERVICE_ROOTS and name not in tracked:
             continue
         path = project / name
         values[name] = file_identity(path)
@@ -153,6 +157,30 @@ def normalized_cabal(project):
     return digest(text.encode())
 
 
+def cabal_test_targets(project, owned):
+    """Read Cabal's actual plan rather than passing packages without suites.
+
+    Cabal can exit successfully before running *any* suites when one package
+    selector has no tests. Both supported plan encodings come from Cabal's
+    ProjectPlanOutput: component-name, or the older components object.
+    """
+    plan = json.loads((project / 'dist-newstyle/cache/plan.json').read_text())
+    targets = set()
+    for entry in plan['install-plan']:
+        name = entry.get('pkg-name')
+        if entry.get('type') != 'configured' or entry.get('style') != 'local':
+            continue
+        if owned and name not in owned:
+            continue
+        components = [entry['component-name']] if 'component-name' in entry else entry.get('components', {})
+        for component in components:
+            if component.startswith('test:'):
+                if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9-]*', name):
+                    raise ValueError('Invalid package name in the Cabal plan')
+                targets.add(name + ':' + component)
+    return sorted(targets)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--project', type=Path, required=True)
@@ -163,6 +191,8 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--system', default='aarch64-darwin')
     parser.add_argument('--owned-package', action='append', default=[])
+    parser.add_argument('--cabal-test-option', action='append', default=[], help='An owner-supported test argument; repeat for bounded suite/runtime settings.')
+    parser.add_argument('--cabal-suite-option', action='append', default=[], metavar='TARGET=OPTION', help='Add an owner-supported argument only to the named test component; repeat as needed.')
     parser.add_argument('--native', action='store_true', help='Run the project build, shell compiler, Cabal build/tests and applicable checks. Review hooks and use an isolated project.')
     args = parser.parse_args()
     project = args.project.absolute()
@@ -196,6 +226,9 @@ def main():
             raise ValueError(label + ' failed: ' + result.stderr[-1800:])
         return result.stdout
 
+    # Revoke a previous acceptance before the first potentially interrupted
+    # external command, not only after that command returns.
+    write()
     try:
         before = json.loads(args.before.read_text()) if args.before else None
         owned = args.owned_package or (before['identities']['ownNames'] if before else [])
@@ -270,7 +303,28 @@ def main():
         # source-repository package imported by the consumer's Cabal policy.
         targets = identities['ownNames'] or ['all']
         run(['nix', 'develop', '--no-write-lock-file', '--command', 'cabal', 'build', '--offline', '-j2', *targets], 'cabal-build')
-        run(['nix', 'develop', '--no-write-lock-file', '--command', 'cabal', 'test', '--offline', '-j2', *targets], 'cabal-tests')
+        test_targets = cabal_test_targets(project, identities['ownNames'])
+        report['cabal_test_targets'] = test_targets
+        if test_targets:
+            options = {target: list(args.cabal_test_option) for target in test_targets}
+            for declaration in args.cabal_suite_option:
+                target, separator, option = declaration.partition('=')
+                if not separator or target not in options or not option:
+                    raise ValueError('Invalid or unselected --cabal-suite-option target: ' + declaration)
+                options[target].append(option)
+            groups = {}
+            for target in test_targets:
+                groups.setdefault(tuple(options[target]), []).append(target)
+            for index, (arguments, group) in enumerate(groups.items()):
+                test_options = ['--test-option=' + option for option in arguments]
+                test_output = run(['nix', 'develop', '--no-write-lock-file', '--command', 'cabal', 'test', '--offline', '-j2', *test_options, *group], 'cabal-tests-' + str(index))
+                if 'No tests to run' in test_output or any(
+                        'Test suite ' + target.split(':test:', 1)[1] + ': PASS' not in test_output
+                        for target in group):
+                    raise ValueError('Cabal did not report every selected suite as executed and passing')
+            report['cabal_tests'] = {'status': 'passed', 'targets': test_targets}
+        else:
+            report['cabal_tests'] = {'status': 'not-applicable', 'reason': 'No configured owned test suites in the actual Cabal plan; no test pass claimed.'}
         for check in ['consumer-overlay', 'cohort-parity', 'library-extension']:
             if check in identities['checks']:
                 run(['nix', 'build', '.#checks.' + args.system + '.' + check, '--no-link', '--no-write-lock-file'], check)
@@ -288,8 +342,8 @@ def main():
                       cabal_comparison_basis='Installed-package reuse; source-complete cohort comparison remains an independent owner check.')
         write()
         print('Accepted adoption report: ' + str(output))
-    except Exception as error:
-        report.update(status='failed', error=str(error))
+    except (Exception, KeyboardInterrupt) as error:
+        report.update(status='failed', error=str(error) or type(error).__name__)
         write()
         print(str(error), file=sys.stderr)
         raise SystemExit(1)

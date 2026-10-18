@@ -48,8 +48,8 @@ remain separate producer work and are not enabled automatically by this migratio
 
 - [x] (2026-10-18) M1: Deliver a compatible module candidate with validated pins, explicit runtime configuration, one checked shell/build scope and working legacy/new-scaffold fixtures.
 - [x] (2026-10-18) M2: Deliver a discoverable adoption/migration blueprint with exact version edges, customization/ownership preservation and repeat/failure coverage.
-- [ ] M3: Accept an isolated real-consumer migration through ordinary builds, shell/Cabal checks, dependency identities, measured costs, cache retrieval and repeat upgrades.
-- [ ] M4: Prepare a coherent module/blueprint release, registry/Mori/docs updates and a validated operator workflow with rollback and explicit support limits.
+- [x] (2026-10-18) M3: Accept an isolated real-consumer migration through ordinary builds, shell/Cabal checks, dependency identities, measured costs, cache retrieval and repeat upgrades.
+- [x] (2026-10-18) M4: Prepare a coherent module/blueprint release, registry/Mori/docs updates and a validated operator workflow with rollback and explicit support limits.
 
 Accepted M1/M2 checkpoint, 2026-10-18: module 0.32.0 and CLI scaffold 0.3.1 use
 published channel `e5a7c2c50080b3364f0f0fd667240c560596d0ed`, toolchain
@@ -64,8 +64,7 @@ Blueprint 0.1.0 validates against published schema 7d02695f and declares exact r
 origins, genuine shared owners, customized managed-file merge, rejected conflicting merge
 with unchanged metadata, interrupted provider/resume, nonzero exit without an applied edge,
 repeat no-op/update and failed independent acceptance after attendance. Registry/Mori and
-generated documentation include the new artifact. M3 real managed Mori adoption and M4 final
-release acceptance remain open; raw terminal commands are retained outside sources under
+generated documentation include the new artifact. That checkpoint was subsequently closed by the final real-consumer acceptance below; raw terminal commands are retained outside sources under
 `/private/tmp/mp4-seihou-runtime`. [Durable fixture evidence](../evidence/haskell-runtime/fixtures.json) and its raw archive
 retain the terminal commands.
 
@@ -99,6 +98,27 @@ package archives populated before offline native acceptance. Source-complete com
 a separate fresh bare-compiler plan. Owned build/test targets avoid accidentally testing all
 upstream source-repository packages imported by the consumer's source policy.
 
+
+2026-10-18: The native published retained-runtime closure retrieves all 393 paths,
+including the compiler, into an initially empty matching store with builders disabled and
+exact publication NAR metadata. The additional independently packaged HLS closure retrieves
+680 further paths (730 in its own closure) without builds and matches all published cache
+metadata. However, 427 paths differ in NAR content from independent local builds at the
+same selected derivation/output paths, including the HLS root. Retain this failed local-byte
+equality probe; native local HLS protocol behavior passes separately. Do not claim byte
+reproducibility, cached-HLS execution or hosted CI from these observations.
+
+
+2026-10-18: Cabal's test command can return zero with “No tests to run” when a mixed
+package selector list includes Mori's schema-pin package, which has no test suites.
+Stopped the initial native check before acceptance. The checker now reads Cabal's generated
+plan and requests all five explicit owned test components, requiring executed passing-suite
+output for every selected suite. No-suite projects record explicit non-applicability,
+never a test pass. Threaded RTS settings are per-suite: the diagram/types runners do
+not support -N4, while the threaded core/API/CLI runners use the existing bounded harness. This preserves all suites without treating an exit status alone as test evidence.
+Source: `mori://haskell/cabal`, project-relative
+`Cabal/cabal-install/src/Distribution/Client/CmdTest.hs` and `ProjectPlanOutput.hs`
+(source artifact URIs pending).
 
 ## Decision Log
 
@@ -134,7 +154,71 @@ pass. Retain the existing engine semantics and gate rollout on a separate accept
 ## Outcomes & Retrospective
 
 
-(To be filled during implementation.)
+Completed on 2026-10-18. Module 0.32.0, composed CLI scaffold 0.3.1 and adoption
+blueprint 0.1.0 are prepared together with exact published channel/toolchain pins and
+canonical lock. Null runtime keeps legacy behavior; explicit retained configuration supplies
+one checked production/development scope. Custom overlays declare every owned recipe;
+compiler/native drift, shared overrides and incomplete selections fail. Local
+[ADR 5](../adr/5-share-one-checked-runtime-scope-and-verify-managed-adoption.md) records
+scope, import-priority and independent-adoption decisions.
+
+[Final fixture receipt](../evidence/haskell-runtime/fixtures.json) covers six native bootstrap
+cases and four adoption cases. Actual Seihou CLI operations preserve genuine shared owners,
+authored source including tracked database SQL, custom managed-file edits and unmanaged
+extensions. Both released origins follow their ordered windows. Nonzero providers create no
+applied edge; conflicts preserve canonical metadata; interrupted checks revoke stale accepted
+reports before external work; no-suite projects explicitly report non-applicability. A
+provider/attendance receipt never substitutes for the independent checker. No real nested
+model was launched: bounded deterministic providers exercise the actual supported CLI path.
+
+[Final real Mori receipt](../evidence/haskell-runtime/native-mori.json) and its raw archive
+bind the independent before/after reports, full commands and source preservation. Genuine
+legacy adoption retains all 311 dependency identities, five owned recipes, compiler and
+ordinary default derivation. All 4,280 owned Cabal cases pass: types 79, core 3,212,
+diagrams 3, API 62 and CLI 924. Ordinary default, overlay audit, cohort parity, library
+extension, formatting, pre-commit, actual HLS protocol and 392-dependency fresh source-complete
+Cabal comparison pass. The checked shell exposes original native tools/headers and service
+environment. Existing master-plan application/origins, ignore ordering/co-owners, custom schema
+input and empty per-project cache additions survive. The real producer's original manifest
+work is unchanged; all adoption operations use an independent clone.
+
+A hook-only edit preserves production/runtime identities and passes native acceptance. A
+real CLI description edit changes help behavior, preserves compiler/all retained dependencies
+and all four unrelated owned recipes, passes 924 CLI cases and builds through normal Nix.
+An invalid selection fails independently. Repeating the blueprint is a no-op for application
+ownership; normal update and a complete second native check pass without duplicating wiring.
+The candidate primary shell becomes the runtime shell; its full SDK and previously accepted
+EP-18 production artifact policy remain application-owned.
+
+The exact retained publication retrieves 393 paths, including the compiler, into an empty
+matching native store with builders disabled (6,930,343,792 logical NAR bytes). The additional
+HLS retrieval adds 680 paths and matches published metadata for its 730-path closure. Its
+427 independent local-rebuild NAR differences are retained explicitly; do not claim local-byte
+reproducibility, downloaded-HLS execution or hosted CI. Native local HLS initialization,
+hover, diagnostics and clean shutdown pass separately. Existing cache trust/authentication
+are preserved; nothing is published to a cache.
+
+Costs are observations, not an asserted compilation speedup. First cold owned Cabal
+preparation has an 880.80-second timestamped upper bound; the initial shell entry was observed
+at approximately 11 seconds but its early per-command receipt was overwritten, so that
+historical observation is explicitly approximate. Exact accepted entry/verification commands
+are retained; warm shell entries are 4.92 and 4.85 seconds. First complete native acceptance
+is 206.53 seconds, hook-edit acceptance 168.20 seconds, CLI edit build 15.01 seconds,
+complete edited CLI tests 51.16 seconds and normal changed Nix build 37.59 seconds. The final
+repeat acceptance is 179.63 seconds. Failed selector/thread-setting probes and additional
+migration/maintenance commands remain visible. No per-edit speedup or amortization is inferred
+from scope consistency.
+
+Module/blueprint validation, registry version synchronization, Mori descriptor type/sealed
+validation, final canonical lock/all-minimal/no-op checks, generated 17-concept OKF docs and
+diff checks pass. READMEs, target manifest, exact edge prompts, old-guide pointers and operator
+preview/adoption/migration/validation/retry/recovery instructions are coherent. Runtime
+qualification is native Apple Silicon only; other runtime configurations need their own
+acceptance. The release is prepared locally, with no Git push, consumer fleet migration,
+production database/schema migration, persistent-service start or system activation. Scoped
+local registry metadata may be refreshed for discovery. EP-19 remains deferred under the
+user's explicit order; this standalone companion adds no ninth member to MP-4's publication
+set.
 
 
 ## Context and Orientation
@@ -219,14 +303,13 @@ exact compiler, Nixpkgs, runtime and publication identities. Do not change the c
 shared dependency policy merely to obtain a helper. Regenerate both template pins and
 canonical lock with `scripts/update-nix-haskell-flake-lock.sh` using explicit revisions.
 
-Add a per-system Nix interface in `files/nix/haskell.nix.tpl`. The proposed new option
+Add a per-system Nix interface in `files/nix/haskell.nix.tpl`. The option
 `haskellProject.runtime` is null by default, or an explicit record containing
 `runtimeSelection`, `applicationSelections`, and
 any necessary application cohort/registry policy; sibling options `ownPackages` and
 `applicationOverlays` declare application recipes. The owning package module or unmanaged
 extension supplies this record. Expose the checked result as read-only
-`haskellProject.applicationScope`. These are proposed local module options to implement,
-not names already provided by upstream libraries.
+`haskellProject.applicationScope`. These are module options adapting the upstream library interface.
 
 In runtime mode construct the checked wrapper once. Its result supplies default/primary
 named shells and production packages. The built-in package output consumes that checked
@@ -388,12 +471,11 @@ mori registry show shinzui/seihou --full
 seihou validate-module modules/haskell/nix-haskell-flake --lint
 ```
 
-After choosing actual validated published commits, replace the placeholders below. These
-are intentionally not proposed pins:
+The accepted immutable published selections are:
 
 ```bash
-runtime_toolchain_rev=FULL_VALIDATED_TOOLCHAIN_COMMIT
-runtime_channel_rev=FULL_VALIDATED_CHANNEL_COMMIT
+runtime_toolchain_rev=21933607e80ec4660a28a125a6f4c0707e358caf
+runtime_channel_rev=e5a7c2c50080b3364f0f0fd667240c560596d0ed
 bash scripts/update-nix-haskell-flake-lock.sh \
   --rev "$runtime_toolchain_rev" --haskell-nix-rev "$runtime_channel_rev"
 bash scripts/update-nix-haskell-flake-lock.sh --check
@@ -407,11 +489,11 @@ the actual chosen target version from the target manifest:
 
 ```bash
 seihou agent --debug run upgrade-haskell-runtime --no-baseline
-seihou agent --debug migrate upgrade-haskell-runtime --from 0.31.0 --to TARGET_MODULE_VERSION
+seihou agent --debug migrate upgrade-haskell-runtime --from 0.31.0 --to 0.32.0
 seihou update nix-haskell-flake --dry-run --json
 ```
 
-The planned checker's CLI must be implemented and documented in M2. Its inventory mode
+The standalone checker and repository wrapper share the same implementation. Its inventory mode
 captures canonical baseline data before migration; validation produces evidence outside
 the consumer and does not mint Seihou attendance receipts:
 
@@ -427,7 +509,7 @@ update (including shared owners where required), then migrate that exact window:
 ```bash
 seihou update nix-haskell-flake --json
 seihou agent migrate upgrade-haskell-runtime \
-  --from ORIGINAL_MODULE_VERSION --to TARGET_MODULE_VERSION
+  --from ORIGINAL_MODULE_VERSION --to 0.32.0
 ```
 
 A legacy/unrecorded project instead uses the adoption entry point:
@@ -444,7 +526,7 @@ python3 scripts/check-haskell-runtime-adoption.py \
   --project /absolute/disposable/consumer \
   --before /absolute/receipts/before.json \
   --target blueprints/upgrade-haskell-runtime/files/target-versions.json \
-  --output /absolute/receipts/validated-adoption.json
+  --output /absolute/receipts/validated-adoption.json --native
 ```
 
 ```bash
@@ -528,7 +610,7 @@ registry, nullable `withHls`, native/library extra inputs, compatible `inputsFro
 `shellHook`. `runtimeSelection` has exactly `name`, `generation`, `channel` and
 `configuration`; configuration has `compiler`, `disableProfiling` and `disableHaddock`.
 Its result exposes checked `applicationScope` and diagnostic `packageSetIdentity`.
-The proposed module options adapt this interface without another solver or selection lock.
+The module options adapt this interface without another solver or selection lock.
 
 Seihou supplies module updates, blueprint discovery, ordered agent migrations, debug
 rendering and artifact-owned attendance receipts. `BlueprintMigration` has dotted numeric

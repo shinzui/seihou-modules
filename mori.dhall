@@ -46,7 +46,7 @@ in  Schema.Project::{
         , name = "nix-haskell-flake"
         , version = Some "0.32.0"
         , description = Some
-            "Nix flake for Haskell projects with exact managed locks, a managed package-module seam for composed scaffolds, an unmanaged user extension point, and toggleable local services, treefmt-nix, and pre-commit hooks"
+            "Nix flake for Haskell projects with optional explicit checked runtime scopes, exact managed locks, a managed package-module seam for composed scaffolds, an unmanaged user extension point, and toggleable local services, treefmt-nix, and pre-commit hooks"
         , modulePath = "modules/haskell/nix-haskell-flake"
         , tags = [ "haskell", "nix", "flake", "devshell" ]
         , requiredVars =

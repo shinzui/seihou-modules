@@ -1,5 +1,9 @@
 # upgrade-haskell-flake-parts
 
+For current retained-runtime adoption and ownership-preserving upgrades, use
+[upgrade-haskell-runtime](../upgrade-haskell-runtime/README.md). This blueprint retains
+its historical flake-parts conversion scope and edge history.
+
 An agent-driven seihou **blueprint** that migrates a shinzui Haskell project's
 Nix flake, in place, to the thin **flake-parts** structure built on the shared
 `haskell-nix-dev` base flake.

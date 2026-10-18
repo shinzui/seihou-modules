@@ -45,6 +45,14 @@ Align retained Cabal import URLs with the exact channel pin only after verifying
 Require `python3 /absolute/blueprint/files/check-haskell-runtime-adoption.py --project /absolute/checkout --before /absolute/receipts/before.json --target /absolute/blueprint/files/target-versions.json --output /absolute/receipts/accepted.json --native`. The standalone checker must execute successfully with accepted=true after native builds/tests and applicable checks. Run full owned Nix test suites, supported HLS protocol smoke, source edit/rebuild, service/header/hook assertions, fresh-plan parity and normal repeat update as applicable; record limitations and separate migration costs. Preserve configured cache authentication; prove shared-output reuse with builders disabled without exposing secrets, and distinguish local-store from hosted-cache evidence.
 
 A provider success or Seihou migration receipt records attendance only. Never announce adoption success without a new independent accepted report. On nonzero provider exit or interrupted merge, preserve actionable state and restore only this migration's affected paths and consistent metadata from its backup. A retry must verify actual state even when Seihou skips an attended edge. Do not reset unrelated work or remove service data. Report exact source/target versions, immutable input/runtime identities, preserved source/ownership evidence, actual command results, repeat-update behavior, costs and recovery instructions.
+
+Before offline acceptance in a fresh checkout, populate the exact pinned Cabal Git sources
+and archives through an ordinary owned-package build with network access if necessary.
+Record that preparation separately; do not change source pins, flags or imports to avoid it.
+The checker builds/tests the explicitly declared owned package targets, falling back to
+`all` for a bare project without declared ownership; it does not claim upstream dependency
+suites as owned tests. Declared submodules must be initialized and clean; preserve and verify
+any submodule work separately before using this inventory workflow.
 ```
 
 ## Reference files

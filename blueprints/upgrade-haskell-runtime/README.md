@@ -135,3 +135,27 @@ The checker builds/tests the explicitly declared owned package targets, falling 
 `all` for a bare project without declared ownership; it does not claim upstream dependency
 suites as owned tests. Declared submodules must be initialized and clean; preserve and verify
 any submodule work separately before using this inventory workflow.
+
+Consumers may repeat `--cabal-test-option=VALUE` for common owner-supported arguments
+and `--cabal-suite-option=TARGET=VALUE` for arguments supported only by a specific
+`package:test:suite` component. Mori uses common `--num-threads=1` and suite-specific
+`+RTS`, `-N4`, `-RTS` for its threaded core/API/CLI runners; its diagram/types runners
+receive no threaded-runtime flag. These settings select no test-case filters.
+The checker discovers explicit test components from Cabal's generated plan and requires
+each selected suite to report PASS. A mixed package list containing a package without
+tests can otherwise make Cabal exit zero without running any suites. Projects with no
+configured owned suites record tests as not applicable, never as a test pass; preserved
+Cabal/source policy prevents silently disabling suites during migration.
+
+The native pilot's retained runtime matches its published NAR receipt exactly. Its extra
+HLS download matches published cache metadata but differs from an independent local build
+at the same output path. Keep that distinction when reporting cache reuse; derivation
+identity alone does not establish independently reproducible bytes or cached execution.
+
+Starting a new checker invocation revokes an older accepted report before the first
+external command. Interrupting that initial evaluation leaves accepted=false, as does
+any failed check; a successful retry must produce a new complete accepted report.
+
+Source inventory protects Git-tracked database SQL/resources even under service-named
+directories such as `db/`. Untracked database/cache service data is excluded; review any
+relevant untracked authored assets there explicitly before migration.

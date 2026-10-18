@@ -1,0 +1,687 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "project_uri": "mori://shinzui/mori",
+  "system": "aarch64-darwin",
+  "source_commit": "48b63f3f372ea9047a8eefd8738f42669956ae3e",
+  "adoption": "Genuine unrecorded legacy adoption through the installed Seihou CLI and bounded deterministic provider, then ordinary repeat update; no fabricated recorded origin.",
+  "module_versions": {
+    "claude-skill-link": "0.1.0",
+    "exec-plan": "0.12.0",
+    "agent-gitignore": "0.1.0",
+    "claude-gitignore": "0.2.0",
+    "link-skill": "0.3.0",
+    "master-plan": "0.12.0",
+    "nix-haskell-flake": "0.32.0"
+  },
+  "identity_retention": {
+    "dependencies": 311,
+    "owned_recipes": 5,
+    "compiler": "/nix/store/09j558h3q1pcl27nhy5hsg07xc3myzp7-ghc-9.12.4.drv",
+    "ordinary_default": "/nix/store/m3ag47c3fqam5rd685kk94kajyb6hms3-mori-cli-7.0.0.0.drv",
+    "all_equal_before_and_after": true
+  },
+  "source_preservation": {
+    "inventoried_paths": 3144,
+    "authored_source_unchanged": true,
+    "custom_input_and_cabal_policy_unchanged_except_verified_channel_import": true,
+    "prior_applications_and_shared_owners_preserved": true,
+    "real_producer_work_preserved": {
+      "status": "passed",
+      "project_uri": "mori://shinzui/mori",
+      "unstaged_diff_sha256": "9a16b9748a1608e88f60c64e6919095f2538544cdcafa95511e7d0e6e3ad76ac",
+      "unchanged_from_before_pilot": true,
+      "staged_diff_empty": true,
+      "qualification": "The real producer retains its original manifest work. All managed-adoption operations use an independent clone."
+    }
+  },
+  "native_tests": {
+    "component_targets": [
+      "mori-api:test:mori-api-test",
+      "mori-cli:test:mori-cli-test",
+      "mori-core:test:mori-core-diagrams",
+      "mori-core:test:mori-core-test",
+      "mori-types:test:mori-types-test"
+    ],
+    "suite_counts": [
+      3,
+      62,
+      79,
+      924,
+      3212
+    ],
+    "total": 4280,
+    "no_test_case_filter": true
+  },
+  "hls_protocol": {
+    "cleanShutdown": true,
+    "compilerVersion": "9.12.4",
+    "hover": {
+      "contents": {
+        "kind": "markdown",
+        "value": "\n```haskell\nanswer :: Int\n```\n\n*Defined at /var/folders/xf/z_902qyd0dg5m6n8pjv1vk300000gn/T/toolchain-hls-3ex9nuul/Smoke.hs:4:1*\n\n"
+      },
+      "range": {
+        "end": {
+          "character": 18,
+          "line": 5
+        },
+        "start": {
+          "character": 12,
+          "line": 5
+        }
+      }
+    },
+    "initialized": true,
+    "probe": "hls-session",
+    "runtimeCapabilities": 2,
+    "schemaVersion": 1,
+    "serverVersion": "haskell-language-server version: 2.13.0.0 (GHC: 9.12.4) (PATH: /nix/store/hb7nc6hk5hab3w9j2icx140m6zc0bvp5-haskell-language-server-2.13.0.0/bin/.haskell-language-server-9.12.4-unwrapped)",
+    "status": "passed",
+    "typeErrorDiagnostics": [
+      {
+        "code": "GHC-83865",
+        "codeDescription": {
+          "href": "https://errors.haskell.org/messages/GHC-83865"
+        },
+        "data": {
+          "attachedReason": [
+            "-Wdeferred-type-errors"
+          ]
+        },
+        "message": "\u2022 Couldn't match type \u2018[Char]\u2019 with \u2018Int\u2019\n  Expected: Int\n    Actual: String\n\u2022 In the expression: \"wrong-type\"\n  In an equation for \u2018answer\u2019: answer = \"wrong-type\"",
+        "range": {
+          "end": {
+            "character": 21,
+            "line": 3
+          },
+          "start": {
+            "character": 9,
+            "line": 3
+          }
+        },
+        "severity": 1,
+        "source": "typecheck",
+        "tags": []
+      }
+    ]
+  },
+  "source_complete_cabal": {
+    "status": "passed",
+    "compiler": "/nix/store/g1qpr9sf56sr9znrqk05wxqrbgnnyanj-ghc-9.12.4",
+    "plan": "/private/tmp/mp4-seihou-runtime/mori-fresh-plan/cache/plan.json",
+    "selection_preserved": true,
+    "channel_revision": "e5a7c2c50080b3364f0f0fd667240c560596d0ed",
+    "qualification": "Fresh plan using underlying bare compiler, exact retained imports and supported tests/benchmarks; separate from scoped installed-package reuse."
+  },
+  "cache": {
+    "runtime_paths": 393,
+    "runtime_builds": 0,
+    "runtime_publication_metadata_exact": true,
+    "runtime_nar_bytes": 6930343792,
+    "hls_additional_paths": 680,
+    "hls_closure_paths": 730,
+    "hls_builds": 0,
+    "hls_published_metadata_exact": true,
+    "hls_local_rebuild_difference": {
+      "paths": 427,
+      "root_local_nar": "sha256-cqOIHigP0WAdPxt5lW1gw/MtkLccmiBB5XEEbJbDtr0=",
+      "root_published_nar": "sha256-FUhTUqRGo3t++Fa3fJZQHMLFEMPuYf0Jrnu5u0/sIQc=",
+      "qualification": "Same selected output/derivation paths do not imply byte-reproducible independent local builds. Local and published HLS have different NARs; no byte-equality or cached-server execution claim. The separate local HLS protocol smoke passes."
+    },
+    "qualification": "Matching native independent local store retrieves existing published caches with builders disabled and unchanged trust/authentication. No hosted-CI or cached-HLS execution claim."
+  },
+  "costs": {
+    "first_shell_entry": {
+      "initial_attempt_entry_approximate_seconds": 11,
+      "qualification": "The earlier native attempt printed 10.968 seconds for the initial shell entry, which initialized a disposable empty cluster without starting a server. Its per-command receipt was overwritten by later attempts; retain this as an approximate historical observation, not a reproducible timing claim. Exact qualified entry and warm-entry commands are retained separately."
+    },
+    "cold_owned_cabal_preparation": {
+      "status": "terminal-observed",
+      "start_utc": "2026-10-18T21:04:12.461604+00:00",
+      "observed_completion_utc": "2026-10-18T21:18:53.265209+00:00",
+      "elapsed_upper_bound_seconds": 880.803605556488,
+      "observation_interval_seconds": 2,
+      "start_basis": "Shell redirection output file birth timestamp immediately before exec. Terminal status is separately checked by the native acceptance runner.",
+      "qualification": "First online owned Cabal preparation, including pinned Git dependencies; separate from warm offline acceptance and source-edit timings. No speedup claim."
+    },
+    "native_acceptance_commands": [
+      {
+        "command": [
+          "nix",
+          "eval",
+          "--json",
+          "--impure",
+          "--expr",
+          "let\n      app = builtins.getFlake \"git+file:///private/tmp/mp4-seihou-runtime/mori-managed-pilot\";\n      system = \"aarch64-darwin\";\n      shell = app.devShells.${system}.default or null;\n      identity = if shell != null then shell.packageSetIdentity or null else null;\n      scope = if shell != null && shell ? applicationScope then shell.applicationScope\n        else app.legacyPackages.${system}.haskellPackages or null;\n      root = app.packages.${system}.default;\n      names = builtins.fromJSON \"[\\\"mori-types\\\", \\\"mori-schema-pin\\\", \\\"mori-core\\\", \\\"mori-api\\\", \\\"mori-cli\\\"]\";\n      ownNames = if names != [] then names\n        else if identity != null then builtins.attrNames identity.ownPackages else [];\n      original = app.lib.runtimeSelection or null;\n      compiler = if scope != null then scope.ghc else root.compiler;\n      tools = app.inputs.haskell-nix-dev.lib.${system}.ghcVersions;\n      keys = builtins.filter (name: tools.${name}.compiler.drvPath == compiler.drvPath) (builtins.attrNames tools);\n      compilerKey = if builtins.length keys == 1 then builtins.head keys else null;\n      configured = if identity != null then {\n        inherit (identity) runtimeSelection applicationSelections;\n      } else if original != null then {\n        runtimeSelection = {\n          name = original.runtime;\n          inherit (original) generation channel;\n          configuration = { compiler = compilerKey; inherit (original) disableProfiling disableHaddock; };\n        };\n        inherit (original) applicationSelections;\n      } else null;\n      retained = if original != null && scope != null then\n        app.inputs.haskell-nix.lib.mkRuntimePackageSet original else null;\n      dependencyFacts = if identity != null then identity.dependencies else if retained != null then\n        builtins.mapAttrs (name: _: if builtins.hasAttr name scope && scope.${name} != null\n          then { derivation = scope.${name}.drvPath; }\n          else { kind = \"compiler-provided\"; compiler = compiler.drvPath; }) retained.metadata.ownership else {};\n      dependencies = builtins.mapAttrs (_: entry: if entry ? derivation\n        then { inherit (entry) derivation; } else { inherit (entry) kind compiler; }) dependencyFacts;\n      data = {\n        root = root.drvPath;\n        compiler = compiler.drvPath;\n        compilerVersion = compiler.version;\n        inherit compilerKey configured dependencies ownNames;\n        managedRuntime = identity != null;\n        owned = if scope == null then {} else builtins.listToAttrs\n          (map (name: { inherit name; value = scope.${name}.drvPath; }) ownNames);\n        hls = if shell != null then shell.hlsIdentity or null else null;\n        checks = builtins.attrNames (app.checks.${system} or {});\n        formatter = builtins.hasAttr system (app.formatter or {});\n        inputs = builtins.mapAttrs (_: input: {\n          rev = input.rev or null;\n          narHash = input.narHash or null;\n        }) app.inputs;\n      };\n    in builtins.fromJSON (builtins.unsafeDiscardStringContext (builtins.toJSON data))"
+        ],
+        "elapsed_seconds": 4.840929042024072,
+        "exit_code": 0,
+        "stdout": "000-identities.stdout",
+        "stderr": "000-identities.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "build",
+          ".#default",
+          "--no-link",
+          "--no-write-lock-file",
+          "--print-build-logs"
+        ],
+        "elapsed_seconds": 4.406293417036068,
+        "exit_code": 0,
+        "stdout": "001-ordinary-build.stdout",
+        "stderr": "001-ordinary-build.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--no-write-lock-file",
+          "--command",
+          "ghc",
+          "--numeric-version"
+        ],
+        "elapsed_seconds": 5.2485162079683505,
+        "exit_code": 0,
+        "stdout": "002-shell-compiler.stdout",
+        "stderr": "002-shell-compiler.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--no-write-lock-file",
+          "--command",
+          "cabal",
+          "build",
+          "--offline",
+          "-j2",
+          "mori-types",
+          "mori-schema-pin",
+          "mori-core",
+          "mori-api",
+          "mori-cli"
+        ],
+        "elapsed_seconds": 10.450083958043251,
+        "exit_code": 0,
+        "stdout": "003-cabal-build.stdout",
+        "stderr": "003-cabal-build.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--no-write-lock-file",
+          "--command",
+          "cabal",
+          "test",
+          "--offline",
+          "-j2",
+          "--test-option=--num-threads=1",
+          "--test-option=+RTS",
+          "--test-option=-N4",
+          "--test-option=-RTS",
+          "mori-api:test:mori-api-test",
+          "mori-cli:test:mori-cli-test",
+          "mori-core:test:mori-core-test"
+        ],
+        "elapsed_seconds": 97.0238159999717,
+        "exit_code": 0,
+        "stdout": "004-cabal-tests-0.stdout",
+        "stderr": "004-cabal-tests-0.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--no-write-lock-file",
+          "--command",
+          "cabal",
+          "test",
+          "--offline",
+          "-j2",
+          "--test-option=--num-threads=1",
+          "mori-core:test:mori-core-diagrams",
+          "mori-types:test:mori-types-test"
+        ],
+        "elapsed_seconds": 7.979552332952153,
+        "exit_code": 0,
+        "stdout": "005-cabal-tests-1.stdout",
+        "stderr": "005-cabal-tests-1.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "build",
+          ".#checks.aarch64-darwin.consumer-overlay",
+          "--no-link",
+          "--no-write-lock-file"
+        ],
+        "elapsed_seconds": 0.4503430830081925,
+        "exit_code": 0,
+        "stdout": "006-consumer-overlay.stdout",
+        "stderr": "006-consumer-overlay.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "build",
+          ".#checks.aarch64-darwin.cohort-parity",
+          "--no-link",
+          "--no-write-lock-file"
+        ],
+        "elapsed_seconds": 52.23075379204238,
+        "exit_code": 0,
+        "stdout": "007-cohort-parity.stdout",
+        "stderr": "007-cohort-parity.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "build",
+          ".#checks.aarch64-darwin.library-extension",
+          "--no-link",
+          "--no-write-lock-file"
+        ],
+        "elapsed_seconds": 6.715499375015497,
+        "exit_code": 0,
+        "stdout": "008-library-extension.stdout",
+        "stderr": "008-library-extension.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "fmt",
+          "--no-write-lock-file",
+          "--",
+          "--ci"
+        ],
+        "elapsed_seconds": 5.742612999980338,
+        "exit_code": 0,
+        "stdout": "009-format.stdout",
+        "stderr": "009-format.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--no-write-lock-file",
+          "--command",
+          "haskell-language-server-wrapper",
+          "--version"
+        ],
+        "elapsed_seconds": 6.367247291025706,
+        "exit_code": 0,
+        "stdout": "010-hls-version.stdout",
+        "stderr": "010-hls-version.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "eval",
+          "--json",
+          "--impure",
+          "--expr",
+          "let\n      app = builtins.getFlake \"git+file:///private/tmp/mp4-seihou-runtime/mori-managed-pilot\";\n      system = \"aarch64-darwin\";\n      shell = app.devShells.${system}.default or null;\n      identity = if shell != null then shell.packageSetIdentity or null else null;\n      scope = if shell != null && shell ? applicationScope then shell.applicationScope\n        else app.legacyPackages.${system}.haskellPackages or null;\n      root = app.packages.${system}.default;\n      names = builtins.fromJSON \"[\\\"mori-types\\\", \\\"mori-schema-pin\\\", \\\"mori-core\\\", \\\"mori-api\\\", \\\"mori-cli\\\"]\";\n      ownNames = if names != [] then names\n        else if identity != null then builtins.attrNames identity.ownPackages else [];\n      original = app.lib.runtimeSelection or null;\n      compiler = if scope != null then scope.ghc else root.compiler;\n      tools = app.inputs.haskell-nix-dev.lib.${system}.ghcVersions;\n      keys = builtins.filter (name: tools.${name}.compiler.drvPath == compiler.drvPath) (builtins.attrNames tools);\n      compilerKey = if builtins.length keys == 1 then builtins.head keys else null;\n      configured = if identity != null then {\n        inherit (identity) runtimeSelection applicationSelections;\n      } else if original != null then {\n        runtimeSelection = {\n          name = original.runtime;\n          inherit (original) generation channel;\n          configuration = { compiler = compilerKey; inherit (original) disableProfiling disableHaddock; };\n        };\n        inherit (original) applicationSelections;\n      } else null;\n      retained = if original != null && scope != null then\n        app.inputs.haskell-nix.lib.mkRuntimePackageSet original else null;\n      dependencyFacts = if identity != null then identity.dependencies else if retained != null then\n        builtins.mapAttrs (name: _: if builtins.hasAttr name scope && scope.${name} != null\n          then { derivation = scope.${name}.drvPath; }\n          else { kind = \"compiler-provided\"; compiler = compiler.drvPath; }) retained.metadata.ownership else {};\n      dependencies = builtins.mapAttrs (_: entry: if entry ? derivation\n        then { inherit (entry) derivation; } else { inherit (entry) kind compiler; }) dependencyFacts;\n      data = {\n        root = root.drvPath;\n        compiler = compiler.drvPath;\n        compilerVersion = compiler.version;\n        inherit compilerKey configured dependencies ownNames;\n        managedRuntime = identity != null;\n        owned = if scope == null then {} else builtins.listToAttrs\n          (map (name: { inherit name; value = scope.${name}.drvPath; }) ownNames);\n        hls = if shell != null then shell.hlsIdentity or null else null;\n        checks = builtins.attrNames (app.checks.${system} or {});\n        formatter = builtins.hasAttr system (app.formatter or {});\n        inputs = builtins.mapAttrs (_: input: {\n          rev = input.rev or null;\n          narHash = input.narHash or null;\n        }) app.inputs;\n      };\n    in builtins.fromJSON (builtins.unsafeDiscardStringContext (builtins.toJSON data))"
+        ],
+        "elapsed_seconds": 4.687408083002083,
+        "exit_code": 0,
+        "stdout": "011-identities.stdout",
+        "stderr": "011-identities.stderr"
+      }
+    ],
+    "post_adoption_commands": [
+      {
+        "command": [
+          "/Users/shinzui/.nix-profile/bin/python3",
+          "/Users/shinzui/Keikaku/bokuno/seihou-modules/scripts/check-haskell-runtime-adoption.py",
+          "--project",
+          "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+          "--project-uri",
+          "mori://shinzui/mori",
+          "--before",
+          "/private/tmp/mp4-seihou-runtime/mori-managed-before-v2.json",
+          "--cabal-test-option=--num-threads=1",
+          "--cabal-suite-option=mori-api:test:mori-api-test=+RTS",
+          "--cabal-suite-option=mori-api:test:mori-api-test=-N4",
+          "--cabal-suite-option=mori-api:test:mori-api-test=-RTS",
+          "--cabal-suite-option=mori-cli:test:mori-cli-test=+RTS",
+          "--cabal-suite-option=mori-cli:test:mori-cli-test=-N4",
+          "--cabal-suite-option=mori-cli:test:mori-cli-test=-RTS",
+          "--cabal-suite-option=mori-core:test:mori-core-test=+RTS",
+          "--cabal-suite-option=mori-core:test:mori-core-test=-N4",
+          "--cabal-suite-option=mori-core:test:mori-core-test=-RTS",
+          "--output",
+          "/private/tmp/mp4-seihou-runtime/mori-managed-accepted.json",
+          "--native"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 206.5333877079538,
+        "exit_code": 0,
+        "stdout": "000-complete-native-acceptance.stdout",
+        "stderr": "000-complete-native-acceptance.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--no-write-lock-file",
+          "--command",
+          "bash",
+          "-c",
+          "set -eu\ntest \"$(command -v ghc)\" = \"$NIX_GHC\"\ntest \"$PGHOST\" = \"$PWD/db\"\ntest \"$PGDATA\" = \"$PWD/db/db\"\ntest \"$PGDATABASE\" = mori\ntest \"$MORI_PG_CONNECTION_STRING\" = \"$PG_CONNECTION_STRING\"\npkg-config --exists libpq openssl libcurl rdkafka zlib\ncommand -v xz hurl vacuum rpk just process-compose\n"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 5.0142455419991165,
+        "exit_code": 0,
+        "stdout": "001-preserved-tools-headers-services.stdout",
+        "stderr": "001-preserved-tools-headers-services.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--no-write-lock-file",
+          "--command",
+          "true"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 4.921171082998626,
+        "exit_code": 0,
+        "stdout": "002-warm-shell-1.stdout",
+        "stderr": "002-warm-shell-1.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--no-write-lock-file",
+          "--command",
+          "true"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 4.850617500022054,
+        "exit_code": 0,
+        "stdout": "003-warm-shell-2.stdout",
+        "stderr": "003-warm-shell-2.stderr"
+      },
+      {
+        "command": [
+          "/Users/shinzui/.nix-profile/bin/python3",
+          "/Users/shinzui/Keikaku/bokuno/seihou-modules/scripts/check-haskell-runtime-adoption.py",
+          "--project",
+          "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+          "--project-uri",
+          "mori://shinzui/mori",
+          "--before",
+          "/private/tmp/mp4-seihou-runtime/mori-managed-before-v2.json",
+          "--cabal-test-option=--num-threads=1",
+          "--cabal-suite-option=mori-api:test:mori-api-test=+RTS",
+          "--cabal-suite-option=mori-api:test:mori-api-test=-N4",
+          "--cabal-suite-option=mori-api:test:mori-api-test=-RTS",
+          "--cabal-suite-option=mori-cli:test:mori-cli-test=+RTS",
+          "--cabal-suite-option=mori-cli:test:mori-cli-test=-N4",
+          "--cabal-suite-option=mori-cli:test:mori-cli-test=-RTS",
+          "--cabal-suite-option=mori-core:test:mori-core-test=+RTS",
+          "--cabal-suite-option=mori-core:test:mori-core-test=-N4",
+          "--cabal-suite-option=mori-core:test:mori-core-test=-RTS",
+          "--output",
+          "/private/tmp/mp4-seihou-runtime/mori-shell-edit-accepted.json",
+          "--native"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 168.20001470897114,
+        "exit_code": 0,
+        "stdout": "004-shell-only-edited-acceptance.stdout",
+        "stderr": "004-shell-only-edited-acceptance.stderr"
+      },
+      {
+        "command": [
+          "/Users/shinzui/.nix-profile/bin/python3",
+          "/Users/shinzui/Keikaku/bokuno/seihou-modules/scripts/check-haskell-runtime-adoption.py",
+          "--project",
+          "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+          "--inventory",
+          "--output",
+          "/private/tmp/mp4-seihou-runtime/mori-owned-edit-inventory.json",
+          "--owned-package",
+          "mori-types",
+          "--owned-package",
+          "mori-schema-pin",
+          "--owned-package",
+          "mori-core",
+          "--owned-package",
+          "mori-api",
+          "--owned-package",
+          "mori-cli"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 5.633683874970302,
+        "exit_code": 0,
+        "stdout": "005-owned-edit-identities.stdout",
+        "stderr": "005-owned-edit-identities.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--no-write-lock-file",
+          "--command",
+          "cabal",
+          "build",
+          "--offline",
+          "-j2",
+          "mori-cli"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 15.014024208998308,
+        "exit_code": 0,
+        "stdout": "006-owned-source-edit-cabal-build.stdout",
+        "stderr": "006-owned-source-edit-cabal-build.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--no-write-lock-file",
+          "--command",
+          "cabal",
+          "test",
+          "--offline",
+          "-j2",
+          "--test-option=--num-threads=1",
+          "--test-option=+RTS",
+          "--test-option=-N4",
+          "--test-option=-RTS",
+          "mori-cli"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 51.157073249982204,
+        "exit_code": 0,
+        "stdout": "007-owned-source-edit-complete-cli-tests.stdout",
+        "stderr": "007-owned-source-edit-complete-cli-tests.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--no-write-lock-file",
+          "--command",
+          "cabal",
+          "run",
+          "--offline",
+          "exe:mori",
+          "--",
+          "--help"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 7.434381124970969,
+        "exit_code": 0,
+        "stdout": "008-owned-source-edit-behavior.stdout",
+        "stderr": "008-owned-source-edit-behavior.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "build",
+          ".#default",
+          "--no-link",
+          "--no-write-lock-file",
+          "--print-build-logs"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 37.5944892920088,
+        "exit_code": 0,
+        "stdout": "009-owned-source-edit-normal-nix-build.stdout",
+        "stderr": "009-owned-source-edit-normal-nix-build.stderr"
+      },
+      {
+        "command": [
+          "/Users/shinzui/.nix-profile/bin/python3",
+          "/Users/shinzui/Keikaku/bokuno/seihou-modules/scripts/check-haskell-runtime-adoption.py",
+          "--project",
+          "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+          "--project-uri",
+          "mori://shinzui/mori",
+          "--before",
+          "/private/tmp/mp4-seihou-runtime/mori-managed-before-v2.json",
+          "--cabal-test-option=--num-threads=1",
+          "--cabal-suite-option=mori-api:test:mori-api-test=+RTS",
+          "--cabal-suite-option=mori-api:test:mori-api-test=-N4",
+          "--cabal-suite-option=mori-api:test:mori-api-test=-RTS",
+          "--cabal-suite-option=mori-cli:test:mori-cli-test=+RTS",
+          "--cabal-suite-option=mori-cli:test:mori-cli-test=-N4",
+          "--cabal-suite-option=mori-cli:test:mori-cli-test=-RTS",
+          "--cabal-suite-option=mori-core:test:mori-core-test=+RTS",
+          "--cabal-suite-option=mori-core:test:mori-core-test=-N4",
+          "--cabal-suite-option=mori-core:test:mori-core-test=-RTS",
+          "--output",
+          "/private/tmp/mp4-seihou-runtime/mori-bad-selection.json"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 0.1724917500396259,
+        "exit_code": 1,
+        "stdout": "010-reject-bad-selection.stdout",
+        "stderr": "010-reject-bad-selection.stderr"
+      },
+      {
+        "command": [
+          "seihou",
+          "agent",
+          "run",
+          "upgrade-haskell-runtime",
+          "--no-baseline",
+          "--batch",
+          "--provider",
+          "claude-cli"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 0.09767383296275511,
+        "exit_code": 0,
+        "stdout": "011-repeat-blueprint-noop.stdout",
+        "stderr": "011-repeat-blueprint-noop.stderr"
+      },
+      {
+        "command": [
+          "seihou",
+          "update",
+          "nix-haskell-flake",
+          "--dry-run",
+          "--json",
+          "--include-shared-owners",
+          "--no-commands"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 0.11864316597348079,
+        "exit_code": 0,
+        "stdout": "012-repeat-update-preview.stdout",
+        "stderr": "012-repeat-update-preview.stderr"
+      },
+      {
+        "command": [
+          "seihou",
+          "update",
+          "nix-haskell-flake",
+          "--json",
+          "--include-shared-owners",
+          "--no-commands"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 0.11607795901363716,
+        "exit_code": 0,
+        "stdout": "013-repeat-normal-update.stdout",
+        "stderr": "013-repeat-normal-update.stderr"
+      },
+      {
+        "command": [
+          "/Users/shinzui/.nix-profile/bin/python3",
+          "/Users/shinzui/Keikaku/bokuno/seihou-modules/scripts/check-haskell-runtime-adoption.py",
+          "--project",
+          "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+          "--project-uri",
+          "mori://shinzui/mori",
+          "--before",
+          "/private/tmp/mp4-seihou-runtime/mori-managed-before-v2.json",
+          "--cabal-test-option=--num-threads=1",
+          "--cabal-suite-option=mori-api:test:mori-api-test=+RTS",
+          "--cabal-suite-option=mori-api:test:mori-api-test=-N4",
+          "--cabal-suite-option=mori-api:test:mori-api-test=-RTS",
+          "--cabal-suite-option=mori-cli:test:mori-cli-test=+RTS",
+          "--cabal-suite-option=mori-cli:test:mori-cli-test=-N4",
+          "--cabal-suite-option=mori-cli:test:mori-cli-test=-RTS",
+          "--cabal-suite-option=mori-core:test:mori-core-test=+RTS",
+          "--cabal-suite-option=mori-core:test:mori-core-test=-N4",
+          "--cabal-suite-option=mori-core:test:mori-core-test=-RTS",
+          "--output",
+          "/private/tmp/mp4-seihou-runtime/mori-repeat-accepted.json",
+          "--native"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 179.6288535419735,
+        "exit_code": 0,
+        "stdout": "014-repeat-native-acceptance.stdout",
+        "stderr": "014-repeat-native-acceptance.stderr"
+      },
+      {
+        "command": [
+          "nix",
+          "build",
+          ".#checks.aarch64-darwin.pre-commit",
+          "--no-link",
+          "--no-write-lock-file"
+        ],
+        "cwd": "/private/tmp/mp4-seihou-runtime/mori-managed-pilot",
+        "elapsed_seconds": 11.907426999998279,
+        "exit_code": 0,
+        "stdout": "015-final-native-precommit.stdout",
+        "stderr": "015-final-native-precommit.stderr"
+      }
+    ],
+    "qualification": "First/warm entry, full verification, source edit and maintenance costs are separate observations, not a compiler speedup or amortization claim. Cold bound is separately timestamped; other command durations use monotonic timers. Failed selector/thread-setting probes remain in the raw archive."
+  },
+  "behavior": {
+    "status": "passed",
+    "project_uri": "mori://shinzui/mori",
+    "native": "mori-managed-accepted.json",
+    "repeat": "mori-repeat-accepted.json",
+    "unchanged_dependencies": 311,
+    "unchanged_owned_recipes": 5,
+    "shell_only_change_preserves_production": true,
+    "owned_source_edit_changes_cli_behavior": true,
+    "bad_selection_rejected": true,
+    "qualification": "Isolated independent clone with source/metadata preserved. Temporary cluster initialized, never started; complete owned suites use their existing disposable harness."
+  },
+  "archive": {
+    "path": "native-mori.tar.gz",
+    "sha256": "e7c6c59724264478fbc7ac6025aac23a53b242b13fe01a8814ca857ba4bd711c",
+    "bytes": 2471894
+  },
+  "limits": [
+    "Native Apple Silicon runtime qualification only.",
+    "Independent local HLS builds differ from published NARs; downloaded bytes match published metadata.",
+    "No production repository migration, existing database change, persistent-service start, activation, Git push or cache publication.",
+    "Agent attendance does not replace the independent accepted reports."
+  ]
+}
