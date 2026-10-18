@@ -105,17 +105,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1792173597,
-        "narHash": "sha256-5gi6T4hcCxQv22VvxutvUq/4Kx/dTmqBYF5jqSViKUo=",
+        "lastModified": 1792347446,
+        "narHash": "sha256-80OeMs506YWpjYxsbEjsMXX9wdl2BGGE4EuYHgWMbOk=",
         "owner": "shinzui",
         "repo": "haskell-nix",
-        "rev": "58a2c26c5be7cdf222fba6323939a67d3c62f193",
+        "rev": "e5a7c2c50080b3364f0f0fd667240c560596d0ed",
         "type": "github"
       },
       "original": {
         "owner": "shinzui",
         "repo": "haskell-nix",
-        "rev": "58a2c26c5be7cdf222fba6323939a67d3c62f193",
+        "rev": "e5a7c2c50080b3364f0f0fd667240c560596d0ed",
         "type": "github"
       }
     },
@@ -128,17 +128,17 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1789084880,
-        "narHash": "sha256-6M5pGtto99W7pjxPiaqTh/0ERBw4/eOLWQTrAKKjHsI=",
+        "lastModified": 1792264978,
+        "narHash": "sha256-qUddP1X00wrEAeTyYLRfbSn1cLuC78rvuH8BWW/jl/E=",
         "owner": "shinzui",
         "repo": "haskell-nix-dev",
-        "rev": "206ecd25bcb4a07581210bdae3e6f43c8fd179d8",
+        "rev": "21933607e80ec4660a28a125a6f4c0707e358caf",
         "type": "github"
       },
       "original": {
         "owner": "shinzui",
         "repo": "haskell-nix-dev",
-        "rev": "206ecd25bcb4a07581210bdae3e6f43c8fd179d8",
+        "rev": "21933607e80ec4660a28a125a6f4c0707e358caf",
         "type": "github"
       }
     },

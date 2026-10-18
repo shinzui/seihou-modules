@@ -2,7 +2,7 @@
 
 > Bootstrap a tested Haskell CLI app as two packages (reusable core library + CLI executable) under GHC2024, with GHC 9.12.4 as the HLS-backed default and GHC 9.14.1 as a secondary build shell. Generates valid package-local distribution metadata and workspace-aware Nix package/check outputs through the latest `nix-haskell-flake`.
 
-**Version:** `0.3.0`
+**Version:** `0.3.1`
 
 ## Overview
 
@@ -142,3 +142,10 @@ seihou run haskell-cli-app --dry-run
 - `module.dhall` — full module definition and authoritative source
 - `files/` — template sources
 - `../nix-haskell-flake/` — the dev-shell dependency
+
+The 0.3.1 package module declares both application recipes and selects them from
+`haskellProject.applicationScope`. Setting the base module's explicit `runtime` option
+therefore supplies the same checked scope to CLI/core builds and the primary shell.
+Each package uses its complete package directory as a stable source boundary, retaining
+resources while shell-only edits leave production recipes unchanged. See
+[the adoption workflow](../../../blueprints/upgrade-haskell-runtime/README.md).

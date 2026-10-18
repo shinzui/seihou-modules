@@ -44,7 +44,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "nix-haskell-flake"
-        , version = Some "0.31.0"
+        , version = Some "0.32.0"
         , description = Some
             "Nix flake for Haskell projects with exact managed locks, a managed package-module seam for composed scaffolds, an unmanaged user extension point, and toggleable local services, treefmt-nix, and pre-commit hooks"
         , modulePath = "modules/haskell/nix-haskell-flake"
@@ -72,7 +72,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "haskell-cli-app"
-        , version = Some "0.3.0"
+        , version = Some "0.3.1"
         , description = Some
             "Tested Haskell CLI bootstrap: reusable core plus CLI packages on GHC2024, GHC 9.12.4/9.14.1 shells, current bounded dependencies, valid package-local distribution metadata, and workspace-aware Nix package/check outputs"
         , modulePath = "modules/haskell/haskell-cli-app"
@@ -110,6 +110,13 @@ in  Schema.Project::{
         , tags = [ "typescript", "fumadocs", "docs" ]
         , dependencies = [ "nix-bun-flake" ]
         , requiredVars = [ "project.name", "project.description", "docs.site-name", "docs.github-user" ]
+        }
+      , Schema.SeihouTemplate::{
+        , name = "upgrade-haskell-runtime"
+        , version = Some "0.1.0"
+        , description = Some "Preserved legacy Haskell adoption and ordered module upgrades with independent native acceptance"
+        , modulePath = "blueprints/upgrade-haskell-runtime"
+        , tags = [ "haskell", "nix", "runtime", "migration" ]
         }
       , Schema.SeihouTemplate::{
         , name = "upgrade-fumadocs"

@@ -5,9 +5,9 @@
 # every project generated from a given module version locks to byte-identical
 # inputs and shares one nix store closure.
 #
-# How the determinism works: the generated flake.nix has exactly ONE pin of its
-# own — the haskell-nix-dev revision — and every other module-owned input
-# `follows` it. So the whole locked graph is a pure function of that rev, and the
+# The generated flake pins haskell-nix-dev, haskell-nix and redpanda-container;
+# other module-owned inputs follow those pins. The locked graph is a pure function
+# of those immutable selections, and the
 # shipped flake.lock is a cache-warming convenience rather than the source of
 # truth. That also means a project may add inputs of its own without any merge:
 # `nix flake lock` there only appends nodes, and `nix flake update` cannot move a
@@ -29,8 +29,8 @@
 #   --rev REV   Pin to a specific haskell-nix-dev revision (default: latest master).
 #   --haskell-nix-rev REV
 #               Pin to a specific haskell-nix revision (default: latest master).
-#   --check     Verify only: fail if the shipped tpl/lock are not what this script
-#               would produce for the current pin. Writes nothing. For CI.
+#   --check     Verify the shipped tpl/lock against its current pins (unless
+#               explicitly overridden). Writes nothing. For CI.
 #
 # It never commits, and it does not bump the module version — do both by hand.
 set -euo pipefail
@@ -118,6 +118,22 @@ PY
 }
 
 # --- 1. target rev ------------------------------------------------------------
+# Validation must remain reproducible when upstream master moves. Regeneration
+# may deliberately choose latest; --check defaults to the shipped selections.
+template_revision() {
+  python3 - "$TPL" "$1" <<'PY'
+import re, sys
+text = open(sys.argv[1]).read()
+matches = re.findall(r'github:shinzui/' + re.escape(sys.argv[2]) + r'/([0-9a-f]{40})(?=")', text)
+if len(matches) != 1:
+    sys.exit('expected one immutable template pin for ' + sys.argv[2])
+print(matches[0])
+PY
+}
+if [ "$CHECK" -eq 1 ]; then
+  [ -n "$REV" ] || REV="$(template_revision haskell-nix-dev)"
+  [ -n "$HN_REV" ] || HN_REV="$(template_revision haskell-nix)"
+fi
 if [ -z "$REV" ]; then
   echo "resolving latest $FLAKE_REF …"
   REV="$(nix flake metadata "$FLAKE_REF" --refresh --json \

@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "blueprint": "0.1.0",
+  "modules": {
+    "nix-haskell-flake": "0.32.0",
+    "haskell-cli-app": "0.3.1"
+  },
+  "pins": {
+    "haskell-nix": "e5a7c2c50080b3364f0f0fd667240c560596d0ed",
+    "haskell-nix-dev": "21933607e80ec4660a28a125a6f4c0707e358caf",
+    "nixpkgs": "d5dfd8e6716dde34398bc14bc87c10dece9c8c68"
+  },
+  "qualified_runtime_configurations": [
+    {
+      "systems": [
+        "aarch64-darwin"
+      ],
+      "selection": {
+        "runtimeSelection": {
+          "name": "keiro-runtime",
+          "generation": 2,
+          "channel": "github",
+          "configuration": {
+            "compiler": "ghc9124",
+            "disableProfiling": true,
+            "disableHaddock": true
+          }
+        },
+        "applicationSelections": {
+          "kioku": 8,
+          "okf": 5,
+          "openapi-hs": 1,
+          "relay-pagination": 3,
+          "servant-openapi-hs": 1,
+          "shikumi-baikai": 9
+        }
+      }
+    }
+  ],
+  "recorded_origins": {
+    "0.30.0": "3a6eebdd0c6a5b594a665dbb5e08f47f69053449",
+    "0.31.0": "cc1b70c70eddeec5155c1a5a723b63a4cfaba6d6"
+  },
+  "qualification": "Native Apple Silicon only. Other systems retain bare behavior; runtime support requires their own qualification. Local candidate release, not a publication claim. Installed Seihou 0.10.1.0 c3cbd9bd202e87d6fd7fc0ede1d997d2c2140e0b tested; attendance does not prove adoption."
+}

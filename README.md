@@ -62,9 +62,9 @@ commands, and an optional removal procedure.
 
 | Module | Version | Purpose |
 |---|---|---|
-| [`nix-haskell-flake`](modules/haskell/nix-haskell-flake) | 0.30.0 | flake-parts Nix dev shell on the `haskell-nix-dev` base flake, with exact managed locks, an optional managed package-module seam, and toggleable local services/formatting/hooks |
+| [`nix-haskell-flake`](modules/haskell/nix-haskell-flake) | 0.32.0 | flake-parts Nix dev shell on the `haskell-nix-dev` base flake, with exact managed locks, an optional managed package-module seam, and toggleable local services/formatting/hooks |
 | [`haskell-library`](modules/haskell/haskell-library) | 0.2.0 | Single-package Haskell library on GHC 9.12 / GHC2024, `lens` + `generic-lens`, BSD-3, optional `tasty` suite |
-| [`haskell-cli-app`](modules/haskell/haskell-cli-app) | 0.3.0 | Tested two-package CLI with real core integration, GHC 9.12.4/9.14.1 shells, valid package metadata, and working Nix package/check outputs |
+| [`haskell-cli-app`](modules/haskell/haskell-cli-app) | 0.3.1 | Tested two-package CLI with real core integration, GHC 9.12.4/9.14.1 shells, valid package metadata, and working Nix package/check outputs |
 | [`haskell-keiro-project`](modules/haskell/haskell-keiro-project) | 0.1.0 | Six-package Keiro service bootstrap: Nix shell, workspace manifest, `just` recipes, implementation brief |
 | [`git-init`](modules/git/git-init) | 0.2.0 | `git init -b master`, seed `.gitignore`, optional private GitHub repo via `gh repo create`, optional org-team access grant |
 | [`repo-dir`](modules/git/repo-dir) | 0.1.0 | Create `<parentDir>/<name>` and run `git-init` inside it with a matching GitHub repo; owner from the active context's `git.githubOwner` |
@@ -167,3 +167,9 @@ promise; the bundle itself stays OKF-conformant regardless.
   Mori's cross-repo discovery, exposes artifacts under the `templates/` kind,
   and is maintained by hand — `seihou registry sync-versions` does not touch it,
   so update it in the same commit when you add an artifact or bump a version.
+
+Existing Haskell projects can use [upgrade-haskell-runtime](blueprints/upgrade-haskell-runtime/README.md)
+for preserved legacy adoption or ordered 0.30.0/0.31.0 upgrades. The optional checked runtime
+scope shares production and development identities; native acceptance remains independently
+verified. This checkout prepares module 0.32.0, CLI scaffold 0.3.1 and blueprint 0.1.0;
+remote discovery requires publishing the reviewed commit first.

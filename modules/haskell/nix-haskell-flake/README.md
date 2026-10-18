@@ -2,7 +2,7 @@
 
 > Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects on the `haskell-nix-dev` base flake (prebuilt GHC/HLS/cabal toolchains). Module-owned inputs are rev-pinned or follow that base, producing one exact lock across feature combinations. Base wiring and dependent scaffold package outputs live in managed `nix/*.nix` modules, while user customizations stay in an unmanaged `flake.module.nix`. Includes toggleable local services, treefmt-nix, and pre-commit hooks.
 
-**Version:** `0.30.0`
+**Version:** `0.32.0`
 
 ## Overview
 
@@ -20,9 +20,9 @@ The generated `flake.nix` is a thin, stable **stub**: it declares inputs, calls
   declared, while feature toggles control imports and generated files. Two projects on the same
   module version therefore get **byte-identical locks and one shared store closure** without a
   first-run lock rewrite. See [Reproducible locks](#reproducible-locks).
-- Each devShell is built from the base flake's `lib.${system}.mkDevShell` (GHC + `cabal` + HLS;
+- Bare devShells are built from the base flake's `lib.${system}.mkDevShell` (GHC + `cabal` + HLS;
   HLS prebuilt from the base flake's cache once published, rather than compiled from source).
-- The project's own package is built with `callCabal2nix` against the followed nixpkgs.
+- Production packages use `haskellProject.applicationScope`; runtime mode shares that checked scope with the primary shell.
 
 ### Generated layout
 
@@ -50,6 +50,43 @@ When pre-commit support is enabled, the generated hook configuration also instal
 `commit-msg` hook that rejects literal `\n` escape sequences. This catches commit commands
 that pass an escaped multi-line body to `git commit -m` instead of supplying real line
 breaks. The existing treefmt hook continues to run at the ordinary `pre-commit` stage.
+
+## Explicit retained-runtime development
+
+Version 0.32.0 adds an opt-in shared scope. Null `haskellProject.runtime` preserves bare
+shells, including compatibility with older toolchains lacking the new shell APIs.
+An explicit runtime record contains `runtimeSelection` (name, generation, channel,
+configuration) and every `applicationSelections` entry. No moving default fills missing
+selections. The checked `applicationScope` supplies both primary shell and production
+recipes; `packageSetIdentity` exposes its diagnostic identities. A secondary compiler
+remains bare.
+
+Declare custom application recipes in `ownPackages` and `applicationOverlays`; root and
+CLI scaffolds declare theirs. Shared recipe overrides, undeclared packages and a second
+compiler fail. Native tools go in `extraDevPackages`, headers/libraries in
+`extraBuildInputs`, compatible inheritance in `inputsFrom`, and the project hook in
+`shellHook`. Nullable `withHls` follows actual availability in runtime mode; unsupported
+explicit requests fail. `packageSource` optionally supplies an audited root source
+boundary; its default includes the complete flake source and all resources.
+
+The module uses the toolchain's direct Nixpkgs import by default in runtime mode.
+Explicit caller package-set definitions keep higher priority and remain subject to the
+retained native-input guard. This avoids a `legacyPackages` library-version label mismatch
+without relaxing compiler or native-library identity checks.
+
+Published input pins: channel `e5a7c2c50080b3364f0f0fd667240c560596d0ed`, toolchain
+`21933607e80ec4660a28a125a6f4c0707e358caf`, Nixpkgs
+`d5dfd8e6716dde34398bc14bc87c10dece9c8c68`. The target manifest in
+[upgrade-haskell-runtime](../../../blueprints/upgrade-haskell-runtime/README.md) records
+the qualified Apple Silicon generation-2 configuration. Runtime consistency alone is
+not a changed-code compilation speedup. Existing full SDK and separately accepted
+executable recipes stay application-owned.
+
+Use that blueprint for existing projects. Preserve their explicit selections, custom
+inputs, cache trust, native tools, HLS, hooks, services and authored files. Recorded
+updates require preview and shared-owner-aware three-way merges. Legacy adoption uses
+`agent run --no-baseline` and invents no old version. The independent checker must pass
+with `--native`; agent attendance does not establish acceptance.
 
 ## Reproducible locks
 

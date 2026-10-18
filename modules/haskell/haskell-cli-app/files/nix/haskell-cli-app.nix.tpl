@@ -3,21 +3,28 @@
 # belong in the unmanaged ../flake.module.nix imported by the base flake.
 { inputs, ... }:
 {
-  perSystem = { pkgs, ... }:
+  perSystem = { pkgs, config, ... }:
     let
-      haskellPackages = pkgs.haskell.packages."{{ghc.version}}".override {
-        overrides = hself: _hsuper: {
-          "{{project.name}}-core" =
-            hself.callCabal2nix "{{project.name}}-core" (inputs.self + "/{{project.name}}-core") { };
-          "{{project.name}}-cli" =
-            hself.callCabal2nix "{{project.name}}-cli" (inputs.self + "/{{project.name}}-cli") { };
-        };
-      };
-
+      haskellPackages = config.haskellProject.applicationScope;
       corePackage = haskellPackages."{{project.name}}-core";
       cliPackage = haskellPackages."{{project.name}}-cli";
     in
     {
+      haskellProject.ownPackages = [ "{{project.name}}-core" "{{project.name}}-cli" ];
+      haskellProject.applicationOverlays = [ (hself: _hsuper: {
+        "{{project.name}}-core" =
+          hself.callCabal2nix "{{project.name}}-core"
+            (builtins.path {
+              path = inputs.self + "/{{project.name}}-core";
+              name = "{{project.name}}-core-source";
+            }) { };
+        "{{project.name}}-cli" =
+          hself.callCabal2nix "{{project.name}}-cli"
+            (builtins.path {
+              path = inputs.self + "/{{project.name}}-cli";
+              name = "{{project.name}}-cli-source";
+            }) { };
+      }) ];
       packages."{{project.name}}-core" = corePackage;
       packages."{{project.name}}-cli" = cliPackage;
       packages.default = cliPackage;

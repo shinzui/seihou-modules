@@ -2,7 +2,7 @@
 , repoDescription = Some "Composable Seihou modules for bootstrapping projects"
 , modules =
   [ { name = "nix-haskell-flake"
-    , version = Some "0.31.0"
+    , version = Some "0.32.0"
     , path = "modules/haskell/nix-haskell-flake"
     , description = Some "Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, local services, treefmt, and pre-commit hooks"
     , tags = [ "haskell", "nix", "flake", "devshell" ]
@@ -14,7 +14,7 @@
     , tags = [ "haskell", "keiro", "service", "bootstrap" ]
     }
   , { name = "haskell-cli-app"
-    , version = Some "0.3.0"
+    , version = Some "0.3.1"
     , path = "modules/haskell/haskell-cli-app"
     , description = Some "Tested Haskell CLI bootstrap: reusable core plus CLI packages on GHC2024, GHC 9.12.4/9.14.1 shells, current bounded dependencies, valid package-local distribution metadata, and workspace-aware Nix package/check outputs"
     , tags = [ "haskell", "cli", "bootstrap", "ghc2024" ]
@@ -71,7 +71,13 @@
     }
   ]
 , blueprints =
-  [ { name = "upgrade-fumadocs"
+  [ { name = "upgrade-haskell-runtime"
+    , version = Some "0.1.0"
+    , path = "blueprints/upgrade-haskell-runtime"
+    , description = Some "Preserved Haskell runtime adoption and ordered upgrades with independent native acceptance"
+    , tags = [ "haskell", "nix", "runtime", "migration" ]
+    }
+  , { name = "upgrade-fumadocs"
     , version = Some "0.1.0"
     , path = "blueprints/upgrade-fumadocs"
     , description = Some "Upgrade existing Fumadocs sites to the shared Bun flake-parts modules while preserving custom content, package-manager workflows, fonts, CI gates, and Seihou ownership"

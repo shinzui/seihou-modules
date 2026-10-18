@@ -16,7 +16,7 @@
   # nix-haskell-flake version and `seihou update nix-haskell-flake`. Editing a rev here is a
   # conflict at the next run.
   inputs = {
-    haskell-nix-dev.url = "github:shinzui/haskell-nix-dev/206ecd25bcb4a07581210bdae3e6f43c8fd179d8";
+    haskell-nix-dev.url = "github:shinzui/haskell-nix-dev/21933607e80ec4660a28a125a6f4c0707e358caf";
     nixpkgs.follows = "haskell-nix-dev/nixpkgs";
     flake-parts.follows = "haskell-nix-dev/flake-parts";
     treefmt-nix.follows = "haskell-nix-dev/treefmt-nix";
@@ -28,7 +28,7 @@
     # unused inputs are locked but never built. Both follows keep the graph to one
     # haskell-nix-dev and nixpkgs.
     haskell-nix = {
-      url = "github:shinzui/haskell-nix/58a2c26c5be7cdf222fba6323939a67d3c62f193";
+      url = "github:shinzui/haskell-nix/e5a7c2c50080b3364f0f0fd667240c560596d0ed";
       inputs.haskell-nix-dev.follows = "haskell-nix-dev";
       inputs.nixpkgs.follows = "nixpkgs";
     };

@@ -3,3 +3,6 @@
 CLAUDE.local.md
 # --- /seihou:claude-gitignore ---
 .agents/
+
+# Python test helpers
+__pycache__/

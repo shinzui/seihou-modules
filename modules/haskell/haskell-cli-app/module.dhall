@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "haskell-cli-app"
-    , version = Some "0.3.0"
+    , version = Some "0.3.1"
     , description = Some
         "Bootstrap a tested two-package Haskell CLI app (reusable core library + CLI executable) under GHC2024, with GHC 9.12.4 as the HLS-backed default and GHC 9.14.1 as a secondary build shell. Generates valid package-local distribution metadata and workspace-aware Nix package/check outputs on the latest nix-haskell-flake."
     , vars =
