@@ -2,7 +2,7 @@
 
 > Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects on the `haskell-nix-dev` base flake (prebuilt GHC/HLS/cabal toolchains). Module-owned inputs are rev-pinned or follow that base, producing one exact lock across feature combinations. Base wiring and dependent scaffold package outputs live in managed `nix/*.nix` modules, while user customizations stay in an unmanaged `flake.module.nix`. Includes toggleable local services, treefmt-nix, and pre-commit hooks.
 
-**Version:** `0.32.0`
+**Version:** `0.33.0`
 
 ## Overview
 

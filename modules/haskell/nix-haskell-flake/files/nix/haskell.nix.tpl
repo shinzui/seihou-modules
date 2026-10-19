@@ -88,7 +88,8 @@
           "haskellProject.applicationOverlays must contain overlay functions";
         lib.composeManyExtensions project.applicationOverlays;
       barePackages = pkgs.haskell.packages."{{ghc.version}}";
-      bareScope = if project.applicationOverlays == [ ] then barePackages
+      bareScope =
+        if project.applicationOverlays == [ ] then barePackages
         else barePackages.override { overrides = applicationOverlay; };
       applicationScope = if runtimeEnabled then runtimeShell.applicationScope else bareScope;
 
@@ -198,7 +199,7 @@
         {{#if Eq nix.kafka true}}
         ++ [ pkgs.rdkafka pkgs.rdkafka.dev ]
         {{/if}}
-        ;
+      ;
       runtimeShell =
         assert lib.assertMsg (inputs.haskell-nix.lib ? mkProjectDevShell && hsdev ? mkProjectShell)
           "haskellProject.runtime requires the published retained-runtime shell APIs";
@@ -218,8 +219,9 @@
       mkBareShell = ghc:
         assert lib.assertMsg (builtins.hasAttr ghc hsdev.ghcVersions)
           "Unknown or unavailable Haskell compiler: ${ghc}";
-        assert lib.assertMsg (project.withHls != true
-          || (hsdev.toolchainCapabilities.compilers.${ghc}.hlsAvailable or false))
+        assert lib.assertMsg
+          (project.withHls != true
+            || (hsdev.toolchainCapabilities.compilers.${ghc}.hlsAvailable or false))
           "HLS explicitly requested but unavailable for ${ghc} on ${system}";
         let
           legacy = hsdev.mkDevShell {
@@ -228,11 +230,13 @@
             withHls = if project.withHls == null then true else project.withHls;
             shellHook = shellHook + project.shellHook;
           };
-        in if project.extraBuildInputs == [ ] && project.inputsFrom == [ ] then legacy
-        else pkgs.mkShell {
-          inputsFrom = [ legacy ] ++ project.inputsFrom;
-          buildInputs = project.extraBuildInputs;
-        };
+        in
+        if project.extraBuildInputs == [ ] && project.inputsFrom == [ ] then legacy
+        else
+          pkgs.mkShell {
+            inputsFrom = [ legacy ] ++ project.inputsFrom;
+            buildInputs = project.extraBuildInputs;
+          };
       primaryShell = if runtimeEnabled then runtimeShell else mkBareShell "{{ghc.version}}";
     in
     {
