@@ -28,7 +28,7 @@
     # unused inputs are locked but never built. Both follows keep the graph to one
     # haskell-nix-dev and nixpkgs.
     haskell-nix = {
-      url = "github:shinzui/haskell-nix/e5a7c2c50080b3364f0f0fd667240c560596d0ed";
+      url = "github:shinzui/haskell-nix/d13245db8a3e2c1c559185c0adf87285259b7ab2";
       inputs.haskell-nix-dev.follows = "haskell-nix-dev";
       inputs.nixpkgs.follows = "nixpkgs";
     };
