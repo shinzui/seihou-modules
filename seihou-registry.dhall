@@ -1,7 +1,13 @@
 { repoName = "seihou-modules"
 , repoDescription = Some "Composable Seihou modules for bootstrapping projects"
 , modules =
-  [ { name = "nix-haskell-flake"
+  [ { name = "gcp-kube-env"
+    , version = Some "0.1.0"
+    , path = "modules/cloud/gcp-kube-env"
+    , description = Some "Checkout-local GCP project and Kubernetes context through direnv, with a private kubeconfig and a configurable env filename defaulting to .envrc.local"
+    , tags = [ "gcp", "kubernetes", "direnv", "environment" ]
+    }
+  , { name = "nix-haskell-flake"
     , version = Some "0.34.0"
     , path = "modules/haskell/nix-haskell-flake"
     , description = Some "Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, local services, treefmt, and pre-commit hooks"

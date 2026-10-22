@@ -62,6 +62,7 @@ commands, and an optional removal procedure.
 
 | Module | Version | Purpose |
 |---|---|---|
+| [`gcp-kube-env`](modules/cloud/gcp-kube-env) | 0.1.0 | Checkout-local GCP project and kube context, private kubeconfig, and direnv settings in a configurable env file (default `.envrc.local`) |
 | [`nix-haskell-flake`](modules/haskell/nix-haskell-flake) | 0.34.0 | flake-parts Nix dev shell on the `haskell-nix-dev` base flake, with exact managed locks, an optional managed package-module seam, and toggleable local services/formatting/hooks |
 | [`haskell-library`](modules/haskell/haskell-library) | 0.2.0 | Single-package Haskell library on GHC 9.12 / GHC2024, `lens` + `generic-lens`, BSD-3, optional `tasty` suite |
 | [`haskell-cli-app`](modules/haskell/haskell-cli-app) | 0.3.1 | Tested two-package CLI with real core integration, GHC 9.12.4/9.14.1 shells, valid package metadata, and working Nix package/check outputs |
@@ -146,6 +147,9 @@ promise; the bundle itself stays OKF-conformant regardless.
 
 ### Scripts
 
+- `scripts/test-gcp-kube-env.py` — exercises real Seihou generation, kubectl
+  configuration and direnv loading against offline fixtures, including custom
+  filenames, reconfiguration, credential isolation and preservation of local settings.
 - `scripts/update-nix-haskell-flake-lock.sh` — the only supported way to move
   the `haskell-nix-dev` pin. Rewrites `files/flake.nix.tpl` and regenerates
   `files/flake.lock` together, then proves the pin sticks and that a minimal

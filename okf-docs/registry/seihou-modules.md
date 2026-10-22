@@ -19,6 +19,7 @@ Every artifact below is published by the `seihou-modules` registry and documente
 
 ## Modules
 
+- [gcp-kube-env](/modules/gcp-kube-env.md)
 - [nix-haskell-flake](/modules/nix-haskell-flake.md)
 - [haskell-keiro-project](/modules/haskell-keiro-project.md)
 - [haskell-cli-app](/modules/haskell-cli-app.md)
