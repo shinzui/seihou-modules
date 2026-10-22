@@ -16,7 +16,7 @@ let MigrationOp =
 
 in      S.Module::{
         , name = "nix-haskell-flake"
-        , version = Some "0.34.0"
+        , version = Some "0.35.0"
         , description = Some
             "Optional explicit retained-runtime configuration shares one checked scope between production packages and the primary shell. Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is rev-pinned or follows that base, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules, dependent Seihou modules can add managed package wiring through nix.package-module, and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, and pre-commit-hooks with a commit-message newline-escape guard; the always-locked shared haskell-nix patch registry is available to custom wiring. The generated flake.module.nix.example includes a ready-to-uncomment, Linux-guarded dockerTools.buildLayeredImage block for building an OCI image of the project's executable. Optional nix.redpanda adds macOS-only redpanda-local-* scripts for a private, non-colliding Redpanda cluster on Apple Container (reusing the always-locked redpanda-container input), for tests that need a broker of their own instead of the shared machine-wide one."
         , vars =
@@ -382,6 +382,23 @@ in      S.Module::{
               -- top-level treefmt.nix. DeleteFile is a no-op when it is absent
               -- (e.g. projects that never enabled treefmt).
               [ MigrationOp.DeleteFile { path = "treefmt.nix" } ]
+            }
+          , { from = "0.34.0"
+            , to = "0.35.0"
+            , ops =
+              -- `.envrc` is a managed generated file and should be tracked by
+              -- git so fresh clones get it; only `.envrc.local` stays ignored.
+              -- Earlier versions appended `.envrc` to `.gitignore` via
+              -- append-line-if-absent, which never removes it on its own, so
+              -- retire that one orphaned line here. Keep `.envrc.local`. The
+              -- sed is a no-op when the line is absent, and we do not touch the
+              -- file if it does not exist.
+              [ MigrationOp.RunCommand
+                  { run =
+                      "if [ -e .gitignore ]; then sed -i.seihoubak '/^\\.envrc$/d' .gitignore && rm -f .gitignore.seihoubak; fi"
+                  , workDir = None Text
+                  }
+              ]
             }
           ]
         }
