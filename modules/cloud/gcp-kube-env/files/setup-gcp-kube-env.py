@@ -20,14 +20,14 @@ def read_file(path):
     return path.read_text() if path.exists() else ''
 
 
-def write_file(path, content, private=False):
+def write_file(path, content, private=False, temp_dir=None):
     """Replace atomically, retaining public file modes and restricting credentials."""
     mode = 0o600 if private else (stat.S_IMODE(path.stat().st_mode) if path.exists() else 0o644)
     if path.exists() and path.read_text() == content:
         if private:
             path.chmod(mode)
         return
-    with tempfile.NamedTemporaryFile(mode='w', dir=path.parent, delete=False) as handle:
+    with tempfile.NamedTemporaryFile(mode='w', dir=temp_dir or path.parent, delete=False) as handle:
         temp_path = Path(handle.name)
         try:
             os.chmod(temp_path, mode)
@@ -57,6 +57,28 @@ def append_lines(existing, additions):
     return result
 
 
+def git(root, *args):
+    # Inspect this checkout's normal index, even when invoked from a Git hook
+    # or a caller that exports an alternate index or work tree.
+    env = {key: value for key, value in os.environ.items() if not key.startswith('GIT_')}
+    result = subprocess.run(['git', *args], cwd=root, env=env, text=True, capture_output=True)
+    if result.returncode not in (0, 1):
+        raise ValueError(f'Cannot verify Git protection: {result.stderr.strip()}')
+    return result
+
+
+def require_untracked(root, paths):
+    result = git(root, 'ls-files', '--cached', '-z', '--', *paths)
+    if result.returncode or result.stdout:
+        raise ValueError('Private output paths must be untracked in Git: ' + ', '.join(paths))
+
+
+def require_ignored(root, paths):
+    for path in paths:
+        if git(root, 'check-ignore', '--quiet', '--', path).returncode:
+            raise ValueError(f'Private output is not ignored by Git: {path}; fix conflicting ignore rules')
+
+
 def main():
     root = Path(__file__).resolve().parents[1]
     values = (root / '.seihou/gcp-kube-env.conf').read_text().splitlines()
@@ -68,8 +90,8 @@ def main():
     if not context or any(ord(char) < 32 or ord(char) == 127 for char in context):
         raise ValueError('k8s.context must be a nonempty single-line context name')
     if (not re.fullmatch(r'[A-Za-z0-9._-]+', filename)
-            or filename in {'.', '..', '.envrc', '.gitignore'}):
-        raise ValueError('env.file must be a checkout-root filename other than .envrc or .gitignore')
+            or filename in {'.', '..', '.envrc', '.gitignore', '.direnv'}):
+        raise ValueError('env.file must be a checkout-root filename other than .envrc, .gitignore, or .direnv')
 
     private_dir = root / '.direnv'
     if private_dir.is_symlink():
@@ -83,6 +105,8 @@ def main():
     existing_ignore = read_file(ignore_path)
     if kube_path.is_symlink():
         raise ValueError('Refusing to replace a kubeconfig symlink')
+    private_paths = [filename, '.direnv']
+    require_untracked(root, private_paths)
 
     block = '\n'.join([
         BEGIN,
@@ -113,11 +137,15 @@ def main():
         raise ValueError('kubectl did not return the requested single-context configuration')
     config['current-context'] = context
 
-    private_dir.mkdir(exist_ok=True)
-    write_file(kube_path, json.dumps(config, indent=2) + '\n', private=True)
-    write_file(env_path, env_content, private=True)
-    write_file(loader_path, loader_content)
+    # Install and verify exclusions before creating credentials or temporary
+    # files. If a later write fails, any remaining private files stay ignored.
     write_file(ignore_path, ignore_content)
+    require_ignored(root, [filename, '.direnv/'])
+    private_dir.mkdir(exist_ok=True)
+    require_ignored(root, [filename, '.direnv/gcp-kube-env.kubeconfig'])
+    write_file(kube_path, json.dumps(config, indent=2) + '\n', private=True)
+    write_file(env_path, env_content, private=True, temp_dir=private_dir)
+    write_file(loader_path, loader_content)
     print(f'gcp-kube-env: configured {filename} for project {project} and context {context}')
 
 

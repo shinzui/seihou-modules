@@ -8,8 +8,8 @@ kubeconfig stay unchanged.
 ```bash
 seihou install https://github.com/shinzui/seihou-modules.git --module gcp-kube-env
 seihou run gcp-kube-env --no-save-prompted \
-  --var gcp.project=tan-ng \
-  --var k8s.context=gke_tan-cluster_us-west1-a_sennari
+  --var gcp.project=example-project \
+  --var k8s.context=gke_example-project_us-central1-a_example-cluster
 direnv allow
 ```
 
@@ -21,8 +21,8 @@ To use `.env` instead:
 
 ```bash
 seihou run gcp-kube-env --no-save-prompted \
-  --var gcp.project=tan-ng \
-  --var k8s.context=gke_tan-cluster_us-west1-a_sennari \
+  --var gcp.project=example-project \
+  --var k8s.context=gke_example-project_us-central1-a_example-cluster \
   --var env.file=.env
 ```
 
@@ -36,9 +36,11 @@ credentials, change accounts, or contact a cluster.
 |---|---|---|
 | `gcp.project` | required | GCP project ID exported as `CLOUDSDK_CORE_PROJECT` and `GOOGLE_CLOUD_PROJECT` |
 | `k8s.context` | required | Existing context from `kubectl config get-contexts` |
-| `env.file` | `.envrc.local` | Checkout-root filename containing exported shell settings; letters, digits, `.`, `_`, `-` only, excluding `.`, `..`, `.envrc`, and `.gitignore` |
+| `env.file` | `.envrc.local` | Checkout-root filename containing exported shell settings; letters, digits, `.`, `_`, `-` only, excluding `.`, `..`, `.envrc`, `.gitignore`, and `.direnv` |
 
-Requires Python 3.8+, kubectl, and an existing local kube context during setup.
+Requires Python 3.8+, Git, a Git checkout, kubectl, and an existing local kube
+context during setup. The env file and everything under `.direnv/` must be
+untracked. Setup refuses tracked output paths; it does not alter Git's index.
 Using the environment requires direnv, gcloud, and the context's usual auth
 tools, such as `gke-gcloud-auth-plugin` for GKE. Existing `.envrc` setup, including
 a Nix shell, is preserved. `nix develop` alone does not load direnv files.
@@ -51,16 +53,22 @@ shell command. Neither file contains kube credentials.
 
 The setup command:
 
-1. Reads the selected context from the current `KUBECONFIG` or kubectl's default
-   config, flattening referenced certificate files into a private snapshot.
-2. Writes `.direnv/gcp-kube-env.kubeconfig` with only that context selected.
-3. Adds or replaces its marked block in `env.file`, preserving all other content.
+1. Rejects tracked private output paths and reads the selected context from the
+   current `KUBECONFIG` or kubectl's default config, flattening referenced
+   certificate files into a private snapshot.
+2. Adds the env file and `.direnv/` to `.gitignore`, without duplicating identical
+   lines, then verifies that Git actually ignores both paths. Conflicting rules
+   cause setup to stop before writing credentials; fix those rules and rerun.
+3. Writes `.direnv/gcp-kube-env.kubeconfig` with only that context selected.
+4. Adds or replaces its marked block in `env.file`, preserving all other content.
    It exports both project variables and an absolute `KUBECONFIG` path.
-4. Appends `source_env_if_exists <env.file>` to `.envrc` and adds the env file and
-   `.direnv/` to `.gitignore`, without duplicating identical lines.
+5. Appends `source_env_if_exists <env.file>` to `.envrc`.
 
-The env file and kubeconfig have mode `0600`. Credentials stay out of Seihou's
-manifest and generation baselines. The private files and the appended loader
+The env file and kubeconfig have mode `0600`. Their temporary files also have
+mode `0600` and live inside the ignored `.direnv/` directory. If a later write
+fails, any private files already written remain ignored; `.gitignore` changes
+are retained. Credentials stay out of Seihou's manifest and generation
+baselines. The private files and the appended loader
 are maintained by the setup script rather than Seihou's file conflict engine;
 edits inside the marked block are replaced on the next setup. Symlink outputs
 and malformed blocks are rejected.

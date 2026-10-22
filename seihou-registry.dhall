@@ -2,7 +2,7 @@
 , repoDescription = Some "Composable Seihou modules for bootstrapping projects"
 , modules =
   [ { name = "gcp-kube-env"
-    , version = Some "0.1.0"
+    , version = Some "0.1.1"
     , path = "modules/cloud/gcp-kube-env"
     , description = Some "Checkout-local GCP project and Kubernetes context through direnv, with a private kubeconfig and a configurable env filename defaulting to .envrc.local"
     , tags = [ "gcp", "kubernetes", "direnv", "environment" ]

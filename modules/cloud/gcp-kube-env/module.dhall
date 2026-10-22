@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "gcp-kube-env"
-    , version = Some "0.1.0"
+    , version = Some "0.1.1"
     , description = Some
         "Configure a checkout-local GCP project and Kubernetes context through direnv, with a private kubeconfig and a configurable env filename (default .envrc.local), preserving existing settings and global CLI configuration."
     , vars =
@@ -25,7 +25,7 @@ in  S.Module::{
         , type = "text"
         , default = Some ".envrc.local"
         , required = True
-        , description = Some "Checkout-root env filename, using letters, digits, dots, underscores, or hyphens; defaults to .envrc.local. Cannot be .envrc or .gitignore."
+        , description = Some "Checkout-root env filename, using letters, digits, dots, underscores, or hyphens; defaults to .envrc.local. Cannot be .envrc, .gitignore, or .direnv."
         }
       ]
     , prompts =
