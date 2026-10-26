@@ -1,0 +1,28 @@
+{
+  "lockfileVersion": 2,
+  "configVersion": 1,
+  "workspaces": {
+    "": {
+      "name": "bun-fixture",
+    },
+    "packages/app": {
+      "name": "fixture-app",
+      "version": "1.0.0",
+      "dependencies": {
+        "fixture-shared": "workspace:*",
+        "is-number": "7.0.0",
+      },
+    },
+    "packages/shared": {
+      "name": "fixture-shared",
+      "version": "1.0.0",
+    },
+  },
+  "packages": {
+    "fixture-app": ["fixture-app@workspace:packages/app"],
+
+    "fixture-shared": ["fixture-shared@workspace:packages/shared"],
+
+    "is-number": ["is-number@7.0.0", "", {}, "sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng=="],
+  }
+}

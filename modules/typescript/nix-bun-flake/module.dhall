@@ -4,8 +4,8 @@ let S =
 
 in  S.Module::{
     , name = "nix-bun-flake"
-    , version = Some "0.3.0"
-    , description = Some "Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, and optional git-hooks.nix pre-commit checks"
+    , version = Some "0.4.0"
+    , description = Some "Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, optional git-hooks.nix pre-commit checks, and opt-in pinned bun2nix build helpers"
     , vars =
       [ S.VarDecl::{
         , name = "project.name"
@@ -18,6 +18,13 @@ in  S.Module::{
         , name = "project.description"
         , type = "text"
         , description = Some "One-line project description"
+        , required = True
+        }
+      , S.VarDecl::{
+        , name = "nix.bun2nix"
+        , type = "bool"
+        , default = Some "false"
+        , description = Some "Include the pinned bun2nix generator and build helpers (project build recipes remain user-owned)"
         , required = True
         }
       , S.VarDecl::{
@@ -42,6 +49,10 @@ in  S.Module::{
         , text = "Describe your project in one line:"
         }
       , S.Prompt::{
+        , var = "nix.bun2nix"
+        , text = "Include bun2nix for explicit Nix dependency generation and builds?"
+        }
+      , S.Prompt::{
         , var = "nix.pre-commit"
         , text = "Include pre-commit hooks (oxlint + oxfmt) via git-hooks.nix?"
         }
@@ -52,6 +63,8 @@ in  S.Module::{
       , S.Step::{ strategy = "copy", src = "nix/tooling.nix", dest = "nix/tooling.nix" }
       , S.Step::{ strategy = "copy", src = "nix/tooling-sources.json", dest = "nix/tooling-sources.json" }
       , S.Step::{ strategy = "copy", src = "nix/pre-commit.nix", dest = "nix/pre-commit.nix", when = Some "Eq nix.pre-commit true" }
+      , S.Step::{ strategy = "copy", src = "nix/bun2nix-package.nix", dest = "nix/bun2nix-package.nix", when = Some "Eq nix.bun2nix true" }
+      , S.Step::{ strategy = "copy", src = "nix/bun2nix-module.nix", dest = "nix/bun2nix-module.nix", when = Some "Eq nix.bun2nix true" }
       , S.Step::{ strategy = "copy", src = "flake.module.nix.example", dest = "flake.module.nix.example" }
       , S.Step::{ strategy = "copy", src = "flake.lock", dest = "flake.lock" }
       , S.Step::{ strategy = "template", src = "package.json.tpl", dest = "package.json" }
@@ -82,6 +95,8 @@ in  S.Module::{
         , S.RemovalStep::{ action = "remove-file", dest = "nix/tooling.nix" }
         , S.RemovalStep::{ action = "remove-file", dest = "nix/tooling-sources.json" }
         , S.RemovalStep::{ action = "remove-file", dest = "nix/pre-commit.nix" }
+        , S.RemovalStep::{ action = "remove-file", dest = "nix/bun2nix-package.nix" }
+        , S.RemovalStep::{ action = "remove-file", dest = "nix/bun2nix-module.nix" }
         , S.RemovalStep::{ action = "remove-file", dest = "flake.module.nix.example" }
         , S.RemovalStep::{ action = "remove-file", dest = "package.json" }
         , S.RemovalStep::{ action = "remove-file", dest = "tsconfig.json" }

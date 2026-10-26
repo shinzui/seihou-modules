@@ -37,6 +37,22 @@ with tempfile.TemporaryDirectory(prefix='fumadocs-adoption-') as temp:
                '--var', 'docs.starter-content=false']
     run(command, project)
     run(command, project)
+    canonical = (ROOT / 'modules/typescript/nix-bun-flake/files/flake.lock').read_bytes()
+    assert (project / 'flake.lock').read_bytes() == canonical
+    assert './nix/bun2nix-module.nix' not in (project / 'flake.nix').read_text()
+    assert not (project / 'nix/bun2nix-module.nix').exists()
+    assert not (project / 'nix/bun2nix-package.nix').exists()
+    package = json.loads((project / 'package.json').read_text())
+    assert 'bun2nix' not in package['dependencies']
+    assert 'bun2nix' not in package['devDependencies']
+    assert all('bun2nix' not in command for command in package['scripts'].values())
+    # A consumer's package-manager choice is preserved through a real update of
+    # the composed application, including the base module's shared owners.
+    package['packageManager'] = 'bun@1.4.2'
+    (project / 'package.json').write_text(json.dumps(package, indent=2) + '\n')
+    run(['seihou', 'update', 'fumadocs', '--dry-run', '--no-commands'], project)
+    run(['seihou', 'update', 'fumadocs', '--json', '--no-commands'], project)
+    assert json.loads((project / 'package.json').read_text())['packageManager'] == 'bun@1.4.2'
     assert content.read_bytes() == original
     assert sorted(f.name for f in content.parent.iterdir()) == ['index.mdx']
     manifest_path = project / '.seihou/manifest.json'

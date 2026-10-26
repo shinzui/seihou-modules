@@ -44,9 +44,9 @@
     , tags = [ "git", "github", "bootstrap", "context" ]
     }
   , { name = "nix-bun-flake"
-    , version = Some "0.3.0"
+    , version = Some "0.4.0"
     , path = "modules/typescript/nix-bun-flake"
-    , description = Some "Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, and optional git-hooks.nix pre-commit checks"
+    , description = Some "Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, optional git-hooks.nix pre-commit checks, and opt-in pinned bun2nix build helpers"
     , tags = [ "typescript", "bun", "nix", "flake", "oxc", "devshell" ]
     }
   , { name = "fumadocs"

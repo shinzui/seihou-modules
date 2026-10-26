@@ -9,6 +9,12 @@ provenance:
     model: "gpt-6.1-sol"
     harness: "codex-cli"
     at: 2026-10-26T17:53:11Z
+  revisions:
+    - model: "gpt-6.1-sol"
+      harness: "codex-cli"
+      at: 2026-10-26T18:18:21Z
+      mode: "implement"
+      note: "Implement the optional pinned helper, immutable verifier, native fixtures, and adoption documentation"
 ---
 
 # Add optional bun2nix support to the Bun Nix module
@@ -37,21 +43,42 @@ opt-out project whose existing shell and unmanaged extensions still work.
 ## Progress
 
 
-- [ ] M1: A shared pinned helper accepts supported v1/v2 lock fixtures, rejects unqualified formats, and preserves the upstream hook/fetch APIs.
-- [ ] M2: The default-off module option renders correctly in every hooks/bun2nix combination, preserves canonical locks and project ownership, and has deterministic pin verification.
-- [ ] M3: Single-package and workspace consumers build in sandboxes without local dependencies; source edits preserve registry-cache identity and update their outputs on the supported native systems.
-- [ ] M4: Adoption and patch-maintenance documentation, versioned registry metadata, generated docs, and regression evidence form a coherent module release candidate.
+- [x] M1 (2026-10-26): Patched bun2nix 2.1.2 built on aarch64-darwin; v1/v2 generation passed, v3 failed explicitly, and a generated registry cache fed a frozen sandbox consumer through the preserved hook/fetch APIs.
+- [x] M2 (2026-10-26): Four real Seihou renders evaluate with/without the copied extension on all three systems; regenerated locks are identical and survive full update. Real enable/disable/removal preserve authored files and edited orphans; immutable verification passed without changing module files.
+- [x] M3 (2026-10-26): Single-package and workspace consumers passed native sandbox builds on aarch64-darwin, aarch64-linux and x86_64-linux, including generator-byte comparison, v3 rejection, output checks, independent app/shared edits, registry-dependency invalidation and unchanged-build reuse. Fumadocs adoption passed with bun2nix disabled and its package-manager choice preserved.
+- [x] M4 (2026-10-26): Version 0.4.0 agrees in module, registry, Mori, README and generated module docs. Adoption/build/patch-maintenance examples and ADR-6 are complete. Module, immutable-pin, native, ownership, Fumadocs, strict documentation and friction-profile checks passed; the global registry check retains only the pre-existing Haskell 0.34.0/0.35.0 mismatch.
 
-This request creates a plan only. No implementation milestone has been executed. Initial
-research validated the existing Bun module and inspected its templates, updater, CLI contracts,
-upstream source, and the working console reference. The repository was clean before creating
-this plan.
+Implementation and native acceptance are complete. Final code is a tested 0.4.0 release
+candidate; no tags, pushes, registry publication or real consumer migration were performed.
+The pre-existing unrelated Haskell registry drift is preserved. Supplemental development-shell
+help checks passed on all three systems, with the translated x86 environment qualifications
+recorded below. Shared Seihou ownership is established through real fixture generation.
 
 
 ## Surprises & Discoveries
 
 
-(None yet.)
+Discovery (2026-10-26): Upstream `fetchBunDeps` is callable through a functor attribute
+set; `builtins.isFunction` alone is false. Acceptance verifies the callable interface
+and exercises it through real cache/build consumers.
+
+Discovery (2026-10-26): Seihou rejects noninteractive edited-orphan dry runs before
+showing the plan unless supplied a resolution. The isolated harness inspects
+`--dry-run --json --force`, requires its sole resolution to be `retainTracked` for
+the edited wrapper and no conflicts, then applies the identical command (FRIC-1 in
+`docs/friction-log/`). Operator documentation continues to use reviewed interactive
+choices instead of blanket force.
+
+Discovery (2026-10-26): The translated x86 Linux container cannot load Nix’s seccomp
+BPF filter. Its coordinator uses `filter-syscalls = false`, preserving explicit
+`sandbox = true` on native builds/checks (FRIC-2 in `docs/friction-log/`).
+
+Discovery (2026-10-26): Translated x86 Python resolves the base interpreter prefix
+instead of its `withPackages` environment, so the existing Oxfmt auto-patchelf step
+cannot import pyelftools. Direct Python probes reproduce this only in the translated
+container. The configured native Linux builder built the unchanged tooling derivations;
+Nix closure transfer then allowed the container's shell help and full native suite to
+pass (FRIC-3 in `docs/friction-log/`). No tooling source or pin change was necessary.
 
 
 ## Decision Log
@@ -83,7 +110,57 @@ refresh explicit in documentation, and do not invoke it merely to enable this fe
 ## Outcomes & Retrospective
 
 
-(To be filled during implementation; this planning session does not claim build acceptance.)
+The opt-in helper, canonical input graph, immutable verifier, real ownership tests and
+registry-backed native recipes are implemented. All required platforms have independent
+native application-build evidence. The helper preserves upstream hook/fetch APIs and its
+narrow gate patch accepts v1/v2 while rejecting v3. The default development-only path and
+Fumadocs composition remain disabled. Application recipes and dependency expressions stay
+project-owned; no consumer migration or publication was performed.
+
+The final acceptance commands were `python3 scripts/update-nix-bun-flake.py --check`,
+`python3 scripts/test-nix-bun-flake.py --native`, `python3 scripts/test-fumadocs-adoption.py`,
+module validation, strict `okf-docs`/friction profile validation and `git diff --check`.
+Linux coordinators used temporary projects rendered by the same `prepare_native` function
+through actual Seihou operations, transferred with the harness/fixtures and executed with
+its portable `native` function. The host used Determinate Nix 3.23.2 / Nix 2.35.3;
+both Linux coordinators used Nix 2.35.2 and the committed Bun 1.4.2/tooling pins.
+
+```text
+Native aarch64-darwin / single: passed
+Native aarch64-darwin / workspace: passed
+Native aarch64-linux / single: passed
+Native aarch64-linux / workspace: passed
+Native x86_64-linux / single: passed
+Native x86_64-linux / workspace: passed
+```
+
+Each native case compared generated bytes, built with `sandbox=true` and frozen install
+without checkout dependencies, ran the output, proved unchanged-build reuse and compared
+app/cache derivation identities after edits. The single-package case additionally changed
+the locked registry version from 7.0.0 to 6.0.0, regenerated and observed a changed cache.
+The workspace case independently edited both app and shared source at fixed version 1.0.0.
+The supplemental shell help check was also executed on each system. The x86 coordinator
+retained `filter-syscalls = false`; the application derivations themselves built in its
+sandbox. Its unchanged TypeScript/Oxc tooling was built by the already configured native
+`ssh://builder@nix-gcp-builder` Nix builder and copied through a temporary Nix binary cache
+using `nix copy`; no store-source traversal or toolchain override was used.
+
+`seihou registry sync-versions --dry-run` now proposes only the baseline unrelated Haskell
+change. `seihou registry validate` still reports that its registry is 0.34.0 and module is
+0.35.0; this is not a passing release-wide check. Generated docs were regenerated with
+the documented extension, and its unrelated Haskell migration-page change was restored
+to the pre-generation baseline. The house documentation profile is unchanged.
+
+FRIC-1 in `docs/friction-log/` is **accepted**: noninteractive edited-orphan preview needs
+a resolution; the isolated harness verifies its sole retainTracked choice before applying.
+FRIC-2 is **accepted**: translated x86 builds use the environment-only syscall-filter
+override while retaining `sandbox=true`. FRIC-3 is **accepted**: unchanged tooling built
+on the configured native x86 builder and imported into the container avoids its Python
+prefix limitation. All three are triaged, with no remaining logged entries for this plan.
+
+Durable helper ownership, patch qualification, immutable maintenance modes and workspace
+cache boundaries are distilled in
+[ADR-6](../adr/6-share-an-opt-in-bun2nix-helper-and-isolate-registry-caches.md).
 
 
 ## Context and Orientation

@@ -13,6 +13,11 @@
       url = "github:cachix/git-hooks.nix/a0e4241b51206fbcbf52fd322eb5f0cd80f153c4";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    bun2nix = {
+      url = "github:nix-community/bun2nix/0f2a1f0b6f42cebe3b149bf62d38754c5e0e9729";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-parts.follows = "flake-parts";
+    };
   };
 
   outputs = inputs@{ flake-parts, nixpkgs, ... }:
@@ -20,6 +25,9 @@
       systems = [ "aarch64-darwin" "aarch64-linux" "x86_64-linux" ];
       imports = [
         ./nix/bun.nix
+        {{#if Eq nix.bun2nix true}}
+        ./nix/bun2nix-module.nix
+        {{/if}}
         {{#if Eq nix.pre-commit true}}
         ./nix/pre-commit.nix
         {{/if}}

@@ -17,6 +17,15 @@ in  Schema.Project::{
         , github = Some "shinzui/seihou-modules"
         }
       ]
+    , okfBundles =
+      [ Schema.OkfBundle::{
+        , name = "friction-log"
+        , path = "docs/friction-log"
+        , okfVersion = "0.2"
+        , profile = Some "docs/friction-log/profile.dhall"
+        , description = Some "Friction met while implementing plans, before triage into bug reports and requests"
+        }
+      ]
     , templates =
       [ Schema.SeihouTemplate::{
         , name = "gcp-kube-env"
@@ -104,8 +113,8 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "nix-bun-flake"
-        , version = Some "0.3.0"
-        , description = Some "Shared Bun/TypeScript/Oxc flake-parts environment with revision-pinned locks and an unmanaged project extension"
+        , version = Some "0.4.0"
+        , description = Some "Shared Bun/TypeScript/Oxc flake-parts environment with revision-pinned locks, optional bun2nix builds, and an unmanaged project extension"
         , modulePath = "modules/typescript/nix-bun-flake"
         , tags = [ "typescript", "bun", "nix", "flake-parts" ]
         , requiredVars = [ "project.name", "project.description" ]
