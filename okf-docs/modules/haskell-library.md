@@ -1,9 +1,8 @@
 ---
 type: SeihouModule
 title: haskell-library
-description: 'Haskell library bootstrap: a single cabal package on GHC 9.12 / GHC2024,
-  with lens + generic-lens, BSD-3 license, an optional tasty test-suite, and a nix-haskell-flake
-  dev shell'
+description: Single-package Haskell library with project-owned starters (Seihou 0.11.0.0+),
+  optional tasty tests and a managed Nix dev shell
 resource: seihou://seihou-modules/modules/haskell/haskell-library
 tags:
 - haskell
@@ -18,7 +17,7 @@ version: 0.3.0
 
 # haskell-library
 
-Haskell library bootstrap: a single cabal package on GHC 9.12 / GHC2024, with lens + generic-lens, BSD-3 license, an optional tasty test-suite, and a nix-haskell-flake dev shell
+Single-package Haskell library with project-owned starters (Seihou 0.11.0.0+), optional tasty tests and a managed Nix dev shell
 
 **Version:** 0.3.0
 

@@ -1,8 +1,8 @@
 ---
 type: SeihouModule
 title: haskell-keiro-project
-description: Six-package Keiro bootstrap with a Nix development shell, workspace manifest,
-  development recipes, and a project-specific implementation brief
+description: Six-package Keiro bootstrap with project-owned domain/API/test starters
+  (Seihou 0.11.0.0+), OpenAPI, optional Mori inventory and managed Nix/test tooling
 resource: seihou://seihou-modules/modules/haskell/haskell-keiro-project
 tags:
 - haskell
@@ -17,7 +17,7 @@ version: 0.3.0
 
 # haskell-keiro-project
 
-Six-package Keiro bootstrap with a Nix development shell, workspace manifest, development recipes, and a project-specific implementation brief
+Six-package Keiro bootstrap with project-owned domain/API/test starters (Seihou 0.11.0.0+), OpenAPI, optional Mori inventory and managed Nix/test tooling
 
 **Version:** 0.3.0
 

@@ -1,9 +1,8 @@
 ---
 type: SeihouModule
 title: haskell-cli-app
-description: 'Tested Haskell CLI bootstrap: reusable core plus CLI packages on GHC2024,
-  GHC 9.12.4/9.14.1 shells, current bounded dependencies, valid package-local distribution
-  metadata, and workspace-aware Nix package/check outputs'
+description: Tested two-package Haskell CLI with project-owned source/Cabal/changelog
+  starters (Seihou 0.11.0.0+), current GHC shells and managed Nix package/check outputs
 resource: seihou://seihou-modules/modules/haskell/haskell-cli-app
 tags:
 - haskell
@@ -18,7 +17,7 @@ version: 0.4.0
 
 # haskell-cli-app
 
-Tested Haskell CLI bootstrap: reusable core plus CLI packages on GHC2024, GHC 9.12.4/9.14.1 shells, current bounded dependencies, valid package-local distribution metadata, and workspace-aware Nix package/check outputs
+Tested two-package Haskell CLI with project-owned source/Cabal/changelog starters (Seihou 0.11.0.0+), current GHC shells and managed Nix package/check outputs
 
 **Version:** 0.4.0
 
