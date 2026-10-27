@@ -2,7 +2,7 @@
 
 > Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects on the `haskell-nix-dev` base flake (prebuilt GHC/HLS/cabal toolchains). Module-owned inputs are rev-pinned or follow that base, producing one exact lock across feature combinations. Base wiring and dependent scaffold package outputs live in managed `nix/*.nix` modules, while user customizations stay in an unmanaged `flake.module.nix`. Includes toggleable local services, treefmt-nix, and pre-commit hooks.
 
-**Version:** `0.34.0`
+**Version:** `0.36.0`
 
 ## Overview
 
@@ -74,9 +74,15 @@ Explicit caller package-set definitions keep higher priority and remain subject 
 retained native-input guard. This avoids a `legacyPackages` library-version label mismatch
 without relaxing compiler or native-library identity checks.
 
-Published input pins: channel `d13245db8a3e2c1c559185c0adf87285259b7ab2`, toolchain
+Published input pins: channel `dedd4d81589e99d97137eb36f88423c70c7d69f5`, toolchain
 `21933607e80ec4660a28a125a6f4c0707e358caf`, Nixpkgs
-`d5dfd8e6716dde34398bc14bc87c10dece9c8c68`. The target manifest in
+`d5dfd8e6716dde34398bc14bc87c10dece9c8c68`.
+The expanded catalog in `mori://shinzui/haskell-nix` requires explicit
+`applicationSelections` entries `heni = 1`, `hinagata = 1`, `shoko = 1` and
+`typesafe-hs = 1`, including for consumers retaining an older runtime generation.
+Preserve their existing runtime generation and other complementary selections.
+Adopting runtime generation 6 separately requires `kioku = 9` and matching Cabal
+imports; the module update does not select it automatically. The target manifest in
 [upgrade-haskell-runtime](../../../blueprints/upgrade-haskell-runtime/README.md) records
 the qualified Apple Silicon generation-2 configuration. Runtime consistency alone is
 not a changed-code compilation speedup. Existing full SDK and separately accepted
@@ -360,6 +366,8 @@ that the socket path is too long.
 
 | From | To | Effect |
 |------|----|--------|
+| `0.35.0` | `0.36.0` | Moves the shared `mori://shinzui/haskell-nix` channel pin to `dedd4d81589e99d97137eb36f88423c70c7d69f5`, making retained runtime generation 6 available with the latest release cohort and inspection packages. Toolchain and Nixpkgs pins stay fixed. Existing explicit runtime and complementary selections are preserved; adopting generation 6 requires an explicit selection with `kioku = 9` and the matching Cabal imports. No migration operations; regenerate managed files through Seihou. |
+| `0.34.0` | `0.35.0` | Removes the obsolete `.envrc` ignore entry while preserving `.envrc.local`, so fresh clones retain the managed development environment. |
 | `0.33.0` | `0.34.0` | Moves only the shared `mori://shinzui/haskell-nix` registry pin to `d13245db8a3e2c1c559185c0adf87285259b7ab2`, adding immutable Kiroku generation 4 with Store 0.11.0.1 and migrations 0.7.1.0. Consumers can select Keiro generation 7, Kiroku 4, and Shibuya 3 together. Existing explicit family selections stay unchanged; toolchain and nixpkgs pins stay fixed. Regenerate managed files through Seihou. |
 | `0.30.0` | `0.31.0` | Moves the shared `mori://shinzui/haskell-nix` channel to `58a2c26c5be7cdf222fba6323939a67d3c62f193`, supplying the generated 462-package cohort, current Kioku/Shikumi patches and coherent CLI/WAI dependencies. Toolchain and nixpkgs pins remain fixed. Regenerate managed files; remove consumer Hackage replacements only after composing the shared extension and passing application checks. Linux and fresh-CI cache acceptance remain pending in the channel. |
 | `0.28.0` | `0.30.0` | Moves only the shared `mori://shinzui/haskell-nix` registry pin to `5cb50cab752945d1a0278c9347edaa5918f6d158`, selecting released Keiro 0.21.0.0 and Kioku 0.9.0.1 while retaining the Shibuya PGMQ adapter 0.16.1.0 correction. Supersedes the unpublished 0.29.0 preparation. Toolchain and nixpkgs pins remain unchanged; regeneration is sufficient. |

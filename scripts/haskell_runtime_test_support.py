@@ -11,8 +11,10 @@ SYSTEM = 'aarch64-darwin'
 SELECTION = {
     'runtimeSelection': {'name': 'keiro-runtime', 'generation': 2, 'channel': 'github',
                          'configuration': {'compiler': 'ghc9124', 'disableProfiling': True, 'disableHaddock': True}},
-    'applicationSelections': {'kioku': 8, 'okf': 5, 'openapi-hs': 1, 'relay-pagination': 3,
-                             'servant-openapi-hs': 1, 'shikumi-baikai': 9},
+    'applicationSelections': {'heni': 1, 'hinagata': 1, 'kioku': 8, 'okf': 5,
+                             'openapi-hs': 1, 'relay-pagination': 3,
+                             'servant-openapi-hs': 1, 'shikumi-baikai': 9,
+                             'shoko': 1, 'typesafe-hs': 1},
 }
 
 

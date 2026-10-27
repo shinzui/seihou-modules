@@ -63,7 +63,7 @@ commands, and an optional removal procedure.
 | Module | Version | Purpose |
 |---|---|---|
 | [`gcp-kube-env`](modules/cloud/gcp-kube-env) | 0.1.1 | Checkout-local GCP project and kube context, private kubeconfig, and direnv settings in a configurable env file (default `.envrc.local`) |
-| [`nix-haskell-flake`](modules/haskell/nix-haskell-flake) | 0.35.0 | flake-parts Nix dev shell on the `haskell-nix-dev` base flake, with exact managed locks, an optional managed package-module seam, and toggleable local services/formatting/hooks |
+| [`nix-haskell-flake`](modules/haskell/nix-haskell-flake) | 0.36.0 | flake-parts Nix dev shell on the `haskell-nix-dev` base flake, with exact managed locks, an optional managed package-module seam, and toggleable local services/formatting/hooks |
 | [`haskell-library`](modules/haskell/haskell-library) | 0.3.0 | Single-package Haskell library on GHC 9.12 / GHC2024, `lens` + `generic-lens`, BSD-3, optional `tasty` suite |
 | [`haskell-cli-app`](modules/haskell/haskell-cli-app) | 0.4.0 | Tested two-package CLI with real core integration, GHC 9.12.4/9.14.1 shells, valid package metadata, and working Nix package/check outputs |
 | [`haskell-keiro-project`](modules/haskell/haskell-keiro-project) | 0.3.0 | Six-package Keiro seed, project-named workspace, injected probes, OpenAPI, Hurl/Hinagata testing, optional Mori inventory |
