@@ -20,6 +20,11 @@ provenance:
       at: 2026-10-27T02:23:35Z
       mode: "update"
       note: "Add servant-health probes and OpenAPI generation with released openapi-hs and servant-openapi-hs dependencies"
+    - model: "gpt-6.1-sol"
+      harness: "codex-cli"
+      at: 2026-10-27T02:35:58Z
+      mode: "update"
+      note: "Add optional prompted Mori descriptor with package/dependency inventory and generated OpenAPI reference"
 ---
 
 # Complete the Keiro project bootstrap with API testing and test data
@@ -30,7 +35,7 @@ This is a living ExecPlan. Maintain Progress, Surprises & Discoveries, Decision 
 ## Purpose / Big Picture
 
 
-Complete the existing `haskell-keiro-project` Seihou module so that a project name produces a six-package Haskell workspace, project-named Keiro domain files, process-compose and PostgreSQL, configurable Redpanda, server probes using `servant-health`, OpenAPI schema generation using `openapi-hs` and `servant-openapi-hs`, Hurl Workbench API tests, and Hinagata test-data loading. OpenAPI is a machine-readable description of HTTP routes and their request/response schemas. Seihou generates files and tracks ownership; process-compose starts local development processes; Hurl Workbench composes HTTP tests; Hinagata loads SQL fixtures and provides isolated PostgreSQL test databases.
+Complete the existing `haskell-keiro-project` Seihou module so that a project name produces a six-package Haskell workspace, project-named Keiro domain files, process-compose and PostgreSQL, configurable Redpanda, server probes using `servant-health`, OpenAPI schema generation using `openapi-hs` and `servant-openapi-hs`, Hurl Workbench API tests, and Hinagata test-data loading. Offer a prompt to generate an initial `mori.dhall` describing the project, its packages/dependencies, and its OpenAPI artifact. OpenAPI is a machine-readable description of HTTP routes and their request/response schemas; `mori.dhall` is Mori's typed project descriptor. Seihou generates files and tracks ownership; process-compose starts local development processes; Hurl Workbench composes HTTP tests; Hinagata loads SQL fixtures and provides isolated PostgreSQL test databases.
 
 For `project.name=sample-service`, generate `cabal.project`, `domain/sample-service.keiro-workspace`, `domain/sample-service/shared.keiro`, and the six root directories `sample-service-{api,workers,core,client,migrations,server}`. Entering `nix develop` supplies the test tools. `just openapi` generates `docs/openapi.json` directly from the typed API without a database or running server. The server library mounts `/health/live` and `/health/ready` with injectable checks, and its tests prove their independent behavior. A developer can start PostgreSQL, compile and load a supplied test fixture, and validate/render the HTTP suite. Once the application is running, `just api-test` runs that suite against its configured URL. Repository acceptance must prove actual fixture data reaches HTTP assertions against real PostgreSQL.
 
@@ -44,7 +49,8 @@ This is a bootstrap feature. A name and synopsis do not define business aggregat
 - [ ] Milestone 2: The generated server's servant-health probes pass conformance tests and its typed API generates an OpenAPI 3.1 schema without runtime resources.
 - [ ] Milestone 3: Generated testing tools and assets validate, and an early real PostgreSQL fixture load succeeds.
 - [ ] Milestone 4: A generated-project acceptance harness proves database-backed HTTP assertions, distinct test databases, cleanup, and failure propagation.
-- [ ] Milestone 5: Module/blueprint metadata and documentation agree with the tested workflow; regressions pass and durable decisions are reflected in ADRs.
+- [ ] Milestone 5: An optional interactive prompt generates a valid initial Mori descriptor with the six packages, accurate dependencies, and the generated OpenAPI path; opt-out and existing-file protection pass.
+- [ ] Milestone 6: Module/blueprint metadata and documentation agree with the tested workflow; regressions pass and durable decisions are reflected in ADRs.
 
 
 ## Surprises & Discoveries
@@ -67,6 +73,8 @@ This is a bootstrap feature. A name and synopsis do not define business aggregat
 2026-10-26: Generate a small, explicitly test-only SQL marker fixture and an external-service health suite. Keep the database-backed HTTP consumer used to prove integration inside the repository test harness. This establishes working setup without inventing a business domain or shipping a pretend Keiro server.
 
 2026-10-26: Incorporate the user's additional requirements as real shared HTTP plumbing in the seed: `servant-health` provides the server probe contract/handlers, while `openapi-hs` and `servant-openapi-hs` derive OpenAPI 3.1 from the same API type. API owns the contract and schema generator; server owns application assembly and injected checks. Replace the placeholder bare `/health` test with `/health/live` and `/health/ready`. Business behavior and actual dependency/drain policies remain the blueprint's implementation responsibility.
+
+2026-10-26: Add an optional prompt for initial Mori descriptor generation, skipped by default, with an independently supplied Mori organization/user namespace. The descriptor inventories the actual generated packages/dependencies and declares their existing OpenAPI artifact; it neither copies the OpenAPI document into Dhall nor makes OpenAPI generation optional. Generation is local and does not register the project or overwrite an authored descriptor.
 
 
 ## Outcomes & Retrospective
@@ -99,6 +107,10 @@ Discover `mori://shinzui/hurl-workbench` using registry show/docs. Within that p
 Hinagata documentation resolves as `mori://shinzui/hinagata/docs/user-documentation` and `mori://shinzui/hinagata/docs/guides`; the real Keiro example is `mori://shinzui/hinagata/packages/hinagata-keiro-example`. Within `mori://shinzui/hinagata`, inspect `examples/keiro-service/{hinagata.yaml,hurl-workbench.dhall,README.md}` and `scripts/example-workbench.sh` (artifact-level URIs pending). Hinagata uses caller-started PostgreSQL. Direct `fixture load` selects an existing target database explicitly. `db with` leases a clone, loads fixtures, and passes application PG connection variables to a child command. A baseline is a prepared database; a lease is one owned clone released after consumers stop. Hurl Workbench can own service startup/readiness/shutdown inside that lease.
 
 Release lookup on 2026-10-26 found Hackage `hinagata-cli` 0.1.0.0 and upstream tag `v0.1.0.0`, peeled commit `a0c1059743e5957e66e4b8cee9e485ad89471937`. Workbench's Hackage package JSON returned HTTP 404 and its upstream release page listed no releases. Hinagata's checked example uses Workbench commit `a29d26ad5e90aa762de88be18f06fddf67b6d02f`. This is a candidate tooling pin, not a published package version. Reverify registries/tags and test selected source before finalizing pins; local corpus APIs can differ from published source. Keep unpublished CLI source pins separate from application runtime dependencies.
+
+For Mori descriptor authoring, discover `mori://shinzui/mori-schema/packages/mori-schema` and `mori://shinzui/mori/docs/schema-spec`. Within the schema project, `Project.dhall` and `records/{ProjectIdentity,Package,Dependency,MoriRef,Api}.dhall` define the required shape (artifact-level source URIs pending). `Project.packages` holds package-local paths and dependency lists; `Dependency.WithAugmentation` carries source, scope, and versionConstraint; `Project.dependencyRefs` holds typed external artifact references. `Project.apis` holds `Schema.Api` values with `name`, `type`, `specPath`, `owner`, and optional typed `ownerRef`. Use OpenAPI type, `specPath = "docs/openapi.json"`, and the API package as owner. Within `mori://shinzui/rei`, the `mori.dhall` API declaration is a working structural example (artifact-level URI pending), not a source of this project's dependency list.
+
+The repository already pins Mori schema commit `3522f4a51181d73c9c90fc27a7c0838bd29ae95f` with integrity hash `sha256:dcb19e2312e790bad14e622cc98a1281cd2298c5b564a2f0d0534d3c718d8803`. Its package/API/dependency records were checked directly and the upstream package URL was accessible during this revision. Upstream release discovery returned no latest release or versioned tags, so this existing verified immutable pin is the initial candidate; do not guess a schema version from the local checkout. Verify compatibility with the implementation-time Mori CLI before retaining or changing it. `mori validate`, `mori show --json`, and Dhall evaluation are local validation interfaces; `mori register` is a separate state-changing operation and is not part of scaffolding. Seihou's optional prompts skip resolved defaults, so an explicit Boolean default can accidentally suppress the requested interactive question. Inspect its actual prompt/variable behavior when adding the option.
 
 
 ## Plan of Work
@@ -148,10 +160,25 @@ Create a test-only Haskell HTTP consumer inside the harness's temporary project,
 
 Run the generated direct-load recipe against its explicit scratch target and prove a separate sentinel database has no marker table. Run an intentionally incorrect HTTP assertion and require a nonzero outer status with service/clone cleanup. Exercise fresh generated files, not handwritten approximations of them. Build all six seed libraries with `cabal build all`. Do not expand this task into tool-level concurrency, retention, or cancellation feature work, and do not claim a production Keiro application exists.
 
-### Milestone 5: Publish a coherent module contract
+### Milestone 5: Optional initial Mori descriptor
 
 
-Update `modules/haskell/haskell-keiro-project/README.md`, generated `files/README.md.tpl` and `files/bootstrap.md.tpl`, `blueprints/haskell-keiro-service/prompt.md`, and affected `blueprint.dhall` descriptions. Explain naming/context, probe assembly and policies, database-free OpenAPI generation/freshness checks, tool acquisition, broker platform limits, database startup, direct targets versus clones, and the handoff to real service routes and migration hooks. Replace duplicated probe types/handlers in the historical `blueprints/haskell-keiro-service/files/Api.hs` reference with library imports and update its descriptor, so it does not lead agents back to a hand-written implementation. Blueprint instructions extend the generated ServiceApi, add compatible schemas for domain DTOs, keep OpenAPI derived from the complete mounted contract, and preserve the generated Hurl/Hinagata assets.
+Add `mori.generate` as an optional Boolean variable with a prompt such as “Generate an initial mori.dhall with packages, dependencies, and the OpenAPI schema reference?”. Keep it unresolved when not supplied so interactive generation actually asks; an empty answer skips generation, an explicit false disables it, and absent noninteractive input also skips. Do not give it a resolved false default that hides the question. Add an optional `mori.namespace` text variable and a prompt conditioned on `Eq mori.generate true`, explaining that this is the Mori organization/user namespace, not `project.namespace` (the PascalCase Haskell module prefix). An enabled run must supply a nonempty valid Mori namespace; missing/invalid identity fails planning before writes. For automation support `--var mori.generate=true --var mori.namespace=example` and `--var mori.generate=false`. Mirror these declarations and conditional prompts in `blueprints/haskell-keiro-service/blueprint.dhall`, ensuring the agent path asks at most once and carries the choice into module application.
+
+Add `modules/haskell/haskell-keiro-project/files/mori.dhall.tpl` and a managed template step targeting root `mori.dhall`, conditioned on `Eq mori.generate true`. Import the verified Mori schema at an immutable commit with a Dhall integrity hash. Project identity uses project name/description, the supplied Mori namespace, Haskell language, Application type, and Experimental lifecycle for the new seed. Do not infer a GitHub owner/URL or reuse the Haskell namespace. A local repository record can identify the current repository without inventing a remote.
+
+Declare exactly six initial package records, with names and relative paths matching `cabal.project` and the Cabal files. Reflect actual generated components: the seed packages currently expose libraries even when their role is server or workers; the API package also contains the OpenAPI executable and test suite. Preserve the existing allowed sibling graph. Populate each package's external dependencies and native Cabal version constraints from the final scaffold, distinguishing regular dependencies from test-only ones such as servant-health:testkit and Tasty. Include the servant-health/openapi-hs/servant-openapi-hs cohort where actually used. Do not invent a fully implemented Keiro runtime dependency list before the blueprint adds that code, or claim that Hurl/Hinagata CLI tooling is linked into application libraries. List tooling separately as development metadata/documentation and canonical project references. Keep this initial inventory synchronized when the blueprint implements the domain.
+
+Use Mori's verified dependency lookup grammar in schema-required name fields, accompanied by exact canonical package URIs in comments or documentation and typed `dependencyRefs` for external packages. Do not feed a canonical URI into a legacy dependency-name parser that treats its colon as the package separator. Local sibling names may stay local. Resolve external ownership through Mori rather than copying ambiguous package aliases. A small checked-in metadata mapping used by the template/checker is acceptable; adding a general Cabal-to-Mori synchronization engine is outside this request. An acceptance check must compare the generated descriptor's declared names, paths, scopes, and bounds with the generated Cabal components so the two representations cannot silently diverge.
+
+Declare one API named `{{project.name}}-api` with `Schema.ApiType.OpenAPI`, `specPath = "docs/openapi.json"`, `owner = "{{project.name}}-api"`, and a typed ownerRef for that same package in the chosen Mori project identity. The referenced document remains produced by `just openapi` from Milestone 2; omit unrelated HTTP endpoints or generated-client provenance that the seed does not implement. Descriptor generation itself does not invoke the compiler or create a fake schema file. After the first build, generate the real document and verify its location agrees with Mori's API record. API ownership must be valid locally without requiring registration of this fresh project.
+
+Extend `scripts/check-keiro-bootstrap.py` with opt-in/opt-out and missing-namespace cases, plus a pseudo-terminal or existing Seihou console fixture that proves an ordinary interactive run displays the question and honors both answers. Enabled output must pass `dhall --file mori.dhall`, `dhall-to-json --file mori.dhall`, `mori validate`, and `mori show --json`; inspect the evaluated data for exactly six packages, dependency parity, and correct API owner/path. These are scoped to temporary generated projects and do not register them. Test identical reapplication, conflict protection for an edited/existing descriptor, and disabling the option after generation without deleting the file. An opted-out run creates no descriptor, asks no namespace question, and still supports the same health/OpenAPI commands. If initial descriptor validation warns that the not-yet-generated OpenAPI file is absent, document the expected `just openapi` next step and require the post-generation check to resolve it; never fill the gap with placeholder JSON.
+
+### Milestone 6: Publish a coherent module contract
+
+
+Update `modules/haskell/haskell-keiro-project/README.md`, generated `files/README.md.tpl` and `files/bootstrap.md.tpl`, `blueprints/haskell-keiro-service/prompt.md`, and affected `blueprint.dhall` descriptions. Explain naming/context, probe assembly and policies, database-free OpenAPI generation/freshness checks, the optional Mori prompt/namespace and package/dependency/API inventory, tool acquisition, broker platform limits, database startup, direct targets versus clones, and the handoff to real service routes and migration hooks. Replace duplicated probe types/handlers in the historical `blueprints/haskell-keiro-service/files/Api.hs` reference with library imports and update its descriptor, so it does not lead agents back to a hand-written implementation. Blueprint instructions extend the generated ServiceApi, add compatible schemas for domain DTOs, keep OpenAPI derived from the complete mounted contract, preserve the generated Hurl/Hinagata assets, and update an opted-in Mori inventory when packages/dependencies/API ownership change.
 
 Bump the Keiro module from 0.1.0 to 0.2.0 for its layout/tooling change and bump the companion blueprint when its instructions change. Update `seihou-registry.dhall`, `mori.dhall`, and the root catalog together. Regenerate `okf-docs/` through the documented extension rather than hand-editing it. Give existing projects review-first upgrade guidance; never force generation over authored workspaces or delete context-named members. Update ADR 2 with naming and test setup, and ADR 3 only if managed-module guidance needs clarification. Run final relevant checks, triage implementation friction, and record concise acceptance evidence.
 
@@ -166,6 +193,10 @@ mori registry list
 mori registry search keiro
 mori registry search servant-health
 mori registry search openapi-hs
+mori registry search mori-schema
+mori registry show shinzui/mori-schema --full
+mori registry docs shinzui/mori-schema
+mori registry docs shinzui/mori
 mori registry show shinzui/servant-health --full
 mori registry docs shinzui/servant-health
 mori registry show shinzui/openapi-hs --full
@@ -187,6 +218,7 @@ git ls-remote --tags https://github.com/shinzui/openapi-hs.git
 git ls-remote --tags https://github.com/shinzui/servant-openapi-hs.git
 git ls-remote --tags https://github.com/shinzui/hinagata.git
 git ls-remote --tags https://github.com/shinzui/hurl-workbench.git
+git ls-remote --tags https://github.com/shinzui/mori-schema.git
 ```
 
 A missing unpublished package is evidence to record, not a reason to infer its version. Verify the candidate Workbench source is fetchable and matches the generated schema/CLI. If the early integration check fails, choose another verified immutable tooling commit and record why, without weakening acceptance or changing application runtime bounds.
@@ -215,6 +247,18 @@ just openapi-check
 ```
 
 Use the fixture's actual project name in place of `sample-service` in the test-suite command. Expect both tool versions, passing doctor/validation, rendered live/ready assertions, fixture-plan JSON with `ok: true`, six successfully built libraries, and an executed passing health suite. `just openapi` writes `docs/openapi.json`; `just openapi-check` passes immediately afterward and fails if the document is edited until regeneration restores it. Schema output must describe both probes' 200/503 responses. These checks need no running application or database. Hurl variables must survive Seihou; Workbench rendering may then supply their bindings.
+
+For a fixture opted into Mori generation using `--var mori.generate=true --var mori.namespace=example`, run the following from that generated project's root after `just openapi`. Use the Mori CLI already installed on the authoring machine; this optional descriptor does not add a Mori daemon/runtime dependency to the application shell.
+
+```bash
+dhall --file mori.dhall
+dhall-to-json --file mori.dhall
+mori validate
+mori show --json
+test -s docs/openapi.json
+```
+
+Expect a valid descriptor and evaluated data naming all six package paths and one OpenAPI API owned by the API package, pointing at `docs/openapi.json`. The checker also compares package dependency scopes/bounds to the generated Cabal components. Repeat with the option absent/false: no descriptor is generated and `just openapi` still succeeds. Do not call `mori register` as a validation shortcut.
 
 For a manual database demonstration, from that generated root inside its shell, start services in one terminal:
 
@@ -264,6 +308,8 @@ The live harness is the required PostgreSQL-to-Hinagata-to-HTTP-to-Hurl proof. T
 
 Repeat generation remains byte-identical, ignore entries do not duplicate, and reapplication protects edited fixtures/workspaces and the user's Nix/process-compose extensions. The canonical base lock is unchanged. Registry, Mori, module, blueprint, and generated catalog versions agree. No milestone is complete merely because templates evaluate or libraries compile.
 
+Mori acceptance requires the optional question to be observable in an actual interactive path and controllable through explicit noninteractive variables. Opt-in creates one typed, evaluable `mori.dhall` with exactly six real packages, accurate sibling/external dependency scopes and bounds, and an OpenAPI declaration whose owner and `docs/openapi.json` path match the generated API/schema. Opt-out skips both descriptor generation and the namespace prompt without changing OpenAPI functionality. A different valid Mori namespace must change only Mori identity/references, not the Haskell module namespace. Missing identity, existing authored files, repeated application, and opting out after a prior opt-in must not cause silent overwrite/deletion or registration side effects.
+
 
 ## Idempotence and Recovery
 
@@ -271,6 +317,8 @@ Repeat generation remains byte-identical, ignore entries do not duplicate, and r
 Generate checks in temporary projects containing local module copies under `.seihou/modules`, following the existing checker; do not overwrite global installed modules. Respect Seihou conflicts and never use `--force` as general recovery.
 
 New naming applies to fresh scaffolds. For existing projects inspect domain files, ledgers, recipes, Cabal configuration, and ownership before adoption. Preserve authored workspaces and back up affected files plus the Seihou manifest together. A reviewed rename must update all references; changing a stable service identity also affects scaffold history. Automatic brownfield migration is not included.
+
+Optional Mori generation is a seed, not an adoption or automatic synchronization command. Leave an existing authored `mori.dhall` under Seihou's conflict protection and review it rather than merging/replacing it blindly. Skipping the option never deletes an existing descriptor, even when it was generated by a previous run. No registry registration, identity minting, or repository creation is implicit. The OpenAPI artifact remains independently regenerable, and its absence before the first build is resolved by `just openapi`, not by changing the descriptor to a bogus path.
 
 Direct fixture loading selects an existing target and never grants deletion rights. The marker fixture is repeatable; arbitrary future SQL need not be. Clone operations own only recorded allocations. Stop consumers before release; inspect retained allocations and use explicit Hinagata release rather than prefix-based database deletion. The harness tracks exact paths/resources it creates and stops its own cluster in a finalizer, retaining useful failure diagnostics.
 
@@ -282,6 +330,8 @@ If a tool pin cannot build, retain evidence, fix its source selection/wrapper, a
 
 The public module stays `haskell-keiro-project`. Required project name/namespace/description and existing author/package metadata remain; `keiro.context` becomes optional. Project paths and workspace service derive from name. Use existing Seihou `IsSet` conditionals instead of extending the CLI. If variable behavior needs inspection, discover `mori://shinzui/seihou` and read its `seihou-core/src/Seihou/Core/Variable.hs` and `seihou-core/src/Seihou/Composition/Resolve.hs` (artifact-level URIs pending).
 
+Optional Mori inputs are `mori.generate` (Boolean; missing/false means skip) and `mori.namespace` (text; needed only when generation is enabled). The conditional root `mori.dhall` uses the pinned `Schema.Project`, `ProjectIdentity`, `Package`, `Dependency.WithAugmentation`, `MoriRef`, and `Api` interfaces. Its OpenAPI record is declaration metadata referencing the existing generated JSON, not a second schema generator. Canonical cross-project references remain explicit alongside any schema-required dependency lookup key. Additional user-specific namespace configuration is kept separate from `project.namespace`.
+
 `nix-haskell-flake` supplies services/toolchain. The scaffold binds `nix.package-module=nix/keiro-dev-tools.nix` and `nix.builtin-package=false`, adding tools through `haskellProject.extraDevPackages`. It does not select retained runtimes, change compiler identity, or create another application package. Existing `nix.redpanda`, `nix.redpanda-console`, `redpanda.*-port`, and `nix.kafka` variables are the broker/client configuration interface.
 
 Workbench types come from its selected `schema/package.dhall`: `Workspace`, `Parameter`, `Fragment`, `Workflow`, `Recipe`, `Suite`, `RunReference`, and `Safety.ReadOnly`. Use only actual fields in that commit and pin schema/tool together. Hurl syntax lives in copied request files.
@@ -290,6 +340,8 @@ The HTTP contract lives in `{{project.name}}-api`, with `{{project.namespace}}.A
 
 Hinagata's executable is `hinagata` from package `hinagata-cli`. Use `--config`, `--check-config`, `fixture plan NAME --json`, `fixture load NAME --target-database DATABASE --json`, and `db with --fixture NAME -- PROGRAM ARGS...`. Configuration requires explicit endpoint host/port, project ID, absolute fixture/bundle roots, maintenance database, and administration/setup/application user/database pairs through documented `HINAGATA_*` bindings. Ambient PG fields alone do not configure Hinagata. A leased child gets explicit PG fields, so future service wrappers must map those into service configuration rather than accidentally retain a development connection URL.
 
-This independent follow-up builds on completed plan 3; it is not a child plan. Implement structural compatibility, shared health/schema plumbing, one real tooling/database consumer, full acceptance, and release documentation in that order. An immutable unpublished CLI tooling pin is explicitly allowed here and remains separate from application runtime dependencies.
+This independent follow-up builds on completed plan 3; it is not a child plan. Implement structural compatibility, shared health/schema plumbing, one real tooling/database consumer, live integration acceptance, optional Mori descriptor generation, and final validation/release documentation in that order. An immutable unpublished CLI tooling pin is explicitly allowed here and remains separate from application runtime dependencies.
 
 Revision note (2026-10-26): Added the user's servant-health/openapi-hs/servant-openapi-hs requirements as a dedicated milestone, bringing the total to five, with generated probe assembly, database-free OpenAPI generation, published dependency verification, conformance/freshness acceptance, and corrected Hurl readiness paths. No business-domain implementation was added to the bootstrap scope.
+
+Revision note (2026-10-26): Added an optional initial Mori descriptor prompt and a dedicated sixth milestone overall, covering project/package/dependency inventory, the generated OpenAPI artifact reference, namespace separation, actual interactive prompting, opt-out, local validation, and existing-file protection. OpenAPI generation remains available regardless of this choice.

@@ -36,6 +36,13 @@ application assembly. This reusable wiring does not establish production depende
 policy. The implementation blueprint supplies those policies and extends the same API/schema
 with business routes. Probe conformance and schema generation must work in a fresh seed.
 
+The seed optionally generates a local `mori.dhall` when the user selects that prompt.
+It describes the actual six packages and their dependencies, and declares the generated
+OpenAPI artifact owned by the API package. The Mori organization/user namespace is separate
+from the Haskell module namespace. This is initial descriptor authoring, with existing-file
+protection; it does not register the project or make OpenAPI generation conditional. The
+implementation blueprint maintains an opted-in inventory as application code is added.
+
 ## Consequences
 
 Both direct module users and blueprint users receive the same structure and implementation
