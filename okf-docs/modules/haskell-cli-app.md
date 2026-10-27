@@ -13,14 +13,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.10.1.0
-version: 0.3.1
+version: 0.4.0
 ---
 
 # haskell-cli-app
 
 Tested Haskell CLI bootstrap: reusable core plus CLI packages on GHC2024, GHC 9.12.4/9.14.1 shells, current bounded dependencies, valid package-local distribution metadata, and workspace-aware Nix package/check outputs
 
-**Version:** 0.3.1
+**Version:** 0.4.0
 
 ## Dependencies
 

@@ -13,14 +13,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.10.1.0
-version: 0.2.0
+version: 0.3.0
 ---
 
 # haskell-library
 
 Haskell library bootstrap: a single cabal package on GHC 9.12 / GHC2024, with lens + generic-lens, BSD-3 license, an optional tasty test-suite, and a nix-haskell-flake dev shell
 
-**Version:** 0.2.0
+**Version:** 0.3.0
 
 ## Dependencies
 

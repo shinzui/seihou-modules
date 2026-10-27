@@ -99,3 +99,31 @@ Repository checks: `python3 scripts/check-keiro-bootstrap.py` and
 `python3 scripts/test-keiro-bootstrap.py --live`. Live acceptance uses its own PostgreSQL
 cluster and a temporary Haskell consumer of the actual generated probe assembly; it proves
 seeded HTTP assertions, distinct leases, failure propagation, and cleanup.
+
+## Project-owned starter files
+
+This candidate requires the supporting Seihou runtime release **0.11.0.0 or newer**.
+Publication is pending that release and installed-binary acceptance. Earlier clients
+can ignore `lifecycle` and overwrite starter content; do not use them with this candidate.
+
+Starter sources, Cabal metadata, changelogs and project declarations use seed steps.
+They are created once; existing regular files, later edits and deliberate deletion
+belong to the project. Ordinary rerun, force, update and removal preserve them.
+Seed-only removal needs no custom deletion policy. When the last claim retires,
+the file remains and its settlement is forgotten. A later absent reintroduction
+can create it again. Shell commands are unsandboxed and must not mutate seeds.
+
+Existing projects adopt with one ordinary command (no prerequisite installation,
+manual manifest edit or transitive target list):
+
+```bash
+seihou update haskell-keiro-project
+```
+
+Review `release to project` in the normal preview and confirm once. Commit the
+manifest so fresh clones retain the settlement, including intentional deletion.
+Repeat unchanged update is a no-op. Seed-to-managed adoption requires an explicit
+interactive keep/accept choice; force cannot consent. Retained conflicting owners
+require compatible producer declarations.
+
+Managed outputs retained for routine updates: `LICENSE`, `nix/keiro-dev-tools.nix`, `scripts/keiro-test-env`, `.gitignore`, `{{project.name}}-core/LICENSE`, `{{project.name}}-api/LICENSE`, `{{project.name}}-migrations/LICENSE`, `{{project.name}}-workers/LICENSE`, `{{project.name}}-server/LICENSE`, `{{project.name}}-client/LICENSE`.

@@ -163,15 +163,15 @@ def extra_checks():
     assert snapshot(project) == before
     run(command + ['--var', 'mori.namespace=another-org'], project)
     changed = snapshot(project)
-    assert {key for key in before if changed[key] != before[key]} == {'mori.dhall'}
-    assert check_inventory(project)['project']['namespace'] == 'another-org'
+    assert changed == before, 'Saved seed settlement must preserve the authored descriptor'
+    assert check_inventory(project)['project']['namespace'] == 'example'
     run(command, project)
     for relative in ['mori.dhall', 'tests/fixtures/bootstrap/fixture.sql', 'domain/sample-service.keiro-workspace']:
         path = project / relative
         original = path.read_text()
         path.write_text(original + '\n-- authored edit\n')
-        result = run(command, project, False)
-        assert 'conflict' in (result.stdout + result.stderr).lower()
+        result = run(command + ['--force'], project)
+        assert 'keep settled' in (result.stdout + result.stderr).lower()
         assert path.read_text() == original + '\n-- authored edit\n'
         path.write_text(original)
     opted_out = command + ['--var', 'mori.generate=false']
@@ -191,9 +191,9 @@ def extra_checks():
     # Existing authored descriptors are protected on first opt-in too.
     path = project / 'mori.dhall'
     path.write_text('-- existing authored descriptor\n')
-    result = run(command + ['--var', 'mori.generate=true', '--var', 'mori.namespace=another-org'], project, False)
+    result = run(command + ['--var', 'mori.generate=true', '--var', 'mori.namespace=another-org'], project)
     assert path.read_text() == '-- existing authored descriptor\n'
-    assert 'conflict' in (result.stdout + result.stderr).lower()
+    assert 'keep existing' in (result.stdout + result.stderr).lower()
     broker_project, _, result = render(**{'nix.redpanda': 'true', 'nix.redpanda-console': 'true', 'nix.kafka': 'false'})
     assert result.returncode == 0, result.stderr
     assert 'enableConsole = true' in (broker_project / 'nix/redpanda.nix').read_text()
@@ -269,10 +269,12 @@ def main():
         readme = project / 'README.md'
         readme.write_text(readme.read_text() + '\nUser-owned implementation notes.\n')
         edited = readme.read_text()
-        result = run(command, project, success=False)
-        # The CLI may report a protected file without failing the whole command.
+        result = run(command + ['--force'], project)
         assert readme.read_text() == edited, 'Reapplication overwrote a user edit'
-        assert 'conflict' in (result.stdout + result.stderr).lower(), result.stdout
+        assert 'keep settled' in (result.stdout + result.stderr).lower(), result.stdout
+        readme.unlink()
+        run(command + ['--force'], project)
+        assert not readme.exists(), 'Settled seed deletion must be preserved'
         print(f'PASS {name}: six packages, workspace, Nix composition, just recipes, rerun, edit protection')
         print(f'Build fixture: {project}')
 

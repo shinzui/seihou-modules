@@ -1,10 +1,10 @@
 let S =
-      https://raw.githubusercontent.com/shinzui/seihou-schema/a0fba0d17b43b14bfdf6d0bf98f1b7ff7af4ebab/package.dhall
-        sha256:36250d32d50cec0ea8c74926684ffb8b20f6d0b4f2152930dfa04a1ff108ef3f
+      https://raw.githubusercontent.com/shinzui/seihou-schema/7d02695f5a716384ec2174a018c20ee680ab3d13/package.dhall
+        sha256:5a24b98eada6628e3e7da267f4e6c31c1e169179d2bacd5fed7254fc4cc55183
 
 in  S.Module::{
     , name = "haskell-library"
-    , version = Some "0.2.0"
+    , version = Some "0.3.0"
     , description = Some
         "Bootstrap a single-package Haskell library under GHC 9.12.4 / GHC2024, with lens + generic-lens, a BSD-3 license, the project author's standard warning set, and an optional tasty test-suite. Depends on nix-haskell-flake for the dev shell."
     , vars =
@@ -42,7 +42,8 @@ in  S.Module::{
         , name = "project.author"
         , type = "text"
         , default = Some "Nadeem Bitar"
-        , description = Some "Author name written into LICENSE and the .cabal file"
+        , description = Some
+            "Author name written into LICENSE and the .cabal file"
         , required = True
         }
       , S.VarDecl::{
@@ -85,32 +86,27 @@ in  S.Module::{
     , prompts =
       [ S.Prompt::{
         , var = "project.name"
-        , text = "What is your project name? (lowercase, hyphenated; the cabal package and library will both be named <name>)"
+        , text =
+            "What is your project name? (lowercase, hyphenated; the cabal package and library will both be named <name>)"
         }
       , S.Prompt::{
         , var = "project.description"
-        , text = "One-line project synopsis (used as cabal `synopsis:` and the flake description):"
+        , text =
+            "One-line project synopsis (used as cabal `synopsis:` and the flake description):"
         }
       , S.Prompt::{
         , var = "project.description-long"
-        , text = "Longer project description (optional; press Enter to reuse the one-line synopsis):"
+        , text =
+            "Longer project description (optional; press Enter to reuse the one-line synopsis):"
         }
       , S.Prompt::{
         , var = "project.namespace"
-        , text = "Top-level Haskell module namespace? (single PascalCase segment, e.g. Rei)"
+        , text =
+            "Top-level Haskell module namespace? (single PascalCase segment, e.g. Rei)"
         }
-      , S.Prompt::{
-        , var = "project.author"
-        , text = "Author name?"
-        }
-      , S.Prompt::{
-        , var = "project.maintainer"
-        , text = "Maintainer email?"
-        }
-      , S.Prompt::{
-        , var = "project.copyright-year"
-        , text = "Copyright year?"
-        }
+      , S.Prompt::{ var = "project.author", text = "Author name?" }
+      , S.Prompt::{ var = "project.maintainer", text = "Maintainer email?" }
+      , S.Prompt::{ var = "project.copyright-year", text = "Copyright year?" }
       , S.Prompt::{
         , var = "project.tests"
         , text = "Generate a tasty test-suite scaffold? (yes/no)"
@@ -127,33 +123,34 @@ in  S.Module::{
         , strategy = "template"
         , src = "cabal.project.tpl"
         , dest = "cabal.project"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "library.cabal.tpl"
         , dest = "{{project.name}}/{{project.name}}.cabal"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "src/Prelude.hs.tpl"
         , dest = "{{project.name}}/src/{{project.namespace}}/Prelude.hs"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "src/Lib.hs.tpl"
         , dest = "{{project.name}}/src/{{project.namespace}}.hs"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "test/Spec.hs.tpl"
         , dest = "{{project.name}}/test/Spec.hs"
         , when = Some "Eq project.tests true"
+        , lifecycle = Some "seed"
         }
-      , S.Step::{
-        , strategy = "template"
-        , src = "LICENSE.tpl"
-        , dest = "LICENSE"
-        }
+      , S.Step::{ strategy = "template", src = "LICENSE.tpl", dest = "LICENSE" }
       , S.Step::{
         , strategy = "copy"
         , src = "fourmolu.yaml"
@@ -163,11 +160,13 @@ in  S.Module::{
         , strategy = "template"
         , src = "CHANGELOG.md.tpl"
         , dest = "CHANGELOG.md"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "README.md.tpl"
         , dest = "README.md"
+        , lifecycle = Some "seed"
         }
       ]
     }

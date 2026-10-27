@@ -73,3 +73,25 @@ extension was decided on 2026-10-26. Released openapi-hs 5.0 generic record deri
 Maybe nullability; the exporter narrowly corrects the derived probe timestamp and fixed
 required key until an upstream release fixes it. Probe wire types and handlers remain
 library-owned. Bootstrap test success proves shared plumbing, not an implemented Keiro domain.
+
+## Seed lifecycle implementation (2026-10-27)
+
+The candidate `haskell-keiro-project` 0.3.0 explicitly declares 28 project-owned
+starter steps: workspace/DSL, recipes/docs, Cabal/source/test files, initial
+Hurl/Hinagata fixtures and optional Mori inventory. Licenses, `.gitignore`,
+`nix/keiro-dev-tools.nix` and `scripts/keiro-test-env` remain managed policy/tools.
+CLI 0.4.0 similarly declares 12 starters and library 0.3.0 declares seven.
+All use the published schema pin supporting lifecycle and preserve managed
+Nix integration. None declares shell commands, removals or migrations; the Nix
+dependency's historical shell migration only removes an `.envrc` ignore line.
+
+The lifecycle contract is implemented by
+`mori://shinzui/seihou/masterplans/12-seed-files-module-outputs-created-once-and-owned-by-the-project`.
+Supporting runtime release 0.11.0.0 and installed-binary acceptance must precede
+producer publication: older clients ignoring lifecycle are unsafe. One ordinary
+update previews release of old managed starter paths without reading/restoring
+project bytes. The manifest records settlement; edits and deletion are retained,
+including reruns with force. Changing the Mori namespace input does not rewrite
+an existing descriptor. Authors maintain that project-owned inventory directly.
+Last-claim retirement preserves disk and permits later absent reintroduction.
+Shell commands are unsandboxed and must not mutate seeds.

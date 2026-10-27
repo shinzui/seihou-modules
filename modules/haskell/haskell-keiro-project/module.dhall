@@ -1,10 +1,10 @@
 let S =
-      https://raw.githubusercontent.com/shinzui/seihou-schema/b83079d377f22c77292ad5ccf88d1061a58f0c1c/package.dhall
-        sha256:1d46697ed3e7ca1b0d9922020e2da034ae6e33f7b482ee454c68d94b536e8c2a
+      https://raw.githubusercontent.com/shinzui/seihou-schema/7d02695f5a716384ec2174a018c20ee680ab3d13/package.dhall
+        sha256:5a24b98eada6628e3e7da267f4e6c31c1e169179d2bacd5fed7254fc4cc55183
 
 in  S.Module::{
     , name = "haskell-keiro-project"
-    , version = Some "0.2.0"
+    , version = Some "0.3.0"
     , description = Some
         "Six-package Keiro seed with project-named domain paths, injected servant-health probes, OpenAPI generation, Hurl/Hinagata test setup, and optional initial Mori inventory on nix-haskell-flake. The blueprint implements the domain."
     , vars =
@@ -66,20 +66,23 @@ in  S.Module::{
         , type = "bool"
         , default = Some "true"
         , required = False
-        , description = Some "Internal prompt coordination: the blueprint asks once and suppresses the baseline module question, including after an empty skip."
+        , description = Some
+            "Internal prompt coordination: the blueprint asks once and suppresses the baseline module question, including after an empty skip."
         }
       , S.VarDecl::{
         , name = "mori.generate"
         , type = "bool"
         , required = False
-        , description = Some "Generate an initial local Mori inventory (no registration). Empty input skips."
+        , description = Some
+            "Generate an initial local Mori inventory (no registration). Empty input skips."
         }
       , S.VarDecl::{
         , name = "mori.namespace"
         , type = "text"
         , required = False
         , validation = Some "[a-z][a-z0-9-]*"
-        , description = Some "Mori organization/user namespace; required when mori.generate=true. Separate from Haskell project.namespace."
+        , description = Some
+            "Mori organization/user namespace; required when mori.generate=true. Separate from Haskell project.namespace."
         }
       , S.VarDecl::{
         , name = "haskell.index-state"
@@ -117,12 +120,14 @@ in  S.Module::{
       , S.Prompt::{ var = "project.copyright-year", text = "Copyright year?" }
       , S.Prompt::{
         , var = "mori.generate"
-        , text = "Generate an initial mori.dhall with packages, dependencies, and the OpenAPI schema reference? (true/false; empty skips)"
+        , text =
+            "Generate an initial mori.dhall with packages, dependencies, and the OpenAPI schema reference? (true/false; empty skips)"
         , when = Some "Eq mori.prompt true"
         }
       , S.Prompt::{
         , var = "mori.namespace"
-        , text = "Mori organization/user namespace? (separate from the PascalCase Haskell namespace)"
+        , text =
+            "Mori organization/user namespace? (separate from the PascalCase Haskell namespace)"
         , when = Some "Eq mori.generate true"
         }
       , S.Prompt::{
@@ -146,116 +151,184 @@ in  S.Module::{
         , strategy = "template"
         , src = "cabal.project.tpl"
         , dest = "cabal.project"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "Prelude.hs.tpl"
         , dest = "{{project.name}}-core/src/{{project.namespace}}/Prelude.hs"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "workspace.tpl"
         , dest = "domain/{{project.name}}.keiro-workspace"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "shared.keiro.tpl"
         , dest = "domain/{{project.name}}/shared.keiro"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "justfile.tpl"
         , dest = "justfile"
+        , lifecycle = Some "seed"
         }
       , S.Step::{ strategy = "template", src = "LICENSE.tpl", dest = "LICENSE" }
       , S.Step::{
         , strategy = "template"
         , src = "README.md.tpl"
         , dest = "README.md"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "bootstrap.md.tpl"
         , dest = "docs/bootstrap-keiro.md"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "core.cabal.tpl"
         , dest = "{{project.name}}-core/{{project.name}}-core.cabal"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "core.hs.tpl"
         , dest = "{{project.name}}-core/src/{{project.namespace}}/Bootstrap.hs"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "api.cabal.tpl"
         , dest = "{{project.name}}-api/{{project.name}}-api.cabal"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "api.hs.tpl"
         , dest = "{{project.name}}-api/src/{{project.namespace}}/Api.hs"
+        , lifecycle = Some "seed"
         }
-      , S.Step::{ strategy = "template", src = "openapi.hs.tpl", dest = "{{project.name}}-api/src/{{project.namespace}}/Api/OpenApi.hs" }
-      , S.Step::{ strategy = "template", src = "openapi-main.hs.tpl", dest = "{{project.name}}-api/app/OpenApiMain.hs" }
-      , S.Step::{ strategy = "template", src = "openapi-test.hs.tpl", dest = "{{project.name}}-api/test/OpenApiTest.hs" }
-      , S.Step::{ strategy = "template", src = "health-test.hs.tpl", dest = "{{project.name}}-server/test/HealthTest.hs" }
+      , S.Step::{
+        , strategy = "template"
+        , src = "openapi.hs.tpl"
+        , dest = "{{project.name}}-api/src/{{project.namespace}}/Api/OpenApi.hs"
+        , lifecycle = Some "seed"
+        }
+      , S.Step::{
+        , strategy = "template"
+        , src = "openapi-main.hs.tpl"
+        , dest = "{{project.name}}-api/app/OpenApiMain.hs"
+        , lifecycle = Some "seed"
+        }
+      , S.Step::{
+        , strategy = "template"
+        , src = "openapi-test.hs.tpl"
+        , dest = "{{project.name}}-api/test/OpenApiTest.hs"
+        , lifecycle = Some "seed"
+        }
+      , S.Step::{
+        , strategy = "template"
+        , src = "health-test.hs.tpl"
+        , dest = "{{project.name}}-server/test/HealthTest.hs"
+        , lifecycle = Some "seed"
+        }
       , S.Step::{
         , strategy = "template"
         , src = "migrations.cabal.tpl"
         , dest = "{{project.name}}-migrations/{{project.name}}-migrations.cabal"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "migrations.hs.tpl"
         , dest =
             "{{project.name}}-migrations/src/{{project.namespace}}/Migrations.hs"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "workers.cabal.tpl"
         , dest = "{{project.name}}-workers/{{project.name}}-workers.cabal"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "workers.hs.tpl"
         , dest =
             "{{project.name}}-workers/src/{{project.namespace}}/Workers/Registry.hs"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "server.cabal.tpl"
         , dest = "{{project.name}}-server/{{project.name}}-server.cabal"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "server.hs.tpl"
         , dest =
             "{{project.name}}-server/src/{{project.namespace}}/Server/App.hs"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "client.cabal.tpl"
         , dest = "{{project.name}}-client/{{project.name}}-client.cabal"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "client.hs.tpl"
         , dest = "{{project.name}}-client/src/{{project.namespace}}/Client.hs"
+        , lifecycle = Some "seed"
         }
-      , S.Step::{ strategy = "template", src = "nix/keiro-dev-tools.nix.tpl", dest = "nix/keiro-dev-tools.nix" }
-      , S.Step::{ strategy = "template", src = "hurl-workbench.dhall.tpl", dest = "hurl-workbench.dhall" }
-      , S.Step::{ strategy = "template", src = "hinagata.yaml.tpl", dest = "hinagata.yaml" }
-      , S.Step::{ strategy = "copy", src = "tests/api/health.hurl", dest = "tests/api/health.hurl" }
-      , S.Step::{ strategy = "copy", src = "fixtures/bootstrap/fixture.sql", dest = "tests/fixtures/bootstrap/fixture.sql" }
-      , S.Step::{ strategy = "copy", src = "scripts/keiro-test-env", dest = "scripts/keiro-test-env" }
+      , S.Step::{
+        , strategy = "template"
+        , src = "nix/keiro-dev-tools.nix.tpl"
+        , dest = "nix/keiro-dev-tools.nix"
+        }
+      , S.Step::{
+        , strategy = "template"
+        , src = "hurl-workbench.dhall.tpl"
+        , dest = "hurl-workbench.dhall"
+        , lifecycle = Some "seed"
+        }
+      , S.Step::{
+        , strategy = "template"
+        , src = "hinagata.yaml.tpl"
+        , dest = "hinagata.yaml"
+        , lifecycle = Some "seed"
+        }
+      , S.Step::{
+        , strategy = "copy"
+        , src = "tests/api/health.hurl"
+        , dest = "tests/api/health.hurl"
+        , lifecycle = Some "seed"
+        }
+      , S.Step::{
+        , strategy = "copy"
+        , src = "fixtures/bootstrap/fixture.sql"
+        , dest = "tests/fixtures/bootstrap/fixture.sql"
+        , lifecycle = Some "seed"
+        }
+      , S.Step::{
+        , strategy = "copy"
+        , src = "scripts/keiro-test-env"
+        , dest = "scripts/keiro-test-env"
+        }
       , S.Step::{
         , strategy = "template"
         , src = "mori.dhall.tpl"
         , dest = "mori.dhall"
         , when = Some "Eq mori.generate true"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"

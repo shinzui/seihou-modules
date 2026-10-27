@@ -1,10 +1,10 @@
 let S =
-      https://raw.githubusercontent.com/shinzui/seihou-schema/2b4035b7e720a9b30642a8a27551592175732ee5/package.dhall
-        sha256:21716b4aee783d8eb8b12c754050880fa710e881ecda85925f855ef34cc34a55
+      https://raw.githubusercontent.com/shinzui/seihou-schema/7d02695f5a716384ec2174a018c20ee680ab3d13/package.dhall
+        sha256:5a24b98eada6628e3e7da267f4e6c31c1e169179d2bacd5fed7254fc4cc55183
 
 in  S.Module::{
     , name = "haskell-cli-app"
-    , version = Some "0.3.1"
+    , version = Some "0.4.0"
     , description = Some
         "Bootstrap a tested two-package Haskell CLI app (reusable core library + CLI executable) under GHC2024, with GHC 9.12.4 as the HLS-backed default and GHC 9.14.1 as a secondary build shell. Generates valid package-local distribution metadata and workspace-aware Nix package/check outputs on the latest nix-haskell-flake."
     , vars =
@@ -84,36 +84,28 @@ in  S.Module::{
     , prompts =
       [ S.Prompt::{
         , var = "project.name"
-        , text = "What is your project name? (lowercase, hyphenated; cabal packages will be <name>-core and <name>-cli)"
+        , text =
+            "What is your project name? (lowercase, hyphenated; cabal packages will be <name>-core and <name>-cli)"
         }
       , S.Prompt::{
         , var = "project.description"
-        , text = "One-line project synopsis (used as cabal `synopsis:` and the flake description):"
+        , text =
+            "One-line project synopsis (used as cabal `synopsis:` and the flake description):"
         }
       , S.Prompt::{
         , var = "project.description-long"
-        , text = "Longer project description (optional; press Enter to reuse the one-line synopsis):"
+        , text =
+            "Longer project description (optional; press Enter to reuse the one-line synopsis):"
         }
       , S.Prompt::{
         , var = "project.namespace"
-        , text = "Top-level Haskell module namespace? (single PascalCase segment, e.g. Rei)"
+        , text =
+            "Top-level Haskell module namespace? (single PascalCase segment, e.g. Rei)"
         }
-      , S.Prompt::{
-        , var = "project.category"
-        , text = "Hackage category?"
-        }
-      , S.Prompt::{
-        , var = "project.author"
-        , text = "Author name?"
-        }
-      , S.Prompt::{
-        , var = "project.maintainer"
-        , text = "Maintainer email?"
-        }
-      , S.Prompt::{
-        , var = "project.copyright-year"
-        , text = "Copyright year?"
-        }
+      , S.Prompt::{ var = "project.category", text = "Hackage category?" }
+      , S.Prompt::{ var = "project.author", text = "Author name?" }
+      , S.Prompt::{ var = "project.maintainer", text = "Maintainer email?" }
+      , S.Prompt::{ var = "project.copyright-year", text = "Copyright year?" }
       , S.Prompt::{
         , var = "project.tests"
         , text = "Generate the tasty test-suite scaffold? (yes/no)"
@@ -134,53 +126,57 @@ in  S.Module::{
         , strategy = "template"
         , src = "cabal.project.tpl"
         , dest = "cabal.project"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "core.cabal.tpl"
         , dest = "{{project.name}}-core/{{project.name}}-core.cabal"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "core/Prelude.hs.tpl"
         , dest = "{{project.name}}-core/src/{{project.namespace}}/Prelude.hs"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "core/Lib.hs.tpl"
         , dest = "{{project.name}}-core/src/{{project.namespace}}.hs"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "cli.cabal.tpl"
         , dest = "{{project.name}}-cli/{{project.name}}-cli.cabal"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "cli/Main.hs.tpl"
         , dest = "{{project.name}}-cli/app/Main.hs"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "cli/Cli.hs.tpl"
         , dest = "{{project.name}}-cli/src/{{project.namespace}}/Cli.hs"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "cli/Spec.hs.tpl"
         , dest = "{{project.name}}-cli/test/Spec.hs"
         , when = Some "Eq project.tests true"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "nix/haskell-cli-app.nix.tpl"
         , dest = "nix/haskell-cli-app.nix"
         }
-      , S.Step::{
-        , strategy = "template"
-        , src = "LICENSE.tpl"
-        , dest = "LICENSE"
-        }
+      , S.Step::{ strategy = "template", src = "LICENSE.tpl", dest = "LICENSE" }
       , S.Step::{
         , strategy = "template"
         , src = "LICENSE.tpl"
@@ -195,21 +191,25 @@ in  S.Module::{
         , strategy = "template"
         , src = "CHANGELOG.md.tpl"
         , dest = "CHANGELOG.md"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "CHANGELOG.md.tpl"
         , dest = "{{project.name}}-core/CHANGELOG.md"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "CHANGELOG.md.tpl"
         , dest = "{{project.name}}-cli/CHANGELOG.md"
+        , lifecycle = Some "seed"
         }
       , S.Step::{
         , strategy = "template"
         , src = "README.md.tpl"
         , dest = "README.md"
+        , lifecycle = Some "seed"
         }
       ]
     }

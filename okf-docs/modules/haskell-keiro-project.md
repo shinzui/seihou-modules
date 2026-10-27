@@ -12,14 +12,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.10.1.0
-version: 0.2.0
+version: 0.3.0
 ---
 
 # haskell-keiro-project
 
 Six-package Keiro bootstrap with a Nix development shell, workspace manifest, development recipes, and a project-specific implementation brief
 
-**Version:** 0.2.0
+**Version:** 0.3.0
 
 ## Dependencies
 

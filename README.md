@@ -49,7 +49,7 @@ Useful follow-ups in a project that already has a `.seihou/manifest.json`:
 | `seihou diff` | Local edits since the last generation |
 | `seihou outdated` | Installed artifacts with newer versions upstream |
 | `seihou migrate` | Apply module-declared migrations to this project |
-| `seihou run <name> --force` | Regenerate after an upgrade |
+| `seihou update <name>` | Reconcile recorded applications and adopt starter seed ownership |
 
 ## Catalog
 
@@ -64,9 +64,9 @@ commands, and an optional removal procedure.
 |---|---|---|
 | [`gcp-kube-env`](modules/cloud/gcp-kube-env) | 0.1.1 | Checkout-local GCP project and kube context, private kubeconfig, and direnv settings in a configurable env file (default `.envrc.local`) |
 | [`nix-haskell-flake`](modules/haskell/nix-haskell-flake) | 0.35.0 | flake-parts Nix dev shell on the `haskell-nix-dev` base flake, with exact managed locks, an optional managed package-module seam, and toggleable local services/formatting/hooks |
-| [`haskell-library`](modules/haskell/haskell-library) | 0.2.0 | Single-package Haskell library on GHC 9.12 / GHC2024, `lens` + `generic-lens`, BSD-3, optional `tasty` suite |
-| [`haskell-cli-app`](modules/haskell/haskell-cli-app) | 0.3.1 | Tested two-package CLI with real core integration, GHC 9.12.4/9.14.1 shells, valid package metadata, and working Nix package/check outputs |
-| [`haskell-keiro-project`](modules/haskell/haskell-keiro-project) | 0.2.0 | Six-package Keiro seed, project-named workspace, injected probes, OpenAPI, Hurl/Hinagata testing, optional Mori inventory |
+| [`haskell-library`](modules/haskell/haskell-library) | 0.3.0 | Single-package Haskell library on GHC 9.12 / GHC2024, `lens` + `generic-lens`, BSD-3, optional `tasty` suite |
+| [`haskell-cli-app`](modules/haskell/haskell-cli-app) | 0.4.0 | Tested two-package CLI with real core integration, GHC 9.12.4/9.14.1 shells, valid package metadata, and working Nix package/check outputs |
+| [`haskell-keiro-project`](modules/haskell/haskell-keiro-project) | 0.3.0 | Six-package Keiro seed, project-named workspace, injected probes, OpenAPI, Hurl/Hinagata testing, optional Mori inventory |
 | [`git-init`](modules/git/git-init) | 0.2.0 | `git init -b master`, seed `.gitignore`, optional private GitHub repo via `gh repo create`, optional org-team access grant |
 | [`repo-dir`](modules/git/repo-dir) | 0.1.0 | Create `<parentDir>/<name>` and run `git-init` inside it with a matching GitHub repo; owner from the active context's `git.githubOwner` |
 | [`nix-bun-flake`](modules/typescript/nix-bun-flake) | 0.4.0 | Nix flake for Bun + TypeScript: oxlint, oxfmt, `just`, optional git-hooks.nix and pinned bun2nix builds |
@@ -182,3 +182,21 @@ for preserved legacy adoption or ordered 0.30.0/0.31.0 upgrades. The optional ch
 scope shares production and development identities; native acceptance remains independently
 verified. This checkout prepares module 0.32.0, CLI scaffold 0.3.1 and blueprint 0.1.0;
 remote discovery requires publishing the reviewed commit first.
+
+## Seed runtime compatibility (release candidate)
+
+The Haskell CLI 0.4.0, library 0.3.0 and Keiro project 0.3.0 candidates declare
+project-owned starter seeds. They require the proposed Seihou runtime **0.11.0.0+**;
+publication and installed-binary acceptance are pending. Release the runtime first.
+Older binaries may ignore lifecycle and overwrite starter content. The runtime
+work is coordinated by
+`mori://shinzui/seihou/masterplans/12-seed-files-module-outputs-created-once-and-owned-by-the-project`.
+
+Existing projects adopt with one ordinary `seihou update haskell-cli-app` (or the
+library/Keiro root). Review `release to project` and confirm once; update fetches
+recorded sources/dependencies and prepares supported manifests. Commit the resulting
+manifest. Saved settlement preserves edits and intentional deletion in clones,
+reruns, force, status, diff, update and removal. No per-file release prompts,
+prerequisite install, internal JSON changes or transitive target list are needed.
+Managed Nix integration, licenses and maintained test helpers still update.
+Shell commands remain unsandboxed and must never mutate project seeds.
