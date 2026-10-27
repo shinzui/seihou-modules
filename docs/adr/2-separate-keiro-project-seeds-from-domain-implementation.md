@@ -21,11 +21,20 @@ development recipes, and a project-specific implementation brief. It depends on
 The existing `haskell-keiro-service` blueprint consumes this module and follows the brief.
 Its historical sketches do not override current standards or release verification.
 
-The seed does not pretend to implement server, workers, migrations, or business behavior.
+The seed does not pretend to implement an assembled application runtime, workers, migrations, or business behavior.
 The implementation phase establishes domain requirements and verifies a coherent published
 runtime cohort before generating domain Haskell. Migrations remain independent of sibling
 libraries. Generated conformance is an auxiliary test package, outside the six application
 packages. One workspace manifest explicitly owns module namespace and runtime package.
+
+The scaffold's shared HTTP plumbing uses `mori://shinzui/servant-health/packages/servant-health`
+for the probe contract and server handlers, with injected liveness/readiness checks. The API
+package owns the typed route contract and a database-free OpenAPI generator using
+`mori://shinzui/openapi-hs/packages/openapi-hs` and
+`mori://shinzui/servant-openapi-hs/packages/servant-openapi-hs`; the server package owns
+application assembly. This reusable wiring does not establish production dependency or drain
+policy. The implementation blueprint supplies those policies and extends the same API/schema
+with business routes. Probe conformance and schema generation must work in a fresh seed.
 
 ## Consequences
 
@@ -34,3 +43,9 @@ instructions. No second copy of shared Nix templates is needed. Initial library 
 proves the seed, not runtime acceptance. Seed files become hand-owned during implementation;
 Seihou conflict protection must be respected on reapplication. Nix can be updated independently,
 and project-specific Nix builds belong in the unmanaged customization file.
+
+Health tests and generated OpenAPI documentation share the typed API authority. HTTP smoke
+tests use `/health/live` and `/health/ready`, and schema generation acquires no database or
+server resources. [Plan 8](../plans/8-complete-the-keiro-project-bootstrap-with-api-testing-and-test-data.md)
+records the planned scaffold extension and its acceptance criteria. This extension was decided
+on 2026-10-26; its implementation remains tracked in that plan.
