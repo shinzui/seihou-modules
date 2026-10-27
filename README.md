@@ -63,10 +63,10 @@ commands, and an optional removal procedure.
 | Module | Version | Purpose |
 |---|---|---|
 | [`gcp-kube-env`](modules/cloud/gcp-kube-env) | 0.1.1 | Checkout-local GCP project and kube context, private kubeconfig, and direnv settings in a configurable env file (default `.envrc.local`) |
-| [`nix-haskell-flake`](modules/haskell/nix-haskell-flake) | 0.34.0 | flake-parts Nix dev shell on the `haskell-nix-dev` base flake, with exact managed locks, an optional managed package-module seam, and toggleable local services/formatting/hooks |
+| [`nix-haskell-flake`](modules/haskell/nix-haskell-flake) | 0.35.0 | flake-parts Nix dev shell on the `haskell-nix-dev` base flake, with exact managed locks, an optional managed package-module seam, and toggleable local services/formatting/hooks |
 | [`haskell-library`](modules/haskell/haskell-library) | 0.2.0 | Single-package Haskell library on GHC 9.12 / GHC2024, `lens` + `generic-lens`, BSD-3, optional `tasty` suite |
 | [`haskell-cli-app`](modules/haskell/haskell-cli-app) | 0.3.1 | Tested two-package CLI with real core integration, GHC 9.12.4/9.14.1 shells, valid package metadata, and working Nix package/check outputs |
-| [`haskell-keiro-project`](modules/haskell/haskell-keiro-project) | 0.1.0 | Six-package Keiro service bootstrap: Nix shell, workspace manifest, `just` recipes, implementation brief |
+| [`haskell-keiro-project`](modules/haskell/haskell-keiro-project) | 0.2.0 | Six-package Keiro seed, project-named workspace, injected probes, OpenAPI, Hurl/Hinagata testing, optional Mori inventory |
 | [`git-init`](modules/git/git-init) | 0.2.0 | `git init -b master`, seed `.gitignore`, optional private GitHub repo via `gh repo create`, optional org-team access grant |
 | [`repo-dir`](modules/git/repo-dir) | 0.1.0 | Create `<parentDir>/<name>` and run `git-init` inside it with a matching GitHub repo; owner from the active context's `git.githubOwner` |
 | [`nix-bun-flake`](modules/typescript/nix-bun-flake) | 0.4.0 | Nix flake for Bun + TypeScript: oxlint, oxfmt, `just`, optional git-hooks.nix and pinned bun2nix builds |
@@ -91,7 +91,7 @@ commit.
 
 | Blueprint | Version | Purpose |
 |---|---|---|
-| [`haskell-keiro-service`](blueprints/haskell-keiro-service) | 0.3.0 | Implement an event-sourced Haskell service on the released Keiro runtime — vertical-slice packages, pg-migrate components, Settei config, OpenTelemetry wiring, Keiro-DSL-first workflow |
+| [`haskell-keiro-service`](blueprints/haskell-keiro-service) | 0.4.0 | Extend the Keiro seed’s probes/OpenAPI/testing into an event-sourced Haskell service on the released Keiro runtime — vertical-slice packages, pg-migrate components, Settei config, OpenTelemetry wiring, Keiro-DSL-first workflow |
 | [`upgrade-fumadocs`](blueprints/upgrade-fumadocs) | 0.1.0 | Upgrade a customized documentation site to current Fumadocs and the shared Bun flake-parts modules while preserving its workflows and content |
 | [`upgrade-haskell-runtime`](blueprints/upgrade-haskell-runtime) | 0.1.0 | Preserve legacy projects or cross ordered 0.30.0/0.31.0 upgrades to explicit shared runtime scopes with independent native acceptance |
 | [`upgrade-haskell-flake-parts`](blueprints/upgrade-haskell-flake-parts) | 0.1.0 | Migrate a monolithic `flake.nix` to the thin flake-parts structure on the base flake, preserving every custom input, overlay, tool, hook, and check |
@@ -156,6 +156,9 @@ promise; the bundle itself stays OKF-conformant regardless.
   `files/flake.lock` together, then proves the pin sticks and that a minimal
   project reusing the lock resolves identical inputs. `--check` verifies without
   writing (for CI); it never commits and never bumps the module version.
+- `scripts/test-keiro-bootstrap.py --live` — builds a fresh generated seed and proves real
+  PostgreSQL fixtures reach HTTP/Hurl assertions under distinct leases, with failure propagation
+  and service/clone cleanup. Runs in the generated Nix shell against its own private cluster.
 - `scripts/check-keiro-bootstrap.py` — renders `haskell-keiro-project` into
   throwaway directories and asserts the six-package layout, idempotent
   regeneration, user-edit protection, and that the registry and Mori descriptors

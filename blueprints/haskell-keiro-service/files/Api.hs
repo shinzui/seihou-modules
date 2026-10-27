@@ -1,5 +1,3 @@
-{-# LANGUAGE EmptyCase #-}
-
 -- | Reference Servant route records (replace Acme/Widget). Application routes
 -- live by concept. The umbrella mounts the fleet probe contract at /health.
 module Acme.Widget.Api
@@ -15,10 +13,10 @@ module Acme.Widget.Api
 where
 
 import Acme.Prelude
-import Data.SOP (I (..), NS (S, Z))
-import Data.Time (UTCTime)
 import Servant.API
-import Servant.API.MultiVerb (AsUnion (..), MultiVerb, Respond)
+import Servant.Health (HealthApi (..), ProbeResult (..), ProbeStatus (..))
+-- Contract: mori://shinzui/servant-health/packages/servant-health
+-- Build handlers with healthServer; preserve the generated injectable server builder.
 
 data WidgetsAPI mode = WidgetsAPI
   { create ::
@@ -30,46 +28,11 @@ data WidgetsAPI mode = WidgetsAPI
   }
   deriving stock (Generic)
 
--- | Liveness is in-process only. Readiness may check the database and bounded
--- subscription lag/overflow, but must not turn unrelated downstream outages
--- into a fleet restart loop. Exclude both paths from successful request logs.
-data HealthApi mode = HealthApi
-  { live :: mode :- "live" :> MultiVerb 'GET '[JSON] ProbeResponses ProbeResult,
-    ready :: mode :- "ready" :> MultiVerb 'GET '[JSON] ProbeResponses ProbeResult
-  }
-  deriving stock (Generic)
-
 data ServiceApi mode = ServiceApi
   { health :: mode :- "health" :> NamedRoutes HealthApi,
     widgets :: mode :- "widgets" :> NamedRoutes WidgetsAPI
   }
   deriving stock (Generic)
-
-data ProbeStatus = ProbeStatus
-  { status :: !Text,
-    check :: !Text,
-    failingSince :: !(Maybe UTCTime)
-  }
-  deriving stock (Generic, Eq, Show)
-  deriving anyclass (FromJSON, ToJSON)
-
-type ProbeResponses =
-  '[ Respond 200 "Probe passed" ProbeStatus,
-     Respond 503 "Probe failed" ProbeStatus
-   ]
-
-data ProbeResult
-  = ProbePassed !ProbeStatus
-  | ProbeFailed !ProbeStatus
-
-instance AsUnion ProbeResponses ProbeResult where
-  toUnion = \case
-    ProbePassed body -> Z (I body)
-    ProbeFailed body -> S (Z (I body))
-  fromUnion = \case
-    Z (I body) -> ProbePassed body
-    S (Z (I body)) -> ProbeFailed body
-    S (S impossible) -> case impossible of {}
 
 -- | A closed-enum field stays Text on the wire and is validated in the
 -- handler. Unknown values become a 400 RFC 7807 problem response.

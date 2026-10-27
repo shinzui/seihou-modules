@@ -1,5 +1,11 @@
 # Bundle Update Log
 
+## 2026-10-27
+* **Update**: FRIC-5 accepted: Accept the supported character-class validation and enforce it with generated-project checks.
+* **Update**: FRIC-4 accepted: Accept the documented schema-export correction while the released generic Maybe derivation omits nullability.
+* **Addition**: FRIC-5 records detour interface friction with mori://shinzui/seihou: Seihou silently accepts unsupported variable patterns
+* **Addition**: FRIC-4 records detour interface friction with mori://shinzui/openapi-hs/packages/openapi-hs: Released probe schema omits nullable timestamp semantics
+
 ## 2026-10-26
 * **Update**: FRIC-3 accepted: Corrected the affecting project reference to its canonical Mori URI under repository reference policy.
 * **Update**: FRIC-2 accepted: Corrected the affecting project reference to its canonical Mori URI under repository reference policy.

@@ -4,7 +4,7 @@ let S =
 
 in  S.Blueprint::{
     , name = "haskell-keiro-service"
-    , version = Some "0.3.0"
+    , version = Some "0.4.0"
     , description = Some
         "Agent-driven scaffold for an event-sourced Haskell service on the released Keiro runtime: a six-package vertical-slice layout with generated and hand-owned rings, Hackage-pinned dependencies, pg-migrate components, validated event streams, Settei configuration, real OpenTelemetry wiring, health and request-logging contracts, and a Keiro-DSL-first workflow."
     , prompt = ./prompt.md as Text
@@ -15,7 +15,7 @@ in  S.Blueprint::{
         , description = Some
             "Project base name; creates <name>-core, -api, -migrations, -workers, -server, and -client. Shared with the Nix environment."
         , required = True
-        , validation = Some "[a-z][a-z0-9]*(-[a-z][a-z0-9]*)*"
+        , validation = Some "[a-z][a-z0-9-]*"
         }
       , S.VarDecl::{
         , name = "project.description"
@@ -58,14 +58,34 @@ in  S.Blueprint::{
         , name = "keiro.context"
         , type = "text"
         , description = Some
-            "Stable service workspace identity and shared DSL context."
-        , required = True
-        , validation = Some "[a-z][a-z0-9]*(-[a-z][a-z0-9]*)*"
+            "Optional logical DSL context override; paths and workspace identity always use project.name."
+        , required = False
+        , validation = Some "[a-z][a-z0-9-]*"
+        }
+      , S.VarDecl::{
+        , name = "mori.prompt"
+        , type = "bool"
+        , default = Some "false"
+        , required = False
+        , description = Some "Internal prompt coordination: the blueprint asks once and suppresses the baseline module question, including after an empty skip."
+        }
+      , S.VarDecl::{
+        , name = "mori.generate"
+        , type = "bool"
+        , required = False
+        , description = Some "Generate an initial local Mori inventory (no registration). Empty input skips."
+        }
+      , S.VarDecl::{
+        , name = "mori.namespace"
+        , type = "text"
+        , required = False
+        , validation = Some "[a-z][a-z0-9-]*"
+        , description = Some "Mori organization/user namespace; required when mori.generate=true. Separate from Haskell project.namespace."
         }
       , S.VarDecl::{
         , name = "haskell.index-state"
         , type = "text"
-        , default = Some "2026-09-07T00:00:00Z"
+        , default = Some "2026-10-26T00:00:00Z"
         , description = Some
             "Hackage index snapshot for the initial libraries; reverify the runtime cohort before adding domain dependencies."
         , required = True
@@ -93,8 +113,13 @@ in  S.Blueprint::{
       , S.Prompt::{ var = "project.maintainer", text = "Maintainer email?" }
       , S.Prompt::{ var = "project.copyright-year", text = "Copyright year?" }
       , S.Prompt::{
-        , var = "keiro.context"
-        , text = "Stable Keiro service/context name? (lowercase, e.g. contacts)"
+        , var = "mori.generate"
+        , text = "Generate an initial mori.dhall with packages, dependencies, and the OpenAPI schema reference? (true/false; empty skips)"
+        }
+      , S.Prompt::{
+        , var = "mori.namespace"
+        , text = "Mori organization/user namespace? (separate from the PascalCase Haskell namespace)"
+        , when = Some "Eq mori.generate true"
         }
       , S.Prompt::{
         , var = "haskell.index-state"
@@ -131,7 +156,7 @@ in  S.Blueprint::{
       , S.Blueprint.BlueprintFile::{
         , src = "Api.hs"
         , description = Some
-            "Reference Servant skeleton: NamedRoutes, wire DTOs, and the fleet liveness/readiness route shape. Adapt domain routes and keep probe semantics separate from dependency health."
+            "Historical NamedRoutes/DTO sketch importing servant-health. Extend the generated ServiceApi and derived OpenAPI, retain the injected probe builder, and add domain schemas; never duplicate probe types/handlers."
         }
       , S.Blueprint.BlueprintFile::{
         , src = "Diagrams.hs"

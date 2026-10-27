@@ -17,14 +17,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.10.1.0
-version: 0.3.0
+version: 0.4.0
 ---
 
 # haskell-keiro-service
 
 Agent-driven scaffold for an event-sourced Haskell service on the released Keiro runtime: a six-package vertical-slice layout with generated and hand-owned rings, Hackage-pinned dependencies, pg-migrate components, validated event streams, Settei configuration, real OpenTelemetry wiring, health and request-logging contracts, and a Keiro-DSL-first workflow.
 
-**Version:** 0.3.0
+**Version:** 0.4.0
 
 ## Base modules
 
@@ -40,7 +40,10 @@ Agent-driven scaffold for an event-sourced Haskell service on the released Keiro
 The `haskell-keiro-project` base module has supplied six initial Cabal libraries, the
 `nix-haskell-flake` environment, a workspace manifest, and `docs/bootstrap-keiro.md`.
 Read that generated brief in full and carry out its workflow. It is the implementation
-contract for namespace {{project.namespace}} and context {{keiro.context}}.
+contract for Haskell namespace {{project.namespace}} and project-named workspace {{project.name}}.
+The base also supplies injected servant-health probes, typed OpenAPI generation, Hurl Workbench
+and Hinagata assets, and an optional local Mori inventory. Extend the same API/schema, preserve
+test setup, and maintain an opted-in dependency inventory while implementing the domain.
 
 Establish real domain requirements before adding aggregates. Implement the complete service,
 validate it, and report evidence as required by the brief. Preserve existing implementation
@@ -58,14 +61,17 @@ configuration and runtime checks, and any remaining failures.
 
 ## Variables
 
-- `project.name` — text, required, matching `[a-z][a-z0-9]*(-[a-z][a-z0-9]*)*`. Project base name; creates <name>-core, -api, -migrations, -workers, -server, and -client. Shared with the Nix environment.
+- `project.name` — text, required, matching `[a-z][a-z0-9-]*`. Project base name; creates <name>-core, -api, -migrations, -workers, -server, and -client. Shared with the Nix environment.
 - `project.description` — text, required. One-line synopsis used in Cabal files, the implementation brief, and the Nix flake description.
 - `project.namespace` — text, required, matching `[A-Z][A-Za-z0-9]*`. Top-level Haskell module namespace (single segment, e.g. Rei). Used both as the source-tree directory and as the module prefix in generated .hs files.
 - `project.author` — text, required, default `Nadeem Bitar`. Author name written into LICENSE and .cabal files
 - `project.maintainer` — text, required, default `nadeem@gmail.com`. Maintainer email written into .cabal files
 - `project.copyright-year` — text, required, default `2026`, matching `[0-9]{4}`. Copyright year written into LICENSE
-- `keiro.context` — text, required, matching `[a-z][a-z0-9]*(-[a-z][a-z0-9]*)*`. Stable service workspace identity and shared DSL context.
-- `haskell.index-state` — text, required, default `2026-09-07T00:00:00Z`, matching `[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z`. Hackage index snapshot for the initial libraries; reverify the runtime cohort before adding domain dependencies.
+- `keiro.context` — text, optional, matching `[a-z][a-z0-9-]*`. Optional logical DSL context override; paths and workspace identity always use project.name.
+- `mori.prompt` — boolean, optional, default `false`. Internal prompt coordination: the blueprint asks once and suppresses the baseline module question, including after an empty skip.
+- `mori.generate` — boolean, optional. Generate an initial local Mori inventory (no registration). Empty input skips.
+- `mori.namespace` — text, optional, matching `[a-z][a-z0-9-]*`. Mori organization/user namespace; required when mori.generate=true. Separate from Haskell project.namespace.
+- `haskell.index-state` — text, required, default `2026-10-26T00:00:00Z`, matching `[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z`. Hackage index snapshot for the initial libraries; reverify the runtime cohort before adding domain dependencies.
 
 ## Prompts
 
@@ -75,7 +81,8 @@ configuration and runtime checks, and any remaining failures.
 - `project.author` — Author name?
 - `project.maintainer` — Maintainer email?
 - `project.copyright-year` — Copyright year?
-- `keiro.context` — Stable Keiro service/context name? (lowercase, e.g. contacts)
+- `mori.generate` — Generate an initial mori.dhall with packages, dependencies, and the OpenAPI schema reference? (true/false; empty skips)
+- `mori.namespace` — Mori organization/user namespace? (separate from the PascalCase Haskell namespace) — when `Eq mori.generate true`
 - `haskell.index-state` — Hackage index-state for this bootstrap? (UTC timestamp)
 
 ## Reference files
@@ -84,7 +91,7 @@ configuration and runtime checks, and any remaining failures.
 - `core.cabal` - Reference <name>-core.cabal: the shared common stanzas, bounded released dependencies, and exposed modules organized by vertical slice, including generated, hand-owned, and read-model rings. Historical sketch only: replace bounds with the verified cohort and use the complete current generated Cabal fragment.
 - `Prelude.hs` - Reference <Ns>.Prelude: a thin re-export over base using {-# LANGUAGE PackageImports #-} (ONLY here), re-exporting module Control.Lens. Notes the rule that Data.Generics.Labels is NOT re-exported (its orphan IsLabel collides with keiki's); each module that uses #field lenses imports it locally.
 - `AppConfig.hs` - Reference runtime dependency module: the strict AppConfig record populated only after Settei resolves Settings, plus the Eff es + Reader AppConfig + Error + IOE effect-row shape. Adapt dependencies; do not merge source resolution into this module.
-- `Api.hs` - Reference Servant skeleton: NamedRoutes, wire DTOs, and the fleet liveness/readiness route shape. Adapt domain routes and keep probe semantics separate from dependency health.
+- `Api.hs` - Historical NamedRoutes/DTO sketch importing servant-health. Extend the generated ServiceApi and derived OpenAPI, retain the injected probe builder, and add domain schemas; never duplicate probe types/handlers.
 - `Diagrams.hs` - Reference <Ns>.Diagrams: renders each aggregate's keiki transducer to a stateDiagram-v2 block (Keiki.Render.Mermaid.toMermaid) and splices it between HTML-comment markers in docs/diagrams/domain-lifecycles.md (Keiki.Render.Markdown.replaceMarkdownDiagramBlock). staleDiagrams/writeDiagrams back the <name>-diagrams executable (--check/--write) and the <name>-core-diagrams test suite that fails `cabal test` when a committed diagram has drifted from its transducer — the generated-artifact freshness gate.
 - `domain.keiro` - Reference keiro DSL spec: a historical bare-source example with a `layout collocated` clause, one aggregate, an id newtype with a prefix, a closed enum referenced via an explicit field:Enum annotation, a couple of commands/events, a projection, and command/query operations — adapt only after reading the current workspace and language standards; the generated workspace is authoritative.
 - `fourmolu.yaml` - Reference fourmolu.yaml (the fleet formatter config, also shipped by the nix-haskell-flake base module) so the generated project formats identically to the rest of the fleet.

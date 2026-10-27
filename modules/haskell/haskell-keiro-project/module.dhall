@@ -4,9 +4,9 @@ let S =
 
 in  S.Module::{
     , name = "haskell-keiro-project"
-    , version = Some "0.1.0"
+    , version = Some "0.2.0"
     , description = Some
-        "Bootstrap the six-package Keiro service structure, workspace-first domain workflow, and implementation brief on nix-haskell-flake. Domain implementation is completed by the haskell-keiro-service blueprint."
+        "Six-package Keiro seed with project-named domain paths, injected servant-health probes, OpenAPI generation, Hurl/Hinagata test setup, and optional initial Mori inventory on nix-haskell-flake. The blueprint implements the domain."
     , vars =
       [ S.VarDecl::{
         , name = "project.name"
@@ -14,7 +14,7 @@ in  S.Module::{
         , description = Some
             "Project base name; creates <name>-core, -api, -migrations, -workers, -server, and -client. Shared with the Nix environment."
         , required = True
-        , validation = Some "[a-z][a-z0-9]*(-[a-z][a-z0-9]*)*"
+        , validation = Some "[a-z][a-z0-9-]*"
         }
       , S.VarDecl::{
         , name = "project.description"
@@ -57,14 +57,34 @@ in  S.Module::{
         , name = "keiro.context"
         , type = "text"
         , description = Some
-            "Stable service workspace identity and shared DSL context."
-        , required = True
-        , validation = Some "[a-z][a-z0-9]*(-[a-z][a-z0-9]*)*"
+            "Optional logical DSL context override; paths and workspace identity always use project.name."
+        , required = False
+        , validation = Some "[a-z][a-z0-9-]*"
+        }
+      , S.VarDecl::{
+        , name = "mori.prompt"
+        , type = "bool"
+        , default = Some "true"
+        , required = False
+        , description = Some "Internal prompt coordination: the blueprint asks once and suppresses the baseline module question, including after an empty skip."
+        }
+      , S.VarDecl::{
+        , name = "mori.generate"
+        , type = "bool"
+        , required = False
+        , description = Some "Generate an initial local Mori inventory (no registration). Empty input skips."
+        }
+      , S.VarDecl::{
+        , name = "mori.namespace"
+        , type = "text"
+        , required = False
+        , validation = Some "[a-z][a-z0-9-]*"
+        , description = Some "Mori organization/user namespace; required when mori.generate=true. Separate from Haskell project.namespace."
         }
       , S.VarDecl::{
         , name = "haskell.index-state"
         , type = "text"
-        , default = Some "2026-09-07T00:00:00Z"
+        , default = Some "2026-10-26T00:00:00Z"
         , description = Some
             "Hackage index snapshot for the initial libraries; reverify the runtime cohort before adding domain dependencies."
         , required = True
@@ -96,8 +116,14 @@ in  S.Module::{
       , S.Prompt::{ var = "project.maintainer", text = "Maintainer email?" }
       , S.Prompt::{ var = "project.copyright-year", text = "Copyright year?" }
       , S.Prompt::{
-        , var = "keiro.context"
-        , text = "Stable Keiro service/context name? (lowercase, e.g. contacts)"
+        , var = "mori.generate"
+        , text = "Generate an initial mori.dhall with packages, dependencies, and the OpenAPI schema reference? (true/false; empty skips)"
+        , when = Some "Eq mori.prompt true"
+        }
+      , S.Prompt::{
+        , var = "mori.namespace"
+        , text = "Mori organization/user namespace? (separate from the PascalCase Haskell namespace)"
+        , when = Some "Eq mori.generate true"
         }
       , S.Prompt::{
         , var = "haskell.index-state"
@@ -111,6 +137,7 @@ in  S.Module::{
           [ { name = "nix.postgresql", value = "true" }
           , { name = "nix.process-compose", value = "true" }
           , { name = "nix.builtin-package", value = "false" }
+          , { name = "nix.package-module", value = "nix/keiro-dev-tools.nix" }
           ]
         }
       ]
@@ -128,12 +155,12 @@ in  S.Module::{
       , S.Step::{
         , strategy = "template"
         , src = "workspace.tpl"
-        , dest = "domain/{{keiro.context}}.keiro-workspace"
+        , dest = "domain/{{project.name}}.keiro-workspace"
         }
       , S.Step::{
         , strategy = "template"
         , src = "shared.keiro.tpl"
-        , dest = "domain/{{keiro.context}}/shared.keiro"
+        , dest = "domain/{{project.name}}/shared.keiro"
         }
       , S.Step::{
         , strategy = "template"
@@ -171,6 +198,10 @@ in  S.Module::{
         , src = "api.hs.tpl"
         , dest = "{{project.name}}-api/src/{{project.namespace}}/Api.hs"
         }
+      , S.Step::{ strategy = "template", src = "openapi.hs.tpl", dest = "{{project.name}}-api/src/{{project.namespace}}/Api/OpenApi.hs" }
+      , S.Step::{ strategy = "template", src = "openapi-main.hs.tpl", dest = "{{project.name}}-api/app/OpenApiMain.hs" }
+      , S.Step::{ strategy = "template", src = "openapi-test.hs.tpl", dest = "{{project.name}}-api/test/OpenApiTest.hs" }
+      , S.Step::{ strategy = "template", src = "health-test.hs.tpl", dest = "{{project.name}}-server/test/HealthTest.hs" }
       , S.Step::{
         , strategy = "template"
         , src = "migrations.cabal.tpl"
@@ -213,6 +244,18 @@ in  S.Module::{
         , strategy = "template"
         , src = "client.hs.tpl"
         , dest = "{{project.name}}-client/src/{{project.namespace}}/Client.hs"
+        }
+      , S.Step::{ strategy = "template", src = "nix/keiro-dev-tools.nix.tpl", dest = "nix/keiro-dev-tools.nix" }
+      , S.Step::{ strategy = "template", src = "hurl-workbench.dhall.tpl", dest = "hurl-workbench.dhall" }
+      , S.Step::{ strategy = "template", src = "hinagata.yaml.tpl", dest = "hinagata.yaml" }
+      , S.Step::{ strategy = "copy", src = "tests/api/health.hurl", dest = "tests/api/health.hurl" }
+      , S.Step::{ strategy = "copy", src = "fixtures/bootstrap/fixture.sql", dest = "tests/fixtures/bootstrap/fixture.sql" }
+      , S.Step::{ strategy = "copy", src = "scripts/keiro-test-env", dest = "scripts/keiro-test-env" }
+      , S.Step::{
+        , strategy = "template"
+        , src = "mori.dhall.tpl"
+        , dest = "mori.dhall"
+        , when = Some "Eq mori.generate true"
         }
       , S.Step::{
         , strategy = "template"

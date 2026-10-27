@@ -1,6 +1,6 @@
-service {{keiro.context}}
+service {{project.name}}
 module {{project.namespace}}
 layout collocated
 runtime-package {{project.name}}-core
 
-spec {{keiro.context}}/shared.keiro
+spec {{project.name}}/shared.keiro

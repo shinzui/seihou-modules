@@ -61,7 +61,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "nix-haskell-flake"
-        , version = Some "0.34.0"
+        , version = Some "0.35.0"
         , description = Some
             "Nix flake for Haskell projects with optional explicit checked runtime scopes, exact managed locks, a managed package-module seam for composed scaffolds, an unmanaged user extension point, and toggleable local services, treefmt-nix, and pre-commit hooks"
         , modulePath = "modules/haskell/nix-haskell-flake"
@@ -103,13 +103,13 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "haskell-keiro-project"
-        , version = Some "0.1.0"
+        , version = Some "0.2.0"
         , description = Some
-            "Six-package Keiro bootstrap with a Nix shell, workspace-first domain structure, and implementation brief"
+            "Six-package Keiro seed with project-named workspace, injected probes, derived OpenAPI, Hurl/Hinagata testing, and optional initial Mori inventory"
         , modulePath = "modules/haskell/haskell-keiro-project"
         , tags = [ "haskell", "keiro", "service", "bootstrap" ]
         , dependencies = [ "nix-haskell-flake" ]
-        , requiredVars = [ "project.name", "project.namespace", "project.description", "keiro.context" ]
+        , requiredVars = [ "project.name", "project.namespace", "project.description" ]
         }
       , Schema.SeihouTemplate::{
         , name = "nix-bun-flake"
@@ -144,13 +144,13 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "haskell-keiro-service"
-        , version = Some "0.3.0"
+        , version = Some "0.4.0"
         , description = Some
-            "Agent implementation of a six-package service using the haskell-keiro-project scaffold and current Keiro runtime patterns"
+            "Implement a six-package Keiro domain while extending the seed probes/OpenAPI, retaining Hurl/Hinagata setup, and maintaining an opted-in Mori inventory"
         , modulePath = "blueprints/haskell-keiro-service"
         , tags = [ "haskell", "service", "keiro", "bootstrap" ]
         , dependencies = [ "haskell-keiro-project" ]
-        , requiredVars = [ "project.name", "project.namespace", "project.description", "keiro.context" ]
+        , requiredVars = [ "project.name", "project.namespace", "project.description" ]
         }
       ]
     }

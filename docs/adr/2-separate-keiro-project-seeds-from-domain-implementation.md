@@ -21,6 +21,11 @@ development recipes, and a project-specific implementation brief. It depends on
 The existing `haskell-keiro-service` blueprint consumes this module and follows the brief.
 Its historical sketches do not override current standards or release verification.
 
+Fresh workspaces use project.name for manifest paths, member directories and service identity.
+An optional keiro.context override changes the logical DSL context only. Existing authored
+workspaces require a reviewed migration of paths, references and ownership; reapplication
+does not automatically rename or delete them.
+
 The seed does not pretend to implement an assembled application runtime, workers, migrations, or business behavior.
 The implementation phase establishes domain requirements and verifies a coherent published
 runtime cohort before generating domain Haskell. Migrations remain independent of sibling
@@ -43,6 +48,15 @@ from the Haskell module namespace. This is initial descriptor authoring, with ex
 protection; it does not register the project or make OpenAPI generation conditional. The
 implementation blueprint maintains an opted-in inventory as application code is added.
 
+The scaffold owns a managed Nix tools module through the existing nix.package-module seam,
+leaving flake.module.nix unmanaged and the base canonical lock/compiler unchanged. Hurl
+Workbench and Hinagata execute immutable upstream flake packages; Workbench tool/schema pins
+move together. Testing CLIs are development tools, separate from bounded application Cabal
+dependencies. The test-only SQL marker is never a production migration or an automatic
+development database load. Direct loads require an explicit existing target; leased test
+consumers stop before their owned clone is released. Domain implementation supplies real
+migration/verification hooks and maps leased PG fields into service configuration.
+
 ## Consequences
 
 Both direct module users and blueprint users receive the same structure and implementation
@@ -54,5 +68,8 @@ and project-specific Nix builds belong in the unmanaged customization file.
 Health tests and generated OpenAPI documentation share the typed API authority. HTTP smoke
 tests use `/health/live` and `/health/ready`, and schema generation acquires no database or
 server resources. [Plan 8](../plans/8-complete-the-keiro-project-bootstrap-with-api-testing-and-test-data.md)
-records the planned scaffold extension and its acceptance criteria. This extension was decided
-on 2026-10-26; its implementation remains tracked in that plan.
+records the scaffold extension and its real PostgreSQL-to-HTTP acceptance criteria. The
+extension was decided on 2026-10-26. Released openapi-hs 5.0 generic record derivation omits
+Maybe nullability; the exporter narrowly corrects the derived probe timestamp and fixed
+required key until an upstream release fixes it. Probe wire types and handlers remain
+library-owned. Bootstrap test success proves shared plumbing, not an implemented Keiro domain.

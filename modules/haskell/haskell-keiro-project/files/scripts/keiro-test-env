@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+: "${PGHOST:?Enter nix develop or set PGHOST to a caller-started PostgreSQL endpoint}"
+: "${PGDATABASE:?Enter nix develop or set PGDATABASE}"
+export PGUSER="${PGUSER:-$(id -un)}" PGPORT="${PGPORT:-5432}"
+umask 077
+mkdir -p "$root/.artifacts/hinagata/bundles"
+export HINAGATA_ENDPOINT_HOST="${HINAGATA_ENDPOINT_HOST:-$PGHOST}"
+export HINAGATA_ENDPOINT_PORT="${HINAGATA_ENDPOINT_PORT:-$PGPORT}"
+export HINAGATA_FIXTURE_ROOT="${HINAGATA_FIXTURE_ROOT:-$root/tests/fixtures}"
+export HINAGATA_BUNDLE_ROOT="${HINAGATA_BUNDLE_ROOT:-$root/.artifacts/hinagata/bundles}"
+export HINAGATA_MAINTENANCE_DATABASE="${HINAGATA_MAINTENANCE_DATABASE:-postgres}"
+export HINAGATA_ADMINISTRATION_USER="${HINAGATA_ADMINISTRATION_USER:-$PGUSER}"
+export HINAGATA_ADMINISTRATION_DATABASE="${HINAGATA_ADMINISTRATION_DATABASE:-postgres}"
+export HINAGATA_SETUP_USER="${HINAGATA_SETUP_USER:-$PGUSER}"
+export HINAGATA_SETUP_DATABASE="${HINAGATA_SETUP_DATABASE:-postgres}"
+export HINAGATA_APPLICATION_USER="${HINAGATA_APPLICATION_USER:-$PGUSER}"
+export HINAGATA_APPLICATION_DATABASE="${HINAGATA_APPLICATION_DATABASE:-postgres}"
+# Let Hinagata replace PG connection fields for a leased child command.
+exec hinagata --config "$root/hinagata.yaml" "$@"

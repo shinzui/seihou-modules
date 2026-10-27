@@ -1,7 +1,7 @@
 # Implement {{project.name}} on the Keiro runtime
 
 Implement **{{project.description}}** with Haskell namespace **{{project.namespace}}** and
-stable service/context **{{keiro.context}}**. The initial six libraries and Nix shell are present.
+workspace service **{{project.name}}** (the optional logical context override is already recorded in the shared member). The initial six libraries and Nix shell are present.
 First establish the actual domain requirements with the owner: aggregates, commands, events,
 queries, integrations, and lifecycle rules. A synopsis alone does not specify business behavior.
 Do not invent a Widget domain, copy CRM behavior, or treat empty libraries as a finished service.
@@ -53,9 +53,9 @@ install or assume the tool already on PATH matches the selected release.
 
 ## Author one workspace before domain Haskell
 
-Use `domain/{{keiro.context}}.keiro-workspace` as the single command target. Preserve the explicit
+Use `domain/{{project.name}}.keiro-workspace` as the single command target. Preserve the explicit
 `module {{project.namespace}}`, `layout collocated`, and `runtime-package {{project.name}}-core`.
-Keep shared declarations in `domain/{{keiro.context}}/shared.keiro`; each aggregate has one complete
+Keep shared declarations in `domain/{{project.name}}/shared.keiro`; each aggregate has one complete
 member in the same directory, registered once by a manifest-relative `spec` clause. All members
 share the same context and explicit language contract (the seed uses stable Language 5).
 
@@ -103,6 +103,41 @@ Replace empty boundary modules with real typed interfaces and build all packages
 any one area. Let compiler diagnostics drive focused source lookup. Keep concept code together
 across packages; do not add a seventh persistence package. The generated conformance package is
 an auxiliary test package, not a seventh application package.
+
+## Preserve the shared HTTP and testing plumbing
+
+Extend `{{project.namespace}}.Api.ServiceApi` with the real NamedRoutes. Import the
+servant-health contract/handlers rather than duplicating ProbeStatus, HealthApi, or status
+mapping. Use `mori://shinzui/servant-health/packages/servant-health` and its public testkit.
+Keep `mkApp liveCheck readyCheck` injectable and the threaded conformance tests passing.
+Assemble bounded process-only liveness and dependency readiness; readiness must fail while
+draining. Harden checks with the library's safeCheck/timeout/tracker helpers after reading
+their current source. No always-healthy production policy is provided by the seed.
+
+Add compatible openapi-hs ToSchema instances to domain DTOs. Keep `Api.OpenApi.openApi`
+derived from the complete mounted API via servant-openapi-hs, not a hand-maintained route
+list. `just openapi` writes `docs/openapi.json` without runtime resources; `just openapi-check`
+gates freshness. Retain the narrow ProbeStatus nullability correction while released generic
+record derivation needs it; it does not replace library codec/handler authority. Update schema
+tests as the contract grows, preserving both probe statuses and the fixed null timestamp key.
+
+Preserve `hurl-workbench.dhall`, `tests/api/health.hurl`, `hinagata.yaml`, fixtures and the
+`scripts/keiro-test-env` helper. `just test-tools`, `just api-validate`, `just api-render`, and
+`just fixture-plan` validate setup before a service exists. Workbench/schema share a verified
+immutable tooling pin; Hinagata uses released source via Nix wrappers. Pin updates must test
+both the executable and its schema; these pins never become application runtime dependencies.
+`just fixture-load TARGET` selects an existing database; `just fixture-with` owns an isolated
+clone and checks the test-only marker. Never place this fixture in production migrations.
+Wire migration up/verify hooks and explicit revisions before persistent baseline reuse and
+domain scenarios. Map the leased child's PG fields into the real service configuration and
+stop consumers before clone release. Local identical smoke roles are not production policy.
+
+If `mori.dhall` exists from the optional generation prompt, maintain its package/dependency
+scope/bound inventory alongside final Cabal components and preserve the OpenAPI owner/path.
+`mori.namespace` is the Mori organization/user namespace, distinct from project.namespace.
+Generation only authors a local descriptor; it does not register, mint identity, or invent a
+remote repository. Run `just openapi`, `mori validate`, and `mori show --json` locally. Preserve
+an authored descriptor, and do not create one when the user skipped the option.
 
 ## Wire migrations and runtime resources
 

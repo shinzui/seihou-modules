@@ -1,0 +1,51 @@
+{
+  "base": null,
+  "lens": [
+    "ekmett",
+    "lens"
+  ],
+  "servant": [
+    "haskell-servant",
+    "servant"
+  ],
+  "servant-server": [
+    "haskell-servant",
+    "servant"
+  ],
+  "servant-health": [
+    "shinzui",
+    "servant-health"
+  ],
+  "servant-health:testkit": [
+    "shinzui",
+    "servant-health"
+  ],
+  "openapi-hs": [
+    "shinzui",
+    "openapi-hs"
+  ],
+  "servant-openapi-hs": [
+    "shinzui",
+    "servant-openapi-hs"
+  ],
+  "aeson": [
+    "haskell",
+    "aeson"
+  ],
+  "bytestring": [
+    "haskell",
+    "bytestring"
+  ],
+  "tasty": [
+    "UnkindPartition",
+    "tasty"
+  ],
+  "tasty-hunit": [
+    "UnkindPartition",
+    "tasty"
+  ],
+  "wai": [
+    "yesodweb",
+    "wai"
+  ]
+}

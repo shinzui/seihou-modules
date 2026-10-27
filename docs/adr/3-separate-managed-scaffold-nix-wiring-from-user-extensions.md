@@ -24,9 +24,12 @@ project-relative `.nix` path. When set, the managed `flake.nix` imports that fla
 alongside `nix/haskell.nix` and watches it from `.envrc`.
 
 A dependent scaffold that needs custom package outputs owns the referenced file and binds
-`nix.builtin-package=false`. It defines its packages and checks there. The dependent scaffold
+`nix.builtin-package=false`. It defines its packages, checks, or scaffold-specific development tools there. The dependent scaffold
 must not generate `flake.module.nix`; that file remains the unmanaged user extension point and
 is imported after managed modules.
+
+The Keiro scaffold owns nix/keiro-dev-tools.nix through the same seam, contributing only
+extraDevPackages; it does not introduce a second application runtime/toolchain.
 
 The CLI scaffold therefore owns `nix/haskell-cli-app.nix`, which recursively adds its core and
 CLI packages to the selected GHC package set, exposes both outputs, makes the CLI the default,

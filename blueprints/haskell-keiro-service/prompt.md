@@ -3,7 +3,10 @@
 The `haskell-keiro-project` base module has supplied six initial Cabal libraries, the
 `nix-haskell-flake` environment, a workspace manifest, and `docs/bootstrap-keiro.md`.
 Read that generated brief in full and carry out its workflow. It is the implementation
-contract for namespace {{project.namespace}} and context {{keiro.context}}.
+contract for Haskell namespace {{project.namespace}} and project-named workspace {{project.name}}.
+The base also supplies injected servant-health probes, typed OpenAPI generation, Hurl Workbench
+and Hinagata assets, and an optional local Mori inventory. Extend the same API/schema, preserve
+test setup, and maintain an opted-in dependency inventory while implementing the domain.
 
 Establish real domain requirements before adding aggregates. Implement the complete service,
 validate it, and report evidence as required by the brief. Preserve existing implementation

@@ -25,6 +25,11 @@ provenance:
       at: 2026-10-27T02:35:58Z
       mode: "update"
       note: "Add optional prompted Mori descriptor with package/dependency inventory and generated OpenAPI reference"
+    - model: "gpt-6.1-sol"
+      harness: "codex-cli"
+      at: 2026-10-27T02:45:30Z
+      mode: "implement"
+      note: "Implement and validate the six-package bootstrap, health/schema plumbing, test tooling, and optional Mori inventory"
 ---
 
 # Complete the Keiro project bootstrap with API testing and test data
@@ -45,18 +50,20 @@ This is a bootstrap feature. A name and synopsis do not define business aggregat
 ## Progress
 
 
-- [ ] Milestone 1: Project-named domain paths and the six-package/local-service scaffold pass render, configuration, and ownership checks.
-- [ ] Milestone 2: The generated server's servant-health probes pass conformance tests and its typed API generates an OpenAPI 3.1 schema without runtime resources.
-- [ ] Milestone 3: Generated testing tools and assets validate, and an early real PostgreSQL fixture load succeeds.
-- [ ] Milestone 4: A generated-project acceptance harness proves database-backed HTTP assertions, distinct test databases, cleanup, and failure propagation.
-- [ ] Milestone 5: An optional interactive prompt generates a valid initial Mori descriptor with the six packages, accurate dependencies, and the generated OpenAPI path; opt-out and existing-file protection pass.
-- [ ] Milestone 6: Module/blueprint metadata and documentation agree with the tested workflow; regressions pass and durable decisions are reflected in ADRs.
+- [x] Milestone 1 (2026-10-26): Structural checker passes project naming with and without logical context overrides, sibling boundaries, database and broker render controls, canonical lock preservation, repeatability, and edit protection.
+- [x] Milestone 2 (2026-10-26): All four servant-health conformance cases and all three OpenAPI schema checks pass on Darwin/aarch64 with released Servant 0.20.3.0, servant-health 0.1.0.0, openapi-hs 5.0.0, and servant-openapi-hs 5.1.0. The six libraries and schema executable build; live acceptance repeats this against generated files and detects edited schema output before regeneration restores freshness.
+- [x] Milestone 3 (2026-10-26): Fresh generated wrappers execute Workbench a29d26a and Hinagata a0c1059, doctor finds supported Hurl/Hurlfmt 8.0.1, Workbench validate/render and Hinagata config/plan pass, and the early private PostgreSQL check observes ready after direct and leased fixture loads. No developer checkout paths or base lock changes are needed.
+- [x] Milestone 4 (2026-10-26): python3 scripts/test-keiro-bootstrap.py --live passes on Darwin/arm64. Its private PostgreSQL cluster proves repeatable explicit-target loads, untouched sentinel data, two distinct ready HTTP leases, a real failing Hurl assertion with identical child/outer exit status, service shutdown before failed-lease release, released allocation inspection, absent clone databases, and cluster finalization.
+- [x] Milestone 5 (2026-10-26): Real pseudo-terminal module and blueprint runs honor true/false/empty answers with one question and conditional namespace prompting. Dhall/Mori validation, six-package Cabal parity, independent namespace changes, missing/invalid identity, reapplication, authored-file protection, and opt-out preservation pass. Generated OpenAPI exists at the declared path; the opted-out other project also runs just openapi successfully.
+- [x] Milestone 6 (2026-10-26): Module/blueprint validation, structural checks, full live acceptance, registry synchronization/validation, Mori evaluation, generated OKF catalog, strict friction validation, and git diff --check pass. ADRs 2/3 record naming, testing, schema, and managed-tool ownership. A separate actual Apple Container broker/Console lifecycle check also passes and cleans its private resources.
 
 
 ## Surprises & Discoveries
 
+2026-10-26: Seihou implements only the exact validation pattern `[a-z][a-z0-9-]*`; other patterns silently accept all input. FRIC-5 in docs/friction-log/ records the finding. Both descriptors now use that supported pattern for project name, context, and Mori namespace, and tests require path-like inputs to fail before file writes. The base Nix module was already 0.35.0 while its registry/Mori/catalog entries still named 0.34.0; final sync aligns those metadata entries without changing shared Nix code.
 
-(None yet.)
+
+2026-10-26: Released openapi-hs 5.0.0 strips nullability from generic Maybe record fields. The generated ProbeStatus schema referenced a non-null UTCTime and omitted failingSince from required, although the library wire codec always emits the key. FRIC-4 in docs/friction-log/ records the mismatch. The exporter corrects that derived property with an anyOf null branch and requires the fixed key; library handlers/types remain authoritative.
 
 
 ## Decision Log
@@ -74,13 +81,23 @@ This is a bootstrap feature. A name and synopsis do not define business aggregat
 
 2026-10-26: Incorporate the user's additional requirements as real shared HTTP plumbing in the seed: `servant-health` provides the server probe contract/handlers, while `openapi-hs` and `servant-openapi-hs` derive OpenAPI 3.1 from the same API type. API owns the contract and schema generator; server owns application assembly and injected checks. Replace the placeholder bare `/health` test with `/health/live` and `/health/ready`. Business behavior and actual dependency/drain policies remain the blueprint's implementation responsibility.
 
+2026-10-26: Coordinate the blueprint and baseline question with an internal mori.prompt Boolean (true in the module, false forwarded by the blueprint). Seihou forwards resolved values but an empty optional answer is absent, so gating the baseline prompt prevents a second question after Skip. Both public inputs retain their original semantics.
+
+2026-10-26: Correct the released generic-schema nullability mismatch at the schema-export boundary, preserving the bounded released cohort and the library-derived schema. This correction is covered by the generated schema test and should be removed after an upstream release fixes the record derivation. Base is a compiler boot dependency without a registered Mori owner; retain its Hackage name/bounds rather than invent a registered project.
+
 2026-10-26: Add an optional prompt for initial Mori descriptor generation, skipped by default, with an independently supplied Mori organization/user namespace. The descriptor inventories the actual generated packages/dependencies and declares their existing OpenAPI artifact; it neither copies the OpenAPI document into Dhall nor makes OpenAPI generation optional. Generation is local and does not register the project or overwrite an authored descriptor.
 
 
 ## Outcomes & Retrospective
 
 
-(To be filled during and after implementation.)
+Implementation delivers the six-package seed, project-name domain layout, injected library-owned probes, corrected derived OpenAPI 3.1 output and freshness checks, pinned testing tools, real fixture/HTTP acceptance, and optional local Mori inventory. Documentation, generated catalog, and ADRs 2/3 describe the tested ownership and handoff boundaries. Module 0.2.0 and blueprint 0.4.0 are synchronized; the pre-existing base-module metadata drift is aligned to its actual 0.35.0 source without changing its lock or templates.
+
+FRIC-4 in docs/friction-log/ is accepted with a narrow schema-export correction and regression coverage until upstream corrects generic Maybe derivation. FRIC-5 in docs/friction-log/ is accepted with supported Seihou name validation and rejection tests rather than assuming regex enforcement. Both entries were triaged through the bundled script.
+
+Final acceptance reports: `PASS real PostgreSQL fixture, distinct leases, generated probes, Hurl marker assertions, failure propagation, service shutdown and clone cleanup`. Logs remain with the temporary fixture printed by the harness; its private cluster is stopped. Structural checks additionally pass all module/blueprint interactive choices, inventory parity, explicit namespace changes and authored-file protection. Private broker and Console startup/readiness/down/purge were separately exercised with unique names and ports.
+
+The native platform exercised is Darwin/arm64. Shared Nix implementation paths were unchanged, so unrelated retained-runtime regression suites were not repeated. Domain application behavior still belongs to the companion blueprint; the acceptance consumer remains temporary test code. Tool acquisition can build dependencies on first use, and the unpublished Workbench pin/schema must continue to move together.
 
 
 ## Context and Orientation
@@ -308,6 +325,8 @@ The live harness is the required PostgreSQL-to-Hinagata-to-HTTP-to-Hurl proof. T
 
 Repeat generation remains byte-identical, ignore entries do not duplicate, and reapplication protects edited fixtures/workspaces and the user's Nix/process-compose extensions. The canonical base lock is unchanged. Registry, Mori, module, blueprint, and generated catalog versions agree. No milestone is complete merely because templates evaluate or libraries compile.
 
+Additional native broker evidence (2026-10-26): Apple Container was available and running. A separately rendered unique bootstrap-broker project enabled Console and five selected free ports. Its actual redpanda-local-up/status reported both containers running, the admin endpoint returned ready, the Console HTTP endpoint responded, and redpanda-local-down followed by the guarded scratch-only purge removed both containers, the volume and network. No existing broker was reused. This is Darwin/arm64 evidence; no Linux broker startup is claimed.
+
 Mori acceptance requires the optional question to be observable in an actual interactive path and controllable through explicit noninteractive variables. Opt-in creates one typed, evaluable `mori.dhall` with exactly six real packages, accurate sibling/external dependency scopes and bounds, and an OpenAPI declaration whose owner and `docs/openapi.json` path match the generated API/schema. Opt-out skips both descriptor generation and the namespace prompt without changing OpenAPI functionality. A different valid Mori namespace must change only Mori identity/references, not the Haskell module namespace. Missing identity, existing authored files, repeated application, and opting out after a prior opt-in must not cause silent overwrite/deletion or registration side effects.
 
 
@@ -329,6 +348,8 @@ If a tool pin cannot build, retain evidence, fix its source selection/wrapper, a
 
 
 The public module stays `haskell-keiro-project`. Required project name/namespace/description and existing author/package metadata remain; `keiro.context` becomes optional. Project paths and workspace service derive from name. Use existing Seihou `IsSet` conditionals instead of extending the CLI. If variable behavior needs inspection, discover `mori://shinzui/seihou` and read its `seihou-core/src/Seihou/Core/Variable.hs` and `seihou-core/src/Seihou/Composition/Resolve.hs` (artifact-level URIs pending).
+
+The internal `mori.prompt` Boolean coordinates interactive questions: it defaults true in the module, while the blueprint forwards false after handling its own question, so an empty skip never prompts twice. It does not affect explicit generation choices.
 
 Optional Mori inputs are `mori.generate` (Boolean; missing/false means skip) and `mori.namespace` (text; needed only when generation is enabled). The conditional root `mori.dhall` uses the pinned `Schema.Project`, `ProjectIdentity`, `Package`, `Dependency.WithAugmentation`, `MoriRef`, and `Api` interfaces. Its OpenAPI record is declaration metadata referencing the existing generated JSON, not a second schema generator. Canonical cross-project references remain explicit alongside any schema-required dependency lookup key. Additional user-specific namespace configuration is kept separate from `project.namespace`.
 
