@@ -61,9 +61,9 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "nix-haskell-flake"
-        , version = Some "0.36.0"
+        , version = Some "0.37.0"
         , description = Some
-            "Nix flake for Haskell projects with optional explicit checked runtime scopes, exact managed locks, a managed package-module seam for composed scaffolds, an unmanaged user extension point, and toggleable local services, treefmt-nix, and pre-commit hooks"
+            "Nix flake for Haskell projects with optional explicit checked runtime scopes, exact managed locks, a managed package-module seam for composed scaffolds, an unmanaged user extension point, pinned nix2container service image support, and toggleable local services, treefmt-nix, and pre-commit hooks"
         , modulePath = "modules/haskell/nix-haskell-flake"
         , tags = [ "haskell", "nix", "flake", "devshell" ]
         , requiredVars =
@@ -127,6 +127,13 @@ in  Schema.Project::{
         , tags = [ "typescript", "fumadocs", "docs" ]
         , dependencies = [ "nix-bun-flake" ]
         , requiredVars = [ "project.name", "project.description", "docs.site-name", "docs.github-user" ]
+        }
+      , Schema.SeihouTemplate::{
+        , name = "upgrade-haskell-nix2container"
+        , version = Some "0.1.0"
+        , description = Some "Migrate customized Haskell service images to pinned nix2container and explicit load/export workflows while preserving managed ownership"
+        , modulePath = "blueprints/upgrade-haskell-nix2container"
+        , tags = [ "haskell", "nix", "docker", "migration" ]
         }
       , Schema.SeihouTemplate::{
         , name = "upgrade-haskell-runtime"

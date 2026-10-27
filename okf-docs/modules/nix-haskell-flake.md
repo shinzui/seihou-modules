@@ -4,7 +4,8 @@ title: nix-haskell-flake
 description: Nix flake for Haskell projects consuming the haskell-nix-dev base flake
   (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an
   optional managed package-module import for composed scaffolds, an unmanaged user
-  extension point, local services, treefmt, and pre-commit hooks
+  extension point, pinned nix2container service image support, local services, treefmt,
+  and pre-commit hooks
 resource: seihou://seihou-modules/modules/haskell/nix-haskell-flake
 tags:
 - haskell
@@ -14,14 +15,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.11.0.1
-version: 0.36.0
+version: 0.37.0
 ---
 
 # nix-haskell-flake
 
-Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, local services, treefmt, and pre-commit hooks
+Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, pinned nix2container service image support, local services, treefmt, and pre-commit hooks
 
-**Version:** 0.36.0
+**Version:** 0.37.0
 
 ## Dependencies
 

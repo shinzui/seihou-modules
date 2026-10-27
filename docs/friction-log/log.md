@@ -1,6 +1,8 @@
 # Bundle Update Log
 
 ## 2026-10-27
+* **Update**: FRIC-6 resolved: Resolved sandbox export failure with an explicit writable temporary directory.
+* **Addition**: FRIC-6 records detour environment friction with mori://nlewo/nix2container: Skopeo archive export needs an explicit sandbox temporary directory
 * **Update**: FRIC-5 accepted: Accept the supported character-class validation and enforce it with generated-project checks.
 * **Update**: FRIC-4 accepted: Accept the documented schema-export correction while the released generic Maybe derivation omits nullability.
 * **Addition**: FRIC-5 records detour interface friction with mori://shinzui/seihou: Seihou silently accepts unsupported variable patterns

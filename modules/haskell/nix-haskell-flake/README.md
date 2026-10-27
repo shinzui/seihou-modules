@@ -2,7 +2,7 @@
 
 > Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects on the `haskell-nix-dev` base flake (prebuilt GHC/HLS/cabal toolchains). Module-owned inputs are rev-pinned or follow that base, producing one exact lock across feature combinations. Base wiring and dependent scaffold package outputs live in managed `nix/*.nix` modules, while user customizations stay in an unmanaged `flake.module.nix`. Includes toggleable local services, treefmt-nix, and pre-commit hooks.
 
-**Version:** `0.36.0`
+**Version:** `0.37.0`
 
 ## Overview
 
@@ -94,6 +94,38 @@ updates require preview and shared-owner-aware three-way merges. Legacy adoption
 `agent run --no-baseline` and invents no old version. The independent checker must pass
 with `--native`; agent attendance does not establish acceptance.
 
+## Service container images
+
+Version 0.37.0 replaces the commented dockerTools image example with
+`inputs.nix2container.packages.${system}.nix2container.buildImage`. The always-locked
+builder pins upstream v1.1.0 at `e503eb81630a0c5d7ec244e08e0733650235d8f1` and follows the
+application's nixpkgs. Existing Haskell toolchain and runtime pins remain unchanged.
+Image definitions stay in unmanaged `flake.module.nix`: copy the example and uncomment
+its Linux-only packages block for a service, keeping the actual executable name. Library
+scaffolds do not acquire an image output. The example root includes runtime tools and TLS
+roots through `pkgs.buildEnv`; add other assets and libraries required by the service.
+
+On Linux:
+
+```bash
+nix build .#dockerImage
+nix run .#dockerImage.copyToDockerDaemon
+nix run .#dockerImage.copyTo -- docker-archive:/absolute/artifacts/service.tar:service:latest
+```
+
+The build result is an image description, so `docker load < result` no longer works.
+`nix run .#dockerImage.copyToRegistry` pushes the configured name/tag when requested.
+macOS evaluation omits the image; build Linux outputs in Linux CI or with a matching Linux
+builder. The builder API and transport implementation are owned by
+`mori://nlewo/nix2container` (artifact-level URI pending for `README.md` and `default.nix`).
+
+Existing consumers use [upgrade-haskell-nix2container](../../../blueprints/upgrade-haskell-nix2container).
+It preserves custom image configuration, root files, custom inputs and Seihou ownership,
+translates dockerTools-only root commands, and updates archive consumers in CI/scripts.
+A normal module update refreshes managed inputs and the example; it cannot rewrite an
+existing unmanaged image automatically. Back up and inventory before updating. The blueprint
+includes a 0.36.0 → 0.37.0 edge and a run workflow for earlier recorded consumers.
+
 ## Reproducible locks
 
 The point of this module is that every project it generates resolves to the **same** GHC,
@@ -111,6 +143,8 @@ inputs = {
   pre-commit-hooks.follows = "haskell-nix-dev/pre-commit-hooks";  # (nix.pre-commit)
   haskell-nix.url = "github:shinzui/haskell-nix/<rev>";
   redpanda-container.url = "github:shinzui/redpanda-container/<rev>";
+  nix2container.url = "github:nlewo/nix2container/<rev>";
+  nix2container.inputs.nixpkgs.follows = "nixpkgs";
 };
 ```
 
@@ -123,7 +157,7 @@ Two properties fall out of this, and together they are the whole guarantee:
   `master` is that day, silently moving one project off the shared toolchain.
 - **Toolchain inputs follow the base.** `nixpkgs`, flake-parts, treefmt-nix, and
   pre-commit-hooks read their revisions from the pinned base flake. The separately pinned
-  `haskell-nix` and `redpanda-container` revisions move only with a module release.
+  `haskell-nix`, `redpanda-container` and `nix2container` revisions move only with a module release.
 
 The shipped `flake.lock` is therefore a **seed, not the source of truth**: it saves the first
 `nix flake lock` a network round trip, and `nix flake lock` would reproduce it from `flake.nix`
@@ -367,6 +401,7 @@ that the socket path is too long.
 | From | To | Effect |
 |------|----|--------|
 | `0.35.0` | `0.36.0` | Moves the shared `mori://shinzui/haskell-nix` channel pin to `dedd4d81589e99d97137eb36f88423c70c7d69f5`, making retained runtime generation 6 available with the latest release cohort and inspection packages. Toolchain and Nixpkgs pins stay fixed. Existing explicit runtime and complementary selections are preserved; adopting generation 6 requires an explicit selection with `kioku = 9` and the matching Cabal imports. No migration operations; regenerate managed files through Seihou. |
+| `0.36.0` | `0.37.0` | Pins nix2container v1.1.0 with application nixpkgs follows and replaces the Linux-only service image example. Build results are image descriptions; use copy helpers for Docker, registries or explicit archive export. Existing unmanaged images require the upgrade-haskell-nix2container blueprint. Haskell toolchain/runtime pins stay fixed; no automatic migration operations. |
 | `0.34.0` | `0.35.0` | Removes the obsolete `.envrc` ignore entry while preserving `.envrc.local`, so fresh clones retain the managed development environment. |
 | `0.33.0` | `0.34.0` | Moves only the shared `mori://shinzui/haskell-nix` registry pin to `d13245db8a3e2c1c559185c0adf87285259b7ab2`, adding immutable Kiroku generation 4 with Store 0.11.0.1 and migrations 0.7.1.0. Consumers can select Keiro generation 7, Kiroku 4, and Shibuya 3 together. Existing explicit family selections stay unchanged; toolchain and nixpkgs pins stay fixed. Regenerate managed files through Seihou. |
 | `0.30.0` | `0.31.0` | Moves the shared `mori://shinzui/haskell-nix` channel to `58a2c26c5be7cdf222fba6323939a67d3c62f193`, supplying the generated 462-package cohort, current Kioku/Shikumi patches and coherent CLI/WAI dependencies. Toolchain and nixpkgs pins remain fixed. Regenerate managed files; remove consumer Hackage replacements only after composing the shared extension and passing application checks. Linux and fresh-CI cache acceptance remain pending in the channel. |
@@ -458,15 +493,17 @@ move them:
 ./scripts/update-nix-haskell-flake-lock.sh              # bump haskell-nix-dev and haskell-nix to latest master
 ./scripts/update-nix-haskell-flake-lock.sh --rev <rev>  # or pin a specific haskell-nix-dev rev
 ./scripts/update-nix-haskell-flake-lock.sh --haskell-nix-rev <rev>  # …or haskell-nix rev
+./scripts/update-nix-haskell-flake-lock.sh --nix2container-rev <rev> # explicitly move the released image builder
 ./scripts/update-nix-haskell-flake-lock.sh --check      # CI: is the shipped pair current?
 ```
 
-It rewrites both revs in the template, renders the canonical inputs graph, locks it, and only
+It rewrites the selected revisions in the template, preserving the released nix2container
+pin unless explicitly overridden, renders the canonical inputs graph, locks it, and only
 then writes both files — after asserting two things that the whole
 guarantee rests on:
 
 1. `nix flake update` against the freshly generated lock is a **no-op**, i.e. every
-   module-owned input really is decided by the one rev.
+   module-owned input really is decided by the immutable selections.
 2. A minimal feature configuration reproduces the **exact same lock**, proving that feature
    toggles cannot add or prune module-owned nodes.
 

@@ -5,7 +5,7 @@
 # every project generated from a given module version locks to byte-identical
 # inputs and shares one nix store closure.
 #
-# The generated flake pins haskell-nix-dev, haskell-nix and redpanda-container;
+# The generated flake pins haskell-nix-dev, haskell-nix, redpanda-container and nix2container;
 # other module-owned inputs follow those pins. The locked graph is a pure function
 # of those immutable selections, and the
 # shipped flake.lock is a cache-warming convenience rather than the source of
@@ -24,11 +24,13 @@
 #   6. writes files/flake.lock.
 #
 # Usage:
-#   update-nix-haskell-flake-lock.sh [--rev REV] [--haskell-nix-rev REV] [--check]
+#   update-nix-haskell-flake-lock.sh [--rev REV] [--haskell-nix-rev REV] [--nix2container-rev REV] [--check]
 #
 #   --rev REV   Pin to a specific haskell-nix-dev revision (default: latest master).
 #   --haskell-nix-rev REV
 #               Pin to a specific haskell-nix revision (default: latest master).
+#   --nix2container-rev REV
+#               Pin nix2container (default: preserve the template's released pin).
 #   --check     Verify the shipped tpl/lock against its current pins (unless
 #               explicitly overridden). Writes nothing. For CI.
 #
@@ -44,11 +46,13 @@ HN_FLAKE_REF="github:shinzui/haskell-nix"
 
 REV=""
 HN_REV=""
+N2C_REV=""
 CHECK=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --rev) REV="$2"; shift 2 ;;
     --haskell-nix-rev) HN_REV="$2"; shift 2 ;;
+    --nix2container-rev) N2C_REV="$2"; shift 2 ;;
     --check) CHECK=1; shift ;;
     -h|--help) sed -n '2,36p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
@@ -124,16 +128,21 @@ template_revision() {
   python3 - "$TPL" "$1" <<'PY'
 import re, sys
 text = open(sys.argv[1]).read()
-matches = re.findall(r'github:shinzui/' + re.escape(sys.argv[2]) + r'/([0-9a-f]{40})(?=")', text)
+matches = re.findall(r'github:' + re.escape(sys.argv[2]) + r'/([0-9a-f]{40})(?=")', text)
 if len(matches) != 1:
     sys.exit('expected one immutable template pin for ' + sys.argv[2])
 print(matches[0])
 PY
 }
 if [ "$CHECK" -eq 1 ]; then
-  [ -n "$REV" ] || REV="$(template_revision haskell-nix-dev)"
-  [ -n "$HN_REV" ] || HN_REV="$(template_revision haskell-nix)"
+  [ -n "$REV" ] || REV="$(template_revision shinzui/haskell-nix-dev)"
+  [ -n "$HN_REV" ] || HN_REV="$(template_revision shinzui/haskell-nix)"
 fi
+[ -n "$N2C_REV" ] || N2C_REV="$(template_revision nlewo/nix2container)"
+for pin in "$REV" "$HN_REV" "$N2C_REV"; do
+  [ -z "$pin" ] || [[ "$pin" =~ ^[0-9a-f]{40}$ ]] || { echo "expected a full immutable revision: $pin" >&2; exit 2; }
+done
+echo "target nix2container rev: $N2C_REV"
 if [ -z "$REV" ]; then
   echo "resolving latest $FLAKE_REF …"
   REV="$(nix flake metadata "$FLAKE_REF" --refresh --json \
@@ -148,7 +157,7 @@ fi
 echo "target haskell-nix rev: $HN_REV"
 
 # --- 2. rewrite the pin in the template --------------------------------------
-python3 - "$TPL" "$REV" "$HN_REV" "$WORK/flake.nix.tpl" <<'PY'
+python3 - "$TPL" "$REV" "$HN_REV" "$WORK/flake.nix.tpl" "$N2C_REV" <<'PY'
 import re, sys
 src = open(sys.argv[1]).read()
 out = re.sub(r'(github:shinzui/haskell-nix-dev)(/[^"?]*)?', r'\1/' + sys.argv[2], src)
@@ -157,6 +166,8 @@ assert out.count("github:shinzui/haskell-nix-dev/" + sys.argv[2]) == 1, \
 out = re.sub(r'(github:shinzui/haskell-nix)(?![-\w])(/[^"?]*)?', r'\1/' + sys.argv[3], out)
 assert out.count("github:shinzui/haskell-nix/" + sys.argv[3]) == 1, \
     "expected exactly one haskell-nix pin in the template"
+out, count = re.subn(r'github:nlewo/nix2container/[^"?]*', 'github:nlewo/nix2container/' + sys.argv[5], out)
+assert count == 1, "expected exactly one nix2container pin in the template"
 open(sys.argv[4], "w").write(out)
 PY
 
@@ -168,7 +179,7 @@ git -C "$WORK/superset" add flake.nix
 echo "locking the canonical flake …"
 nix flake lock "$WORK/superset" >/dev/null
 
-for node in haskell-nix-dev nixpkgs flake-parts treefmt-nix pre-commit-hooks haskell-nix; do
+for node in haskell-nix-dev nixpkgs flake-parts treefmt-nix pre-commit-hooks haskell-nix nix2container; do
   python3 -c "
 import json,sys
 nodes = json.load(open('$WORK/superset/flake.lock'))['nodes']
@@ -180,7 +191,7 @@ done
 cp "$WORK/superset/flake.lock" "$WORK/superset.lock.before"
 git -C "$WORK/superset" add flake.lock
 nix flake update --flake "$WORK/superset" >/dev/null 2>&1
-if ! diff -q <(lock_pins "$WORK/superset.lock.before") <(lock_pins "$WORK/superset/flake.lock") >/dev/null; then
+if ! cmp -s "$WORK/superset.lock.before" "$WORK/superset/flake.lock"; then
   echo "FAIL: 'nix flake update' moved a module-owned pin — the graph is not fully rev-pinned." >&2
   diff <(lock_pins "$WORK/superset.lock.before") <(lock_pins "$WORK/superset/flake.lock") >&2 || true
   exit 1
@@ -210,7 +221,7 @@ echo "ok: feature toggles reproduce the exact canonical lock"
 if [ "$CHECK" = 1 ]; then
   status=0
   diff -u "$TPL" "$WORK/flake.nix.tpl" || status=1
-  diff -u <(lock_pins "$LOCK") <(lock_pins "$WORK/superset/flake.lock") || status=1
+  diff -u "$LOCK" "$WORK/superset/flake.lock" || status=1
   if [ "$status" = 0 ]; then
     echo "✓ shipped template and lock match the canonical pins $REV / haskell-nix $HN_REV"
   else

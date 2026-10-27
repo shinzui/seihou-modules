@@ -63,7 +63,7 @@ commands, and an optional removal procedure.
 | Module | Version | Purpose |
 |---|---|---|
 | [`gcp-kube-env`](modules/cloud/gcp-kube-env) | 0.1.1 | Checkout-local GCP project and kube context, private kubeconfig, and direnv settings in a configurable env file (default `.envrc.local`) |
-| [`nix-haskell-flake`](modules/haskell/nix-haskell-flake) | 0.36.0 | flake-parts Nix dev shell on the `haskell-nix-dev` base flake, with exact managed locks, an optional managed package-module seam, and toggleable local services/formatting/hooks |
+| [`nix-haskell-flake`](modules/haskell/nix-haskell-flake) | 0.37.0 | flake-parts Nix dev shell on the `haskell-nix-dev` base flake, with exact managed locks, an optional managed package-module seam, pinned nix2container service images, and toggleable local services/formatting/hooks |
 | [`haskell-library`](modules/haskell/haskell-library) | 0.3.0 | Single-package Haskell library on GHC 9.12 / GHC2024, `lens` + `generic-lens`, BSD-3, optional `tasty` suite |
 | [`haskell-cli-app`](modules/haskell/haskell-cli-app) | 0.4.0 | Tested two-package CLI with real core integration, GHC 9.12.4/9.14.1 shells, valid package metadata, and working Nix package/check outputs |
 | [`haskell-keiro-project`](modules/haskell/haskell-keiro-project) | 0.3.0 | Six-package Keiro seed, project-named workspace, injected probes, OpenAPI, Hurl/Hinagata testing, optional Mori inventory |
@@ -93,6 +93,7 @@ commit.
 |---|---|---|
 | [`haskell-keiro-service`](blueprints/haskell-keiro-service) | 0.4.0 | Extend the Keiro seed’s probes/OpenAPI/testing into an event-sourced Haskell service on the released Keiro runtime — vertical-slice packages, pg-migrate components, Settei config, OpenTelemetry wiring, Keiro-DSL-first workflow |
 | [`upgrade-fumadocs`](blueprints/upgrade-fumadocs) | 0.1.0 | Upgrade a customized documentation site to current Fumadocs and the shared Bun flake-parts modules while preserving its workflows and content |
+| [`upgrade-haskell-nix2container`](blueprints/upgrade-haskell-nix2container) | 0.1.0 | Preserve custom service images while migrating dockerTools wiring and archive consumers to pinned nix2container |
 | [`upgrade-haskell-runtime`](blueprints/upgrade-haskell-runtime) | 0.1.0 | Preserve legacy projects or cross ordered 0.30.0/0.31.0 upgrades to explicit shared runtime scopes with independent native acceptance |
 | [`upgrade-haskell-flake-parts`](blueprints/upgrade-haskell-flake-parts) | 0.1.0 | Migrate a monolithic `flake.nix` to the thin flake-parts structure on the base flake, preserving every custom input, overlay, tool, hook, and check |
 | [`fix-nix-haskell-flake-customizations`](blueprints/fix-nix-haskell-flake-customizations) | 0.2.0 | Upgrade a repo's `nix-haskell-flake` and relocate local edits from the managed `nix/haskell.nix` into the upgrade-safe `flake.module.nix` |
@@ -156,6 +157,7 @@ promise; the bundle itself stays OKF-conformant regardless.
   `files/flake.lock` together, then proves the pin sticks and that a minimal
   project reusing the lock resolves identical inputs. `--check` verifies without
   writing (for CI); it never commits and never bumps the module version.
+- `scripts/test-haskell-nix2container.py` — real generation and repeat-update checks, Linux image/helper evaluation, Darwin exclusion; optional `--native-linux SYSTEM` builds and inspects an exported archive.
 - `scripts/test-keiro-bootstrap.py --live` — builds a fresh generated seed and proves real
   PostgreSQL fixtures reach HTTP/Hurl assertions under distinct leases, with failure propagation
   and service/clone cleanup. Runs in the generated Nix shell against its own private cluster.

@@ -8,7 +8,7 @@ tags:
 - seihou
 status: stable
 generated:
-  by: seihou-okf-extension/0.10.1.0
+  by: seihou-okf-extension/0.11.0.1
 ---
 
 # seihou-modules
@@ -37,6 +37,7 @@ Every artifact below is published by the `seihou-modules` registry and documente
 
 ## Blueprints
 
+- [upgrade-haskell-nix2container](/blueprints/upgrade-haskell-nix2container.md)
 - [upgrade-haskell-runtime](/blueprints/upgrade-haskell-runtime.md)
 - [upgrade-fumadocs](/blueprints/upgrade-fumadocs.md)
 - [upgrade-haskell-flake-parts](/blueprints/upgrade-haskell-flake-parts.md)

@@ -8,9 +8,9 @@
     , tags = [ "gcp", "kubernetes", "direnv", "environment" ]
     }
   , { name = "nix-haskell-flake"
-    , version = Some "0.36.0"
+    , version = Some "0.37.0"
     , path = "modules/haskell/nix-haskell-flake"
-    , description = Some "Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, local services, treefmt, and pre-commit hooks"
+    , description = Some "Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, pinned nix2container service image support, local services, treefmt, and pre-commit hooks"
     , tags = [ "haskell", "nix", "flake", "devshell" ]
     }
   , { name = "haskell-keiro-project"
@@ -77,7 +77,13 @@
     }
   ]
 , blueprints =
-  [ { name = "upgrade-haskell-runtime"
+  [ { name = "upgrade-haskell-nix2container"
+    , version = Some "0.1.0"
+    , path = "blueprints/upgrade-haskell-nix2container"
+    , description = Some "Migrate Haskell service images to pinned nix2container with preserved image configuration, root files, custom inputs and explicit copy/export workflows"
+    , tags = [ "haskell", "nix", "docker", "nix2container", "migration" ]
+    }
+  , { name = "upgrade-haskell-runtime"
     , version = Some "0.1.0"
     , path = "blueprints/upgrade-haskell-runtime"
     , description = Some "Preserved Haskell runtime adoption and ordered upgrades with independent native acceptance"
