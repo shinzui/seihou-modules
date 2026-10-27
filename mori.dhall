@@ -75,7 +75,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "haskell-library"
-        , version = Some "0.1.0"
+        , version = Some "0.3.0"
         , description = Some
             "Haskell library bootstrap: single cabal package on GHC 9.12 / GHC2024, with lens + generic-lens, BSD-3 license, the project author's standard warning set, and an optional tasty test-suite; pulls in nix-haskell-flake for the dev shell"
         , modulePath = "modules/haskell/haskell-library"
@@ -89,7 +89,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "haskell-cli-app"
-        , version = Some "0.3.1"
+        , version = Some "0.4.0"
         , description = Some
             "Tested Haskell CLI bootstrap: reusable core plus CLI packages on GHC2024, GHC 9.12.4/9.14.1 shells, current bounded dependencies, valid package-local distribution metadata, and workspace-aware Nix package/check outputs"
         , modulePath = "modules/haskell/haskell-cli-app"
@@ -103,7 +103,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "haskell-keiro-project"
-        , version = Some "0.2.0"
+        , version = Some "0.3.0"
         , description = Some
             "Six-package Keiro seed with project-named workspace, injected probes, derived OpenAPI, Hurl/Hinagata testing, and optional initial Mori inventory"
         , modulePath = "modules/haskell/haskell-keiro-project"
