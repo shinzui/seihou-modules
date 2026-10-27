@@ -183,11 +183,11 @@ scope shares production and development identities; native acceptance remains in
 verified. This checkout prepares module 0.32.0, CLI scaffold 0.3.1 and blueprint 0.1.0;
 remote discovery requires publishing the reviewed commit first.
 
-## Seed runtime compatibility (release candidate)
+## Seed runtime compatibility
 
-The Haskell CLI 0.4.0, library 0.3.0 and Keiro project 0.3.0 candidates declare
-project-owned starter seeds. They require the proposed Seihou runtime **0.11.0.0+**;
-publication and installed-binary acceptance are pending. Release the runtime first.
+The Haskell CLI 0.4.0, library 0.3.0 and Keiro project 0.3.0 releases declare
+project-owned starter seeds. They require **Seihou 0.11.0.0+**. Update the runtime
+first.
 Older binaries may ignore lifecycle and overwrite starter content. The runtime
 work is coordinated by
 `mori://shinzui/seihou/masterplans/12-seed-files-module-outputs-created-once-and-owned-by-the-project`.

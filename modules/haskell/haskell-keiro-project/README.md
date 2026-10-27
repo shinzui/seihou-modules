@@ -102,9 +102,8 @@ seeded HTTP assertions, distinct leases, failure propagation, and cleanup.
 
 ## Project-owned starter files
 
-This candidate requires the supporting Seihou runtime release **0.11.0.0 or newer**.
-Publication is pending that release and installed-binary acceptance. Earlier clients
-can ignore `lifecycle` and overwrite starter content; do not use them with this candidate.
+Requires **Seihou 0.11.0.0 or newer**. Update the runtime before adopting this
+module release. Earlier clients can ignore `lifecycle` and overwrite starter content.
 
 Starter sources, Cabal metadata, changelogs and project declarations use seed steps.
 They are created once; existing regular files, later edits and deliberate deletion
