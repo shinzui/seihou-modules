@@ -76,7 +76,7 @@ library-owned. Bootstrap test success proves shared plumbing, not an implemented
 
 ## Seed lifecycle implementation (2026-10-27)
 
-The candidate `haskell-keiro-project` 0.3.0 explicitly declares 28 project-owned
+The released `haskell-keiro-project` 0.3.0 explicitly declares 28 project-owned
 starter steps: workspace/DSL, recipes/docs, Cabal/source/test files, initial
 Hurl/Hinagata fixtures and optional Mori inventory. Licenses, `.gitignore`,
 `nix/keiro-dev-tools.nix` and `scripts/keiro-test-env` remain managed policy/tools.
@@ -87,11 +87,35 @@ dependency's historical shell migration only removes an `.envrc` ignore line.
 
 The lifecycle contract is implemented by
 `mori://shinzui/seihou/masterplans/12-seed-files-module-outputs-created-once-and-owned-by-the-project`.
-Supporting runtime release 0.11.0.0 and installed-binary acceptance must precede
-producer publication: older clients ignoring lifecycle are unsafe. One ordinary
-update previews release of old managed starter paths without reading/restoring
+Runtime support must precede producer publication: older clients ignoring lifecycle
+are unsafe. The release-order and installed evidence below complete this requirement.
+One ordinary update previews release of old managed starter paths without reading/restoring
 project bytes. The manifest records settlement; edits and deletion are retained,
 including reruns with force. Changing the Mori namespace input does not rewrite
 an existing descriptor. Authors maintain that project-owned inventory directly.
 Last-claim retirement preserves disk and permits later absent reintroduction.
 Shell commands are unsandboxed and must not mutate seeds.
+
+## Released lifecycle delivery (2026-10-27)
+
+Runtime Seihou 0.11.0.0 was published on Hackage/GitHub before this producer's
+CLI 0.4.0, library 0.3.0 and Keiro project 0.3.0 became public. The minimum seed
+runtime remains 0.11.0.0; installed acceptance now uses 0.11.0.1, which also corrects
+compiled command help. The producer registry's ordinary Git HEAD publication
+workflow exposes these versions; all template output bytes retain their accepted
+classification and managed integration.
+
+The installed release fetches the public registry into an empty personal cache,
+creates all three projects (including a provider-free Keiro blueprint baseline),
+and preserves starter edits and deletion on forced reruns and unchanged updates.
+Ordinary one-command adoption from actual `mori://shinzui/reiko` saved state also
+passes with an empty cache, preserving edits and cancellation/index state. Clones
+and worktrees preserve committed receipt/deletion intent. No manifest/index repair
+or transitive module list is part of the developer workflow.
+
+The durable runtime contract is in `mori://shinzui/seihou`, project-relative
+`docs/adr/0017-a-seed-file-is-created-once-and-belongs-to-the-project.md`
+(artifact-level URI pending). Release and installed-executable evidence is recorded in
+`mori://shinzui/seihou/plans/104-adopt-seed-steps-in-seihou-modules-and-document-seed-authoring`
+and the parent MasterPlan. This is completed producer/runtime delivery; live domain
+implementation remains the consuming project's responsibility.
