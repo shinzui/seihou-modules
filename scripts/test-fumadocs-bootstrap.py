@@ -40,6 +40,8 @@ with tempfile.TemporaryDirectory(prefix='fumadocs-bootstrap-') as temp:
     assert not (project / 'nix/pre-commit.nix').exists(), 'Default composition enabled hooks'
     manifest = json.loads((project / 'package.json').read_text())
     assert 'typescript' not in manifest['devDependencies'], 'Local compiler shadows the Nix toolchain'
+    assert 'fumadocs-openapi' not in manifest['dependencies'], 'OpenAPI is opt-in'
+    assert not (project / 'src/lib/openapi.ts').exists() and not (project / 'openapi.yaml').exists()
 
     # The unmanaged extension survives repeated generation and composes with the shell.
     extension = (project / 'flake.module.nix.example').read_bytes()
@@ -67,8 +69,10 @@ with tempfile.TemporaryDirectory(prefix='fumadocs-bootstrap-') as temp:
     probe.parent.mkdir()
     probe.write_text('''import { staticClient } from "fumadocs-core/search/client/orama-static"
 import { rehypeMermaid } from "../src/lib/rehype-mermaid"
-import { renderMermaidSVG } from "beautiful-mermaid"
+import { registerElk, renderMermaidSVG } from "@zombie-mermaid/svg-renderer"
+import ELK from "elkjs/lib/elk.bundled.js"
 import type { Root } from "hast"
+registerElk(ELK)
 const data = await Bun.file(".output/public/api/search").json()
 globalThis.fetch = (async () => Response.json(data)) as typeof fetch
 const results = await staticClient().search("diagram")

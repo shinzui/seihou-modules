@@ -4,9 +4,9 @@ let S =
 
 in  S.Module::{
     , name = "fumadocs"
-    , version = Some "0.2.1"
+    , version = Some "0.3.0"
     , description = Some
-        "Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, beautiful-mermaid diagrams, and an interactive zoom/pan/expand widget for every diagram"
+        "Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, and optional OpenAPI reference pages"
     , vars =
       [ S.VarDecl::{
         , name = "docs.starter-content"
@@ -14,6 +14,31 @@ in  S.Module::{
         , default = Some "true"
         , description = Some "Generate starter content for a new site; set false when adopting an existing documentation tree"
         , required = True
+        }
+      , S.VarDecl::{
+        , name = "docs.openapi"
+        , type = "bool"
+        , default = Some "false"
+        , description = Some
+            "Generate API reference pages from an OpenAPI document with fumadocs-openapi"
+        , required = True
+        }
+      , S.VarDecl::{
+        , name = "docs.openapi-spec"
+        , type = "text"
+        , default = Some "openapi.yaml"
+        , description = Some
+            "OpenAPI document rendered when docs.openapi is true: a project-relative path or a URL. New sites with starter content get an example at openapi.yaml."
+        , required = True
+        }
+      , S.VarDecl::{
+        , name = "docs.openapi-base-dir"
+        , type = "text"
+        , default = Some "api"
+        , description = Some
+            "Docs folder holding the generated OpenAPI pages (served under /docs/<dir>/). Pick one no authored content uses."
+        , required = True
+        , validation = Some "[a-z][a-z0-9-]*"
         }
       , S.VarDecl::{
         , name = "project.name"
@@ -137,7 +162,17 @@ in  S.Module::{
         , dest = "src/routeTree.gen.ts"
         }
       , S.Step::{ strategy = "copy", src = "src/lib/cn.ts", dest = "src/lib/cn.ts" }
-      , S.Step::{ strategy = "copy", src = "src/lib/source.ts", dest = "src/lib/source.ts" }
+      , S.Step::{
+        , strategy = "template"
+        , src = "src/lib/source.ts.tpl"
+        , dest = "src/lib/source.ts"
+        }
+      , S.Step::{
+        , strategy = "template"
+        , src = "src/lib/openapi.ts.tpl"
+        , dest = "src/lib/openapi.ts"
+        , when = Some "Eq docs.openapi true"
+        }
       , S.Step::{
         , strategy = "template"
         , src = "src/lib/shared.ts.tpl"
@@ -170,6 +205,12 @@ in  S.Module::{
         , dest = "src/components/not-found.tsx"
         }
       , S.Step::{
+        , strategy = "copy"
+        , src = "src/components/api-page.tsx"
+        , dest = "src/components/api-page.tsx"
+        , when = Some "Eq docs.openapi true"
+        }
+      , S.Step::{
         , strategy = "template"
         , src = "src/styles/app.css.tpl"
         , dest = "src/styles/app.css"
@@ -185,8 +226,8 @@ in  S.Module::{
         , dest = "src/routes/index.tsx"
         }
       , S.Step::{
-        , strategy = "copy"
-        , src = "src/routes/docs/splat.tsx"
+        , strategy = "template"
+        , src = "src/routes/docs/splat.tsx.tpl"
         , dest = "src/routes/docs/\$.tsx"
         }
       , S.Step::{
@@ -212,10 +253,17 @@ in  S.Module::{
         , when = Some "Eq docs.starter-content true"
         }
       , S.Step::{
-        , strategy = "copy"
-        , src = "content/meta.json"
+        , strategy = "template"
+        , src = "content/meta.json.tpl"
         , dest = "content/docs/meta.json"
         , when = Some "Eq docs.starter-content true"
+        }
+      , S.Step::{
+        , strategy = "copy"
+        , src = "content/openapi.yaml"
+        , dest = "openapi.yaml"
+        , when = Some
+            "Eq docs.openapi true && Eq docs.starter-content true && Eq docs.openapi-spec openapi.yaml"
         }
       , S.Step::{
         , strategy = "template"
@@ -235,6 +283,7 @@ in  S.Module::{
         , S.RemovalStep::{ action = "remove-file", dest = "src/routeTree.gen.ts" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/lib/cn.ts" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/lib/source.ts" }
+        , S.RemovalStep::{ action = "remove-file", dest = "src/lib/openapi.ts" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/lib/shared.ts" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/lib/layout.shared.tsx" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/lib/rehype-mermaid.ts" }
@@ -242,6 +291,7 @@ in  S.Module::{
         , S.RemovalStep::{ action = "remove-file", dest = "src/components/mermaid.tsx" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/components/search.tsx" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/components/not-found.tsx" }
+        , S.RemovalStep::{ action = "remove-file", dest = "src/components/api-page.tsx" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/styles/app.css" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/routes/__root.tsx" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/routes/index.tsx" }

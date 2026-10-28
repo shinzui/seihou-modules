@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react"
 /** A rectangle describing the visible region of an <svg>, i.e. its viewBox. */
 type ViewBoxRect = { x: number; y: number; w: number; h: number }
 
-/** beautiful-mermaid theme object. */
+/** zombie-mermaid theme object. */
 type MermaidTheme = {
   bg: string
   fg: string
@@ -91,7 +91,28 @@ export function zoomViewBoxAt(
   )
 }
 
-// Strip injected web-font @import rules from the SVG (beautiful-mermaid injects an
+// zombie-mermaid lays graph diagrams out with ELK, which browser bundles must register
+// once before the first render. Both load lazily, on the first diagram.
+let rendererPromise: Promise<typeof import("@zombie-mermaid/svg-renderer")> | null = null
+
+function loadRenderer() {
+  rendererPromise ??= Promise.all([
+    import("@zombie-mermaid/svg-renderer"),
+    import("elkjs/lib/elk.bundled.js"),
+  ]).then(
+    ([renderer, elk]) => {
+      renderer.registerElk(elk.default)
+      return renderer
+    },
+    (e: unknown) => {
+      rendererPromise = null
+      throw e
+    },
+  )
+  return rendererPromise
+}
+
+// Strip injected web-font @import rules from the SVG (zombie-mermaid injects an
 // Inter @import; we already load fonts ourselves and want no network fetch from the SVG).
 function stripFontImports(svg: string): string {
   return svg.replace(/@import url\([^)]+\);?/g, "")
@@ -131,9 +152,9 @@ export function Mermaid({ chart }: { chart: string }) {
     let cancelled = false
     void (async () => {
       try {
-        const mod = await import("beautiful-mermaid")
+        const renderer = await loadRenderer()
         const theme = isDark ? DARK_THEME : LIGHT_THEME
-        const rendered = await mod.renderMermaidSVG(chart, theme)
+        const rendered = renderer.renderMermaidSVG(chart, theme)
         if (!cancelled) {
           setRenderedDiagram({ chart, isDark, svg: stripFontImports(rendered), error: null })
         }

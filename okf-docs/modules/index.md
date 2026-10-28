@@ -1,6 +1,6 @@
 # SeihouModule
 
-- [fumadocs](fumadocs.md) - Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, beautiful-mermaid diagrams, and an interactive zoom/pan/expand widget for every diagram
+- [fumadocs](fumadocs.md) - Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, and optional OpenAPI reference pages
 - [gcp-kube-env](gcp-kube-env.md) - Checkout-local GCP project and Kubernetes context through direnv, with a private kubeconfig and a configurable env filename defaulting to .envrc.local
 - [git-init](git-init.md) - Initialize a local git repo (default branch master), seed .gitignore with .claude/, .agents/, and .seihou/manifest.json.tmp, and optionally create a private GitHub repo via `gh` under a configured org or username, optionally granting an organization team access
 - [haskell-cli-app](haskell-cli-app.md) - Tested two-package Haskell CLI with project-owned source/Cabal/changelog starters (Seihou 0.11.0.0+), current GHC shells and managed Nix package/check outputs

@@ -2,8 +2,9 @@
 type: SeihouModule
 title: fumadocs
 description: 'Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake''s
-  dev shell: a static-SPA docs app with self-hosted custom fonts, beautiful-mermaid
-  diagrams, and an interactive zoom/pan/expand widget for every diagram'
+  dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams,
+  an interactive zoom/pan/expand widget for every diagram, and optional OpenAPI reference
+  pages'
 resource: seihou://seihou-modules/modules/typescript/fumadocs
 tags:
 - typescript
@@ -12,17 +13,18 @@ tags:
 - mermaid
 - vite
 - tanstack
+- openapi
 status: stable
 generated:
-  by: seihou-okf-extension/0.10.1.0
-version: 0.2.1
+  by: seihou-okf-extension/0.12.1.0
+version: 0.3.0
 ---
 
 # fumadocs
 
-Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, beautiful-mermaid diagrams, and an interactive zoom/pan/expand widget for every diagram
+Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, and optional OpenAPI reference pages
 
-**Version:** 0.2.1
+**Version:** 0.3.0
 
 ## Dependencies
 
@@ -31,6 +33,9 @@ Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's
 ## Variables
 
 - `docs.starter-content` — boolean, required, default `true`. Generate starter content for a new site; set false when adopting an existing documentation tree
+- `docs.openapi` — boolean, required, default `false`. Generate API reference pages from an OpenAPI document with fumadocs-openapi
+- `docs.openapi-spec` — text, required, default `openapi.yaml`. OpenAPI document rendered when docs.openapi is true: a project-relative path or a URL. New sites with starter content get an example at openapi.yaml.
+- `docs.openapi-base-dir` — text, required, default `api`, matching `[a-z][a-z0-9-]*`. Docs folder holding the generated OpenAPI pages (served under /docs/<dir>/). Pick one no authored content uses.
 - `project.name` — text, required, matching `[a-z][a-z0-9-]*`. Project name (package.json name). Re-declared so step `dest` paths and templates validate; the value is shared with `nix-bun-flake` via the dependency graph (it exports `project.name`).
 - `project.description` — text, required. One-line project description (package.json description, home page intro). Inherited from `nix-bun-flake`, which exports `project.description`.
 - `docs.site-name` — text, required. Human-readable site/nav title shown in the navbar and browser tab (e.g. "keiro runtime docs").
@@ -66,7 +71,8 @@ No exports declared.
 - `Copy` `src/router.tsx` → `src/router.tsx`
 - `Copy` `src/routeTree.gen.ts` → `src/routeTree.gen.ts`
 - `Copy` `src/lib/cn.ts` → `src/lib/cn.ts`
-- `Copy` `src/lib/source.ts` → `src/lib/source.ts`
+- `Template` `src/lib/source.ts.tpl` → `src/lib/source.ts`
+- `Template` `src/lib/openapi.ts.tpl` → `src/lib/openapi.ts` — when `Eq docs.openapi true`
 - `Template` `src/lib/shared.ts.tpl` → `src/lib/shared.ts`
 - `Copy` `src/lib/layout.shared.tsx` → `src/lib/layout.shared.tsx`
 - `Copy` `src/lib/rehype-mermaid.ts` → `src/lib/rehype-mermaid.ts`
@@ -74,15 +80,17 @@ No exports declared.
 - `Copy` `src/components/mermaid.tsx` → `src/components/mermaid.tsx`
 - `Copy` `src/components/search.tsx` → `src/components/search.tsx`
 - `Copy` `src/components/not-found.tsx` → `src/components/not-found.tsx`
+- `Copy` `src/components/api-page.tsx` → `src/components/api-page.tsx` — when `Eq docs.openapi true`
 - `Template` `src/styles/app.css.tpl` → `src/styles/app.css`
 - `Copy` `src/routes/__root.tsx` → `src/routes/__root.tsx`
 - `Copy` `src/routes/index.tsx` → `src/routes/index.tsx`
-- `Copy` `src/routes/docs/splat.tsx` → `src/routes/docs/$.tsx`
+- `Template` `src/routes/docs/splat.tsx.tpl` → `src/routes/docs/$.tsx`
 - `Copy` `src/routes/docs/md-route.ts` → `src/routes/docs/{$}[.]md.ts`
 - `Copy` `src/routes/api/search.ts` → `src/routes/api/search.ts`
 - `Template` `content/index.mdx.tpl` → `content/docs/index.mdx` — when `Eq docs.starter-content true`
 - `Copy` `content/diagram-demo.mdx` → `content/docs/diagram-demo.mdx` — when `Eq docs.starter-content true`
-- `Copy` `content/meta.json` → `content/docs/meta.json` — when `Eq docs.starter-content true`
+- `Template` `content/meta.json.tpl` → `content/docs/meta.json` — when `Eq docs.starter-content true`
+- `Copy` `content/openapi.yaml` → `openapi.yaml` — when `Eq docs.openapi true && Eq docs.starter-content true && Eq docs.openapi-spec "openapi.yaml"`
 - `Template` `gitignore-fumadocs.tpl` → `.gitignore` (appends one line to a file another module owns, if absent)
 
 ## Removal
@@ -96,6 +104,7 @@ No exports declared.
 - delete `src/routeTree.gen.ts`
 - delete `src/lib/cn.ts`
 - delete `src/lib/source.ts`
+- delete `src/lib/openapi.ts`
 - delete `src/lib/shared.ts`
 - delete `src/lib/layout.shared.tsx`
 - delete `src/lib/rehype-mermaid.ts`
@@ -103,6 +112,7 @@ No exports declared.
 - delete `src/components/mermaid.tsx`
 - delete `src/components/search.tsx`
 - delete `src/components/not-found.tsx`
+- delete `src/components/api-page.tsx`
 - delete `src/styles/app.css`
 - delete `src/routes/__root.tsx`
 - delete `src/routes/index.tsx`

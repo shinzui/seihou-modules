@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @import "fumadocs-ui/css/neutral.css";
 @import "fumadocs-ui/css/preset.css";
+{{#if Eq docs.openapi true}}
+@import "fumadocs-openapi/css/preset.css";
+{{/if}}
 
 html {
   scrollbar-gutter: stable;
@@ -72,7 +75,7 @@ pre code {
   font-variant-ligatures: contextual common-ligatures;
 }
 
-/* ---- beautiful Mermaid diagrams (zoom / pan / expand) ---- */
+/* ---- zombie-mermaid diagrams (zoom / pan / expand) ---- */
 
 .diagram {
   margin: 1rem 0;

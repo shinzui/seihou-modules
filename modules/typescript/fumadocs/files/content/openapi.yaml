@@ -1,0 +1,97 @@
+openapi: 3.1.0
+info:
+  title: Example API
+  version: 0.1.0
+  description: A starter OpenAPI document. Replace it with your service's specification.
+servers:
+  - url: http://localhost:8080
+tags:
+  - name: notes
+    description: Create and read notes.
+paths:
+  /notes:
+    get:
+      operationId: listNotes
+      summary: List notes
+      description: Returns every note, newest first.
+      tags: [notes]
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of notes to return.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        "200":
+          description: The notes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Note"
+    post:
+      operationId: createNote
+      summary: Create a note
+      description: Stores a new note and returns it.
+      tags: [notes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewNote"
+      responses:
+        "201":
+          description: The created note.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+  /notes/{id}:
+    get:
+      operationId: getNote
+      summary: Get a note
+      description: Returns one note by its identifier.
+      tags: [notes]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The note.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+        "404":
+          description: No note has this identifier.
+components:
+  schemas:
+    NewNote:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          description: A short title.
+        body:
+          type: string
+          description: The note's Markdown body.
+    Note:
+      allOf:
+        - $ref: "#/components/schemas/NewNote"
+        - type: object
+          required: [id, createdAt]
+          properties:
+            id:
+              type: string
+            createdAt:
+              type: string
+              format: date-time

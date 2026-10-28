@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "start": "serve .output/public --config serve.json",
+    "start": "serve .output/public --config ../../serve.json",
     "preview": "vite preview",
     "typecheck": "bun --bun fumadocs-mdx && tsc --noEmit",
     "lint": "oxlint",
@@ -22,32 +22,36 @@
     "prebuild": "bun run copy-fonts"
   },
   "dependencies": {
-    "@tanstack/react-router": "1.170.41",
-    "@tanstack/react-start": "1.168.60",
-    "@tanstack/start-static-server-functions": "1.167.39",
-    "beautiful-mermaid": "^1.1.3",
-    "fumadocs-core": "16.16.2",
-    "fumadocs-mdx": "15.4.6",
-    "fumadocs-ui": "16.16.2",
-    "lucide-react": "^1.17.0",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "tailwind-merge": "^3.6.0"
+    "@tanstack/react-router": "1.170.46",
+    "@tanstack/react-start": "1.169.4",
+    "@tanstack/start-static-server-functions": "1.167.44",
+    "@zombie-mermaid/svg-renderer": "^5.11.1",
+    "elkjs": "^0.12.1",
+    "fumadocs-core": "16.17.9",
+    "fumadocs-mdx": "15.4.10",
+{{#if Eq docs.openapi true}}
+    "fumadocs-openapi": "12.5.6",
+{{/if}}
+    "fumadocs-ui": "16.17.9",
+    "lucide-react": "^1.63.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.3.0",
+    "@tailwindcss/vite": "^4.3.3",
     "@types/bun": "1.4.2",
-    "@types/hast": "^3.0.4",
-    "@types/mdx": "2.0.13",
-    "@types/node": "^25.9.1",
-    "@types/react": "^19.2.15",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.2",
-    "linkinator": "^6.1.2",
-    "nitro": "3.0.260429-beta",
+    "@types/hast": "^3.0.5",
+    "@types/mdx": "2.0.14",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "linkinator": "^8.1.0",
+    "nitro": "3.0.260903-beta",
     "serve": "^14.2.6",
-    "srvx": "^0.11.16",
-    "tailwindcss": "^4.3.0",
-    "vite": "^8.0.14"
+    "srvx": "^1.0.8",
+    "tailwindcss": "^4.3.3",
+    "vite": "^8.3.5"
   }
 }
