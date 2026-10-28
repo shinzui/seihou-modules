@@ -13,15 +13,15 @@ tags:
 - migration
 status: stable
 generated:
-  by: seihou-okf-extension/0.10.1.0
-version: 0.1.0
+  by: seihou-okf-extension/0.12.1.0
+version: 0.2.0
 ---
 
 # upgrade-fumadocs
 
 Upgrade existing Fumadocs sites to the shared Bun flake-parts modules while preserving custom content, package-manager workflows, fonts, CI gates, and Seihou ownership
 
-**Version:** 0.1.0
+**Version:** 0.2.0
 
 ## Base modules
 
@@ -91,8 +91,8 @@ not disguise them as generated content. Use supported manifest repair-origins fo
 
 Merge target dependency changes into the existing manifest, retaining custom scripts and
 packages. Remove the obsolete @orama/orama dependency only if no custom feature still uses
-it. Use staticClient from fumadocs-core/search/client/orama-static with useDocsSearch({ client:
-staticClient({ locale }) }); let createFromSource use its default ZBSearch engine and export
+it. Use useStaticSearch({ locale }) from fumadocs-core/search/client and spread its result
+into SearchDialog; let createFromSource use its default ZBSearch engine and export
 staticGET. Preserve customized searches if present and adapt them using upstream source.
 Use Mori to locate sources; verify releases against npm and upstream tags before selecting
 new versions beyond the tested cohort.
@@ -108,6 +108,7 @@ runtime or explicitly under Bun. Include the MDX generation step in typechecking
 Fix compiler/linter compatibility issues precisely. HAST className can be treated as unknown
 before validating string/array forms. Mermaid render state should be keyed by chart and theme,
 with asynchronous completion setting one result; avoid synchronous setState resets in effects.
+Render with @zombie-mermaid/svg-renderer and register elkjs once before the first render.
 Use TanStack's validator method in place of deprecated inputValidator. Merge template ignore
 patterns with existing project ignores, including dependency-owned nix/tooling-sources.json.
 Do not suppress errors broadly or delete custom diagram/editorial gates to obtain green tests.
@@ -151,3 +152,30 @@ exported /api/search route, and verify real queries against its built index.
 Use the Nix-provided TypeScript 7 compiler rather than a second local compiler.
 Fix necessary source compatibility issues without rewriting documentation or
 removing project-specific checks. Record this edge only after validation succeeds.
+
+### 0.2.1 → 0.3.0
+
+# Fumadocs module 0.2.1 to 0.3.0
+
+Follow the shared upgrade prompt. Adopt nix-bun-flake 0.4.0 and Fumadocs module
+0.3.0, including Core/UI 16.17.9 and MDX 15.4.10. This edge tracks module versions,
+not upstream library versions. Do not record it without an actual 0.2.1 origin.
+
+Replace the deprecated useDocsSearch and staticClient pair in the search dialog
+with useStaticSearch({ locale }) from fumadocs-core/search/client, spreading its
+result into SearchDialog and rendering SearchDialogList without items. Adapt
+customized search dialogs the same way rather than discarding their changes.
+
+Replace beautiful-mermaid with @zombie-mermaid/svg-renderer and elkjs. Browser
+bundles must call registerElk with the default export of elkjs/lib/elk.bundled.js
+once before the first render; load both lazily with the renderer. Keep custom
+themes and interaction code. Compare rendered diagrams before and after, since
+fixes in the fork can change layout.
+
+Correct the start script to serve .output/public with --config ../../serve.json;
+serve resolves the configuration relative to the served directory.
+
+OpenAPI reference pages are opt-in. Enable docs.openapi only when the project has
+an OpenAPI document and asks for API pages, set docs.openapi-spec to it, and pick
+a docs.openapi-base-dir no authored content uses. Record this edge only after
+validation succeeds.

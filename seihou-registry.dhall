@@ -90,7 +90,7 @@
     , tags = [ "haskell", "nix", "runtime", "migration" ]
     }
   , { name = "upgrade-fumadocs"
-    , version = Some "0.1.0"
+    , version = Some "0.2.0"
     , path = "blueprints/upgrade-fumadocs"
     , description = Some "Upgrade existing Fumadocs sites to the shared Bun flake-parts modules while preserving custom content, package-manager workflows, fonts, CI gates, and Seihou ownership"
     , tags = [ "typescript", "fumadocs", "nix", "flake-parts", "migration" ]

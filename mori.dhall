@@ -144,7 +144,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "upgrade-fumadocs"
-        , version = Some "0.1.0"
+        , version = Some "0.2.0"
         , description = Some "Migrate customized Fumadocs sites to the current shared Bun flake-parts modules with content preservation and static-output validation"
         , modulePath = "blueprints/upgrade-fumadocs"
         , tags = [ "typescript", "fumadocs", "nix", "migration" ]

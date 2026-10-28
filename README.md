@@ -92,7 +92,7 @@ commit.
 | Blueprint | Version | Purpose |
 |---|---|---|
 | [`haskell-keiro-service`](blueprints/haskell-keiro-service) | 0.4.0 | Extend the Keiro seed’s probes/OpenAPI/testing into an event-sourced Haskell service on the released Keiro runtime — vertical-slice packages, pg-migrate components, Settei config, OpenTelemetry wiring, Keiro-DSL-first workflow |
-| [`upgrade-fumadocs`](blueprints/upgrade-fumadocs) | 0.1.0 | Upgrade a customized documentation site to current Fumadocs and the shared Bun flake-parts modules while preserving its workflows and content |
+| [`upgrade-fumadocs`](blueprints/upgrade-fumadocs) | 0.2.0 | Upgrade a customized documentation site to current Fumadocs and the shared Bun flake-parts modules while preserving its workflows and content |
 | [`upgrade-haskell-nix2container`](blueprints/upgrade-haskell-nix2container) | 0.1.0 | Preserve custom service images while migrating dockerTools wiring and archive consumers to pinned nix2container |
 | [`upgrade-haskell-runtime`](blueprints/upgrade-haskell-runtime) | 0.1.0 | Preserve legacy projects or cross ordered 0.30.0/0.31.0 upgrades to explicit shared runtime scopes with independent native acceptance |
 | [`upgrade-haskell-flake-parts`](blueprints/upgrade-haskell-flake-parts) | 0.1.0 | Migrate a monolithic `flake.nix` to the thin flake-parts structure on the base flake, preserving every custom input, overlay, tool, hook, and check |

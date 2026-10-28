@@ -59,7 +59,8 @@ with tempfile.TemporaryDirectory(prefix='fumadocs-adoption-') as temp:
     manifest = json.loads(manifest_path.read_text())
     assert not any(name.startswith('content/') for name in manifest['files'])
     for args in [['run', 'upgrade-fumadocs'],
-                 ['migrate', 'upgrade-fumadocs', '--from', '0.1.2', '--to', '0.2.1']]:
+                 ['migrate', 'upgrade-fumadocs', '--from', '0.1.2', '--to', '0.2.1'],
+                 ['migrate', 'upgrade-fumadocs', '--from', '0.2.1', '--to', '0.3.0']]:
         before = json.loads(manifest_path.read_text())
         prompt = run(['seihou', 'agent', '--debug', *args], project)
         assert 'docs.starter-content=false' in prompt

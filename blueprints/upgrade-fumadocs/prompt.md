@@ -57,8 +57,8 @@ not disguise them as generated content. Use supported manifest repair-origins fo
 
 Merge target dependency changes into the existing manifest, retaining custom scripts and
 packages. Remove the obsolete @orama/orama dependency only if no custom feature still uses
-it. Use staticClient from fumadocs-core/search/client/orama-static with useDocsSearch({ client:
-staticClient({ locale }) }); let createFromSource use its default ZBSearch engine and export
+it. Use useStaticSearch({ locale }) from fumadocs-core/search/client and spread its result
+into SearchDialog; let createFromSource use its default ZBSearch engine and export
 staticGET. Preserve customized searches if present and adapt them using upstream source.
 Use Mori to locate sources; verify releases against npm and upstream tags before selecting
 new versions beyond the tested cohort.
@@ -74,6 +74,7 @@ runtime or explicitly under Bun. Include the MDX generation step in typechecking
 Fix compiler/linter compatibility issues precisely. HAST className can be treated as unknown
 before validating string/array forms. Mermaid render state should be keyed by chart and theme,
 with asynchronous completion setting one result; avoid synchronous setState resets in effects.
+Render with @zombie-mermaid/svg-renderer and register elkjs once before the first render.
 Use TanStack's validator method in place of deprecated inputValidator. Merge template ignore
 patterns with existing project ignores, including dependency-owned nix/tooling-sources.json.
 Do not suppress errors broadly or delete custom diagram/editorial gates to obtain green tests.
