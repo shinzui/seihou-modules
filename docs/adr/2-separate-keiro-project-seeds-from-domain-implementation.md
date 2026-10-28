@@ -127,7 +127,7 @@ The inventory records core runtime package relationships. Cabal remains the comp
 component/build authority. Exclude compiler-provided `base`, test-only dependencies,
 and package self references from the inventory. This is the consumer's intended
 scope, independent of future support for scoped dependency identities in
-`mori://shinzui/mori/okf/improvement-requests/concepts/IR-39`.
+`mori://shinzui/mori/okf/improvement-requests/concepts/IR-42`.
 
 The generic `mori.okf-bundles` text input supplies a Dhall list expression using the
 inventory's pinned `Schema.OkfBundle` record. It defaults to an empty list and
