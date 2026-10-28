@@ -14,7 +14,7 @@
     , tags = [ "haskell", "nix", "flake", "devshell" ]
     }
   , { name = "haskell-keiro-project"
-    , version = Some "0.3.0"
+    , version = Some "0.4.0"
     , path = "modules/haskell/haskell-keiro-project"
     , description = Some "Six-package Keiro bootstrap with project-owned domain/API/test starters (Seihou 0.11.0.0+), OpenAPI, optional Mori inventory and managed Nix/test tooling"
     , tags = [ "haskell", "keiro", "service", "bootstrap" ]

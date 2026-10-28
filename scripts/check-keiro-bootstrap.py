@@ -71,6 +71,8 @@ def check_inventory(project):
         cabal = cabal_dependencies(project / package['path'] / (package['name'] + '.cabal'))
         expected = set()
         for name, bounds, scope in cabal:
+            if name == 'base' or scope != 'Regular' or name == package['name']:
+                continue
             owner = owners.get(name)
             lookup = '/'.join(owner) + ':' + name if owner else name
             source = 'Local' if name.startswith(data['project']['name'] + '-') else 'Hackage'
@@ -148,6 +150,14 @@ def extra_checks():
     assert result.returncode == 0, result.stderr
     data = check_inventory(project)
     assert data['project']['namespace'] == 'example'
+    assert data['okfBundles'] == []
+    bundle_expression = '[Schema.OkfBundle::{name="requests",path="docs/requests",okfVersion="0.2",profile=Some "docs/requests/profile.dhall"}]'
+    extended, _, extended_result = render(**{'mori.generate': 'true', 'mori.namespace': 'example', 'mori.okf-bundles': bundle_expression})
+    assert extended_result.returncode == 0, extended_result.stderr
+    extended_data = check_inventory(extended)
+    assert extended_data['okfBundles'][0]['name'] == 'requests'
+    assert extended_data['okfBundles'][0]['profile'] == 'docs/requests/profile.dhall'
+
     nix = (project / 'nix/haskell.nix').read_text()
     assert 'export PGDATABASE=custom_db' in nix
     broker = (project / 'nix/redpanda.nix').read_text()

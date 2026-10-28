@@ -21,11 +21,20 @@ An optional question offers an initial `mori.dhall`. Empty input or `mori.genera
 skips it; true asks for the separate Mori organization/user namespace (`mori.namespace`).
 This namespace uses lowercase letters, digits and hyphens and starts with a letter. It does
 not change the PascalCase Haskell namespace. Opt-in requires the namespace before writes.
-The descriptor inventories six actual packages, component dependency bounds/scopes, and one
+The descriptor inventories six actual packages, core runtime dependency bounds, and one
 OpenAPI API owned by the API package at `docs/openapi.json`. It uses a hash-pinned schema,
 invents no remote repository, and never registers the project. Run `mori validate` locally.
 Existing authored descriptors are protected; opting out later preserves an existing file.
-Maintain the inventory as Cabal components change. No placeholder schema is created.
+Maintain the core inventory as application dependencies change. Cabal owns complete
+component dependencies: compiler-provided `base`, test-only dependencies, and package
+self references are excluded from this inventory. No placeholder schema is created.
+
+`mori.okf-bundles` accepts a Dhall list expression of `Schema.OkfBundle` values.
+`Schema` is the inventory's pinned Mori schema. It defaults to an empty list and
+adds declarations to the same project-owned seed; it does not create bundle files.
+For example, pass `[Schema.OkfBundle::{name="requests",path="docs/requests",okfVersion="0.2",profile=Some "docs/requests/profile.dhall"}]`.
+Use it when composing a module that separately generates the declared bundles.
+Existing inventory edits and deletions remain preserved on reapplication.
 
 Enter `nix develop`, then run `just build`, `just test`, `just openapi`, and
 `just openapi-check`. The API library owns `ServiceApi` and derives OpenAPI 3.1 from that type;

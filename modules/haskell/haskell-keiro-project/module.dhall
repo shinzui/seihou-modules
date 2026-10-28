@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "haskell-keiro-project"
-    , version = Some "0.3.0"
+    , version = Some "0.4.0"
     , description = Some
         "Six-package Keiro seed with project-named domain paths, injected servant-health probes, OpenAPI generation, Hurl/Hinagata test setup, and optional initial Mori inventory on nix-haskell-flake. The blueprint implements the domain."
     , vars =
@@ -83,6 +83,14 @@ in  S.Module::{
         , validation = Some "[a-z][a-z0-9-]*"
         , description = Some
             "Mori organization/user namespace; required when mori.generate=true. Separate from Haskell project.namespace."
+        }
+      , S.VarDecl::{
+        , name = "mori.okf-bundles"
+        , type = "text"
+        , default = Some "[] : List Schema.OkfBundle.Type"
+        , required = False
+        , description = Some
+            "Dhall list expression of Schema.OkfBundle values added to the initial inventory. Schema names the pinned Mori schema. Does not create bundles or rewrite an existing inventory."
         }
       , S.VarDecl::{
         , name = "haskell.index-state"

@@ -42,7 +42,7 @@ policy. The implementation blueprint supplies those policies and extends the sam
 with business routes. Probe conformance and schema generation must work in a fresh seed.
 
 The seed optionally generates a local `mori.dhall` when the user selects that prompt.
-It describes the actual six packages and their dependencies, and declares the generated
+It describes the actual six packages and their core runtime dependencies, and declares the generated
 OpenAPI artifact owned by the API package. The Mori organization/user namespace is separate
 from the Haskell module namespace. This is initial descriptor authoring, with existing-file
 protection; it does not register the project or make OpenAPI generation conditional. The
@@ -119,3 +119,18 @@ The durable runtime contract is in `mori://shinzui/seihou`, project-relative
 `mori://shinzui/seihou/plans/104-adopt-seed-steps-in-seihou-modules-and-document-seed-authoring`
 and the parent MasterPlan. This is completed producer/runtime delivery; live domain
 implementation remains the consuming project's responsibility.
+
+
+## Core inventory and bundle extension (2026-10-28)
+
+The inventory records core runtime package relationships. Cabal remains the complete
+component/build authority. Exclude compiler-provided `base`, test-only dependencies,
+and package self references from the inventory. This is the consumer's intended
+scope, independent of future support for scoped dependency identities in
+`mori://shinzui/mori/okf/improvement-requests/concepts/IR-39`.
+
+The generic `mori.okf-bundles` text input supplies a Dhall list expression using the
+inventory's pinned `Schema.OkfBundle` record. It defaults to an empty list and
+extends only the initial project-owned inventory seed. A composing module owns
+bundle generation; this producer remains the single inventory writer. Existing
+inventory edits/deletions retain the seed lifecycle.
