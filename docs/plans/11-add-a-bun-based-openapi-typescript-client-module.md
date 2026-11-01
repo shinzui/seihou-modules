@@ -25,6 +25,11 @@ provenance:
       at: 2026-11-01T23:35:36Z
       mode: "update"
       note: "Resolve freshness normalization conflict, tighten semantic and removal gates, refresh dependency and runtime evidence"
+    - model: "gpt-6.1-sol"
+      harness: "codex-cli"
+      at: 2026-11-01T23:38:29Z
+      mode: "implement"
+      note: "Begin pinned Orval fidelity and transport qualification before scaffold expansion"
   reviews:
     - model: "gpt-6-astra"
       harness: "codex-cli"
@@ -36,7 +41,7 @@ provenance:
 # Add a Bun-based OpenAPI TypeScript client module
 
 
-This ExecPlan is a living document. Keep its living sections current and follow `agents/skills/exec-plan/PLANS.md`, `agents/skills/exec-plan/ADR.md`, and `agents/skills/exec-plan/FRICTION.md`. This is a planning revision; implementation has not begun.
+This ExecPlan is a living document. Keep its living sections current and follow `agents/skills/exec-plan/PLANS.md`, `agents/skills/exec-plan/ADR.md`, and `agents/skills/exec-plan/FRICTION.md`. Implementation is in progress; milestone evidence below distinguishes qualification from scaffold acceptance.
 
 
 ## Purpose / Big Picture
@@ -52,12 +57,12 @@ The reference client at `mori://tan/mls-service-v2-ts-client/packages/mls-servic
 ## Progress
 
 
-- [ ] Milestone 1: Qualify Orval with a schema-fidelity fixture under TypeScript 7, including status-aware runtime validation, difficult schema cases, and missing/stale output failures.
+- [x] Milestone 1 (2026-11-01): Pinned Orval qualification passes with TypeScript 7.0.2, bidirectional response contracts, real HTTP/status validation, mandatory semantic fixtures for 3.0/3.1 and nested local references, missing/stale/obsolete output failures, and packed Node/Bun consumers. `python3 scripts/test-openapi-typescript-client.py --toolchain-only` prints `OpenAPI client toolchain qualification passed.`
 - [ ] Milestone 2: Real Seihou composition creates the client with the shared Bun/TypeScript 7 shell, supported Node runtime, and verified starter-file ownership.
 - [ ] Milestone 3: The scaffold generates and validates clients, passes compiler and real HTTP tests, and builds an ESM package consumable outside its source tree.
 - [ ] Milestone 4: Catalog and documentation expose the module, and ownership, packaging, and existing Bun/Fumadocs regressions pass.
 
-Planning handoff (2026-11-01): Orval is the proposed replacement, and basic generation, TypeScript 7 checking/emission, status narrowing, and freshness behavior were probed successfully. Correctness qualification remains unfinished: a valid 404 response was rejected against the success schema by Orval's built-in runtime validation. No module files have been implemented. Review preflight now reports Seihou 0.14.0.0 (b371308), satisfying the >=0.11.0.0 prerequisite. The earlier 0.10.1.0 observation is superseded; ownership acceptance still requires real generation tests.
+Historical planning handoff (2026-11-01, superseded by checked milestone evidence): Orval is the proposed replacement, and basic generation, TypeScript 7 checking/emission, status narrowing, and freshness behavior were probed successfully. Correctness qualification remains unfinished: a valid 404 response was rejected against the success schema by Orval's built-in runtime validation. No module files have been implemented. Review preflight now reports Seihou 0.14.0.0 (b371308), satisfying the >=0.11.0.0 prerequisite. The earlier 0.10.1.0 observation is superseded; ownership acceptance still requires real generation tests.
 
 
 ## Surprises & Discoveries
@@ -81,6 +86,10 @@ The same probe's component schema declared `additionalProperties: false`, while 
 
 ## Decision Log
 
+
+2026-11-01 (implementation): Keep Orval 8.46.0 unchanged and own a bounded schema adapter plus a derived client tree. The adapter projects request read-only and response write-only properties, makes implicit object openness explicit, and uses reusable Zod schemas for recursion. The derived stage adds Node import extensions, repairs optional nullable/recursive validator input annotations, uses a platform-neutral fetch signature, and decodes declared empty responses as undefined. Every response gets bidirectional input/output type contracts. A per-instance validating fetch dispatcher checks actual method/path, explicit status, and application/json before the generated decoder can expose data. Raw files remain untouched; freshness runs Orval --outdated, generates expectations in an isolated temporary directory, and compares complete path sets/bytes in both trees. This is maintained compatibility glue, not an upstream fork. FRIC-7 records the generator surface cost.
+
+The supported allOf subset is open object branches with disjoint properties; overlapping property definitions and closed branches are rejected because Orval can merge away constraints. Other unimplemented schema keywords, remote references, response ranges/defaults, and non-JSON media are diagnosed before output replacement. Required recursive, tagged/exclusive/inclusive union, nullability, directional-property, open/closed object, explicit status, and 3.0/3.1 fixtures remain mandatory.
 
 2026-11-01: Replace the proposed `openapi-typescript`/`openapi-fetch` stack with Orval, initially 8.46.0. The user favors Orval and prioritizes strong typing/correctness. The former project's maintainer announced no further updates, including security fixes, on 2026-09-19. Retire the earlier plan to wait for or adapt its legacy compiler API.
 
@@ -297,7 +306,7 @@ The module is `modules/typescript/openapi-typescript-client/` with `module.dhall
 
 Baseline dependencies are Orval 8.46.0 (development generator), Redocly CLI 2.72.1 (development schema validator), Zod 4.6.7 (runtime payload validation), and `@types/bun` 1.4.2 (development tests). The shared environment supplies Bun, Oxc, TypeScript 7.0.2, and a Node 22 runtime satisfying Orval's engine. Orval's private TypeScript 6 API dependencies are explicitly allowed. Do not downgrade or replace the base compiler and canonical lock to accommodate them.
 
-The source facade provides `make(options)` with a required base URL and optional injected fetch/default headers, and exports its inferred `Api` type plus generated operation/model types. Each returned instance exposes schema-derived named operations; callers narrow the response by literal HTTP status. The operation surface is generated rather than a handwritten list. `make` must delegate to the factory/adapter qualified in milestone 1, whose precise configuration and registry-generation contract must be recorded here before template expansion. The transport fix is currently an open qualification item; do not represent the basic research probe as a complete client implementation.
+The source facade provides `make(options)` with a required base URL and optional injected fetch/default headers, and exports its inferred `Api` type plus generated operation/model types. Each returned instance exposes schema-derived named operations; callers narrow the response by literal HTTP status. The operation surface is generated rather than a handwritten list. `make` must delegate to the factory/adapter qualified in milestone 1, whose precise configuration and registry-generation contract must be recorded here before template expansion. The qualified adapter is `src/transport.ts`: a per-instance fetch wrapper selects the generated method/path/status registry, checks media and payload, and returns the validated Response to Orval. The deterministic two-stage generator and schema adapter live in `scripts/generate.ts` and `scripts/schema.ts`; the fixture documents their bounded support. The basic research probe remains historical failure evidence.
 
 Seihou >=0.11.0.0 is a prerequisite for seed ownership. Its owner is `mori://shinzui/seihou`; the descriptor schema owner is `mori://shinzui/seihou-schema/packages/seihou-schema`. Use the existing library scaffold's published schema hash. This plan has no parent MasterPlan and no prerequisite feature plan.
 

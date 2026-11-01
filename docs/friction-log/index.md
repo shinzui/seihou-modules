@@ -14,3 +14,5 @@ okf_version: "0.2"
 - [Released probe schema omits nullable timestamp semantics](4-released-probe-schema-omits-nullable-timestamp-semantics.md) - The released OpenAPI generic record derivation drops Maybe nullability, requiring correction of the derived probe schema before publication.
 - [Seihou silently accepts unsupported variable patterns](5-seihou-silently-accepts-unsupported-variable-patterns.md) - Seihou only implements one variable character-class pattern and silently accepts other patterns, requiring supported validation for project and Mori names.
 - [Skopeo archive export needs an explicit sandbox temporary directory](6-skopeo-archive-export-needs-an-explicit-sandbox-temporary-directory.md) - The nix2container copy helper inherits Skopeo defaults and failed native archive acceptance because the Nix build sandbox omits /var/tmp.
+- [Pinned Orval output needs fidelity and ESM adapters](7-pinned-orval-output-needs-fidelity-and-esm-adapters.md) - Orval 8.46.0 required a derived-output compatibility stage to preserve nullable optional and recursive input types, empty response data, and Node imports.
+

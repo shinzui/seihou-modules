@@ -1,5 +1,8 @@
 # Bundle Update Log
 
+## 2026-11-01
+* **Addition**: FRIC-7 records detour tooling friction with mori://orval-labs/orval: Pinned Orval output needs fidelity and ESM adapters
+
 ## 2026-10-27
 * **Update**: FRIC-6 resolved: Resolved sandbox export failure with an explicit writable temporary directory.
 * **Addition**: FRIC-6 records detour environment friction with mori://nlewo/nix2container: Skopeo archive export needs an explicit sandbox temporary directory

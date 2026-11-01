@@ -1,0 +1,6 @@
+extends:
+  - spec
+rules:
+  operation-operationId-unique: error
+  operation-parameters-unique: error
+  path-parameters-defined: error
