@@ -11,15 +11,15 @@ tags:
 - bootstrap
 status: stable
 generated:
-  by: seihou-okf-extension/0.10.1.0
-version: 0.3.0
+  by: seihou-okf-extension/0.14.0.0
+version: 0.4.0
 ---
 
 # haskell-keiro-project
 
 Six-package Keiro bootstrap with project-owned domain/API/test starters (Seihou 0.11.0.0+), OpenAPI, optional Mori inventory and managed Nix/test tooling
 
-**Version:** 0.3.0
+**Version:** 0.4.0
 
 ## Dependencies
 
@@ -37,6 +37,7 @@ Six-package Keiro bootstrap with project-owned domain/API/test starters (Seihou 
 - `mori.prompt` — boolean, optional, default `true`. Internal prompt coordination: the blueprint asks once and suppresses the baseline module question, including after an empty skip.
 - `mori.generate` — boolean, optional. Generate an initial local Mori inventory (no registration). Empty input skips.
 - `mori.namespace` — text, optional, matching `[a-z][a-z0-9-]*`. Mori organization/user namespace; required when mori.generate=true. Separate from Haskell project.namespace.
+- `mori.okf-bundles` — text, optional, default `[] : List Schema.OkfBundle.Type`. Dhall list expression of Schema.OkfBundle values added to the initial inventory. Schema names the pinned Mori schema. Does not create bundles or rewrite an existing inventory.
 - `haskell.index-state` — text, required, default `2026-10-26T00:00:00Z`, matching `[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z`. Hackage index snapshot for the initial libraries; reverify the runtime cohort before adding domain dependencies.
 
 ## Exports

@@ -8,7 +8,7 @@ tags:
 - seihou
 status: stable
 generated:
-  by: seihou-okf-extension/0.11.0.1
+  by: seihou-okf-extension/0.14.0.0
 ---
 
 # seihou-modules
