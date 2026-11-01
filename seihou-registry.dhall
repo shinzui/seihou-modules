@@ -64,7 +64,7 @@
     , tags = [ "haskell", "library", "git", "bootstrap" ]
     }
   , { name = "haskell-cli-app-repo"
-    , version = Some "0.1.0"
+    , version = Some "0.1.1"
     , path = "recipes/haskell-cli-app-repo"
     , description = Some "Bootstrap a tested two-package Haskell CLI app in a fresh git repo: real core-to-CLI behavior, parser tests, GHC 9.12.4/9.14.1 shells, working Nix package/check outputs, then git-init last so the initial commit captures the full scaffold"
     , tags = [ "haskell", "cli", "git", "bootstrap" ]

@@ -13,14 +13,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.14.0.0
-version: 0.1.0
+version: 0.1.1
 ---
 
 # haskell-cli-app-repo
 
 Bootstrap a tested two-package Haskell CLI app in a fresh git repo: real core-to-CLI behavior, parser tests, GHC 9.12.4/9.14.1 shells, working Nix package/check outputs, then git-init last so the initial commit captures the full scaffold
 
-**Version:** 0.1.0
+**Version:** 0.1.1
 
 ## Composes
 

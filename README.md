@@ -80,7 +80,7 @@ generation logic.
 | Recipe | Version | Purpose |
 |---|---|---|
 | [`haskell-library-repo`](recipes/haskell-library-repo) | 0.1.0 | `haskell-library` + `git-init`, so the initial commit captures the full scaffold |
-| [`haskell-cli-app-repo`](recipes/haskell-cli-app-repo) | 0.1.0 | Tested two-package CLI scaffold plus `git-init`, with working Nix builds/checks in the initial commit |
+| [`haskell-cli-app-repo`](recipes/haskell-cli-app-repo) | 0.1.1 | Tested two-package CLI scaffold plus `git-init`, with working Nix builds/checks in the initial commit |
 | [`github-repo`](recipes/github-repo) | 0.1.0 | Prompt for a location and folder name, create it, and make it a git repo with a matching GitHub repo under the context's owner |
 
 ### Blueprints

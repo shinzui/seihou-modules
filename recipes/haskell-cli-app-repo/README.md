@@ -2,7 +2,7 @@
 
 > Bootstrap a two-package Haskell CLI app (core library + CLI executable) in a fresh git repository. Composes `haskell-cli-app` (which pulls in `nix-haskell-flake`) with `git-init`; seihou's planner runs all file generation before any commands, so the resulting `git init` + initial commit captures the full scaffold in one shot.
 
-**Version:** `0.1.0`
+**Version:** `0.1.1`
 
 ## Overview
 
