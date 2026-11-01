@@ -20,14 +20,27 @@ provenance:
       at: 2026-11-01T16:06:38Z
       mode: "discuss"
       note: "Propose Orval; prioritize type fidelity and status-aware validation; allow private generator TypeScript 6 while project builds and consumers require 7+"
+    - model: "gpt-6-astra"
+      harness: "codex-cli"
+      at: 2026-11-01T23:35:36Z
+      mode: "update"
+      note: "Resolve freshness normalization conflict, tighten semantic and removal gates, refresh dependency and runtime evidence"
+  reviews:
+    - model: "gpt-6-astra"
+      harness: "codex-cli"
+      at: 2026-11-01T23:35:36Z
+      verdict: "approved"
+      note: "Revised plan ready for bounded qualification; runtime fidelity remains an explicit implementation gate"
 ---
 
 # Add a Bun-based OpenAPI TypeScript client module
+
 
 This ExecPlan is a living document. Keep its living sections current and follow `agents/skills/exec-plan/PLANS.md`, `agents/skills/exec-plan/ADR.md`, and `agents/skills/exec-plan/FRICTION.md`. This is a planning revision; implementation has not begun.
 
 
 ## Purpose / Big Picture
+
 
 Create an `openapi-typescript-client` Seihou module that depends on `nix-bun-flake` and produces a reusable TypeScript client package from an OpenAPI document. OpenAPI is a JSON or YAML description of HTTP operations and their request and response shapes. Use Orval to generate operation functions, models, and validators. Use TypeScript 7+ for all project checking, JavaScript/declaration emission, and consumer tests. Strong typing and correctness are the primary selection and acceptance criteria.
 
@@ -38,15 +51,17 @@ The reference client at `mori://tan/mls-service-v2-ts-client/packages/mls-servic
 
 ## Progress
 
+
 - [ ] Milestone 1: Qualify Orval with a schema-fidelity fixture under TypeScript 7, including status-aware runtime validation, difficult schema cases, and missing/stale output failures.
 - [ ] Milestone 2: Real Seihou composition creates the client with the shared Bun/TypeScript 7 shell, supported Node runtime, and verified starter-file ownership.
 - [ ] Milestone 3: The scaffold generates and validates clients, passes compiler and real HTTP tests, and builds an ESM package consumable outside its source tree.
 - [ ] Milestone 4: Catalog and documentation expose the module, and ownership, packaging, and existing Bun/Fumadocs regressions pass.
 
-Planning handoff (2026-11-01): Orval is the proposed replacement, and basic generation, TypeScript 7 checking/emission, status narrowing, and freshness behavior were probed successfully. Correctness qualification remains unfinished: a valid 404 response was rejected against the success schema by Orval's built-in runtime validation. No module files have been implemented. The planning machine has Seihou 0.10.1.0; generation acceptance requires 0.11.0.0 or newer.
+Planning handoff (2026-11-01): Orval is the proposed replacement, and basic generation, TypeScript 7 checking/emission, status narrowing, and freshness behavior were probed successfully. Correctness qualification remains unfinished: a valid 404 response was rejected against the success schema by Orval's built-in runtime validation. No module files have been implemented. Review preflight now reports Seihou 0.14.0.0 (b371308), satisfying the >=0.11.0.0 prerequisite. The earlier 0.10.1.0 observation is superseded; ownership acceptance still requires real generation tests.
 
 
 ## Surprises & Discoveries
+
 
 The earlier compiler restriction was broader than the user's intent. The user explicitly permits Orval's private TypeScript 6 tooling dependencies while requiring project builds and consumers to use TypeScript 7+. A compiler API dependency used inside a generator is separate from the project's supported compiler. Keep that distinction observable in the final checks.
 
@@ -66,6 +81,7 @@ The same probe's component schema declared `additionalProperties: false`, while 
 
 ## Decision Log
 
+
 2026-11-01: Replace the proposed `openapi-typescript`/`openapi-fetch` stack with Orval, initially 8.46.0. The user favors Orval and prioritizes strong typing/correctness. The former project's maintainer announced no further updates, including security fixes, on 2026-09-19. Retire the earlier plan to wait for or adapt its legacy compiler API.
 
 2026-11-01: Project compilation and consumers support TypeScript 7+ only, initially the shared Nix compiler 7.0.2. The user explicitly allows Orval's private TypeScript 6 generator dependencies. Do not use that private executable for project builds, add a supported TypeScript 6 build path, or override the generator's dependencies to force a different API version. Future TypeScript 7+ releases require explicit qualification; they are not already tested.
@@ -77,12 +93,17 @@ The same probe's component schema declared `additionalProperties: false`, while 
 2026-11-01: Extend the Bun base with an optional managed `nix.package-module` seam, preserving the unmanaged `flake.module.nix` extension and canonical lock. The client contributes a supported Node 22 package through `bunProject.extraDevPackages`. It does not create a second Bun/TypeScript toolchain or enable bun2nix implicitly.
 
 
+2026-11-01 (review): Preserve raw Orval output for `--outdated`; if Node import normalization is necessary, generate separate normalized client copies and compare that entire derived tree without writing. Unsupported schema semantics fail generation, and required fidelity fixtures cannot be waived by diagnostics. Include package consumption before template expansion and shell evaluation after client removal. These changes close gaps in the existing correctness and ownership acceptance contract.
+
+
 ## Outcomes & Retrospective
+
 
 (To be filled during implementation.)
 
 
 ## Context and Orientation
+
 
 Seihou modules consist of `module.dhall` descriptors and `files/` templates. Dhall is the typed configuration language for those descriptors. `seihou-registry.dhall` catalogs artifacts; `mori.dhall` independently exposes discovery metadata; `README.md` lists them. `okf-docs/` is generated documentation.
 
@@ -96,7 +117,8 @@ ADR discovery scanned local filenames and headings. [ADR 2](../adr/2-separate-ke
 
 ### Research and qualification evidence
 
-Mori was queried for OpenAPI projects and for Orval, Hey API, Kubb, and Zod. The old generator is available at `mori://openapi-ts/openapi-typescript`, but the replacement projects are not currently registered in this local corpus. Their authoritative package metadata, release tags, documentation, and published source archives were therefore used. Intended project identities are `mori://orval-labs/orval`, `mori://hey-api/hey-api`, `mori://kubb-labs/kubb`, and `mori://colinhacks/zod`; artifact-level URIs and local registration are pending. Use those identities with project-relative paths for durable source references.
+
+Mori was queried for OpenAPI projects and for Orval, Hey API, Kubb, and Zod. The old generator is available at `mori://openapi-ts/openapi-typescript`, and the initial research used authoritative package metadata, release tags, documentation, and published source archives when replacements were absent. Review now finds Orval registered, with source under its `orval/` repository directory and no curated Mori docs. Resolve `mori://orval-labs/orval/repos/orval` and inspect that source first. The corpus HEAD is `81f16e4a65990c7925bb22a51b70a8ad521fc84e`, not the selected release commit; its local remote did not provide tag `v8.46.0`, so verify release-specific options against upstream files at that tag. Intended project identities are `mori://orval-labs/orval`, `mori://hey-api/hey-api`, `mori://kubb-labs/kubb`, and `mori://colinhacks/zod`; Orval package/repository URIs are now registered; registration for the other replacements and source-file artifact URIs remains pending. Use those identities with project-relative paths for durable source references.
 
 The [maintenance announcement](https://github.com/openapi-ts/openapi-typescript/issues/2874) supersedes that project's older roadmap. npm and upstream tag `v8.46.0` verify Orval 8.46.0, released 2026-10-30 at commit `46aaf2a177d39c60bfa92d70edb713f24f221e03`. Node must be at least 22.18.0. The [release notes](https://github.com/orval-labs/orval/releases/tag/v8.46.0) include the new read-only freshness check and TypeScript 7-related work. npm and tag `v4.6.7` verify Zod 4.6.7 at commit `b500a2ee95134f81d74da7911d7378dd2853d042`. Redocly CLI 2.72.1 was verified against npm and annotated tag `@redocly/cli@2.72.1`, resolving to `d402413a1cba14680e5d7cc5038337b1b4cdc8bf`.
 
@@ -109,23 +131,26 @@ Alternatives were investigated. Kubb 5.15.3 has recent releases and a modular ge
 
 ## Plan of Work
 
+
 ### Milestone 1: Qualify schema fidelity and transport correctness
+
 
 Create `scripts/fixtures/openapi-typescript-client/` and `scripts/test-openapi-typescript-client.py --toolchain-only`. Work from temporary copies. Pin Orval 8.46.0 as a development dependency, Zod 4.6.7 as a runtime dependency, and Redocly CLI 2.72.1 as a development dependency. Use the shared TypeScript 7.0.2 compiler, not a local compiler executable. Record a qualified fixture Bun lock separately from consumer locks.
 
 The primary fixture is OpenAPI 3.1 with `GET /widgets/{id}` and `POST /widgets`, explicit success/error JSON bodies, a required path parameter, required body fields, and a local referenced component. Include an OpenAPI 3.0 equivalent. Additional fixtures must exercise required versus optional versus nullable fields; explicit `undefined` with exact optional properties; closed and open objects; enum/literal values; tagged unions; overlapping `oneOf` versus inclusive `anyOf`; `allOf`; recursive/local references; request read-only and response write-only exclusions; and separate response shapes for 200, 201, 404, and 422. A tagged union uses a literal field to distinguish the possible object shapes. Keep dates as wire strings and disable coercion/renaming that would claim a different shape without transforming the actual value.
 
-Use `redocly.yaml` extending `spec` and explicit operation/parameter uniqueness errors. Independently test malformed structure, unresolved references, missing required path declarations, and duplicate operation IDs. Orval config must emit operation functions/types and per-operation/per-status validators into `src/generated/`. Inspect its installed public option types before selecting configuration. Initial codegen can use `client: 'fetch'`, Zod model output, `override.fetch.useRuntimeFetcher`, and factory injection; `override.title` is a function, not a string. Keep formatter hooks disabled for deterministic `--outdated` behavior.
+Use `redocly.yaml` extending `spec` and explicit operation/parameter uniqueness errors. Independently test malformed structure, unresolved references, missing required path declarations, and duplicate operation IDs. Orval config must emit operation functions/types and per-operation/per-status validators into `src/generated/`. Inspect its installed public option types before selecting configuration. For the release-specific API, `mori://orval-labs/orval` project-relative `orval/packages/core/src/types.ts` (source-file URI pending) exposes `override.fetch.httpClientInjection: 'factory'`, `override.zod.generateXor: true`, and `override.zod.exactOptional: true`. Qualify these options with pinned Zod 4 rather than relying on their defaults. Initial codegen can use `client: 'fetch'`, Zod model output, `override.fetch.useRuntimeFetcher`, and factory injection; `override.title` is a function, not a string. Keep formatter hooks disabled for deterministic `--outdated` behavior.
 
 Reproduce the valid-404 failure from Surprises & Discoveries, then qualify the transport fix before accepting this milestone. Prefer ordinary generated Zod operation/status schemas plus a small owned dispatcher, using an explicit generated registry keyed by operation, method/path, status, and content type. Select the actual response schema, validate untrusted data, and only then return the declared response union. A custom fetch/mutator must retain validation; injecting a transport must never bypass it. Generate registry entries deterministically from the same document/configuration, with compiler-checked references to generated validators. Avoid global mutable base URLs. If a different public Orval configuration resolves the failure, prove the same acceptance before preferring it over custom glue. An upstream patch or broader custom generator needs a recorded design decision.
 
-Test valid success and error bodies, malformed success and error bodies, unsupported statuses/media types, empty responses, and declared JSON primitive/array responses. Handle a declared empty response without inventing a JSON body; reject an undeclared status or unsupported typed media path clearly. Do not silently turn unsupported schema constraints into accepting validators. Document the supported subset and produce a generation diagnostic for constraints whose semantics are not preserved. For `oneOf`, accepting an input that matches two branches is a failure. For `additionalProperties: false`, silently stripping forbidden properties is not sufficient. Validation of an open object must retain its allowed properties.
+Test valid success and error bodies, malformed success and error bodies, unsupported statuses/media types, empty responses, and declared JSON primitive/array responses. Handle a declared empty response without inventing a JSON body; reject an undeclared status or unsupported typed media path clearly. Do not silently turn unsupported schema constraints into accepting validators. Document the supported subset and fail generation with a source-location diagnostic for constraints whose semantics are not preserved; a warning followed by usable but unsound output is not acceptance. Keep the required fixture cases above mandatory. Diagnostics cover additional unsupported constructs, not an escape from those cases. Define treatment of response ranges/default responses, non-JSON media, remote references, and unrecognized validation keywords in the qualification report; reject any unimplemented case before replacing existing generated files. For `oneOf`, accepting an input that matches two branches is a failure. For `additionalProperties: false`, silently stripping forbidden properties is not sufficient. Validation of an open object must retain its allowed properties.
 
 Use positive and negative TypeScript assertions that prove actual type safety, not snapshots alone. Missing required parameters, wrong body fields, invalid enum values, improper nullability, and access to the wrong status branch must fail checking. Generated validators' input/output types must agree with exported client models in both assignability directions for the supported cases. Verify declarations and a valid response at runtime, so an `any` or broad cast cannot make a weak type test pass. Record limitations rather than calling a generator universally correct.
 
-Generate twice with byte-identical output. `orval --config orval.config.ts --outdated` must return zero unchanged and nonzero for missing/stale output, leaving existing bytes unchanged. The harness prints `OpenAPI client toolchain passed.` only when schema, type, transport, and freshness criteria pass. Stop before template expansion if they do not; record the concrete failure and remedy. This milestone explicitly permits prototyping a small adapter, not changing the supported TypeScript floor or weakening correctness.
+Include the packed Node consumer proof from milestone 3 in this bounded prototype before expanding templates; declaration and runtime integration can invalidate the adapter design. Generate twice with byte-identical output. `orval --config orval.config.ts --outdated` must return zero unchanged and nonzero for missing/stale output, leaving existing bytes unchanged. Configure cleaning only for Orval-owned output so removed operations/models are reported as obsolete; test a schema deletion as well as a schema addition. The harness prints `OpenAPI client toolchain passed.` only when schema, type, transport, and freshness criteria pass. Stop before template expansion if they do not; record the concrete failure and remedy. This milestone explicitly permits prototyping a small adapter, not changing the supported TypeScript floor or weakening correctness.
 
 ### Milestone 2: Compose with the shared Bun shell
+
 
 Add optional `nix.package-module` to `modules/typescript/nix-bun-flake/module.dhall`, following the existing Haskell base's validated relative `.nix` path convention. Add the conditional import to `files/flake.nix.tpl` before the unmanaged extension. Rename `files/envrc` to `files/envrc.tpl`, change the step to `template`, and watch the configured import while preserving all existing environment behavior. Bump the base from 0.4.0 to 0.5.0 without refreshing inputs, archives, or its canonical lock.
 
@@ -139,15 +164,16 @@ Implement `--render-only` to prove real generation and ownership behavior withou
 
 ### Milestone 3: Deliver the typed package workflow
 
+
 Templates live in `modules/typescript/openapi-typescript-client/files/`. The package is initially private, named from `project.name`, version 0.1.0, and `type: module`. Declare `types: ./dist/index.d.ts`, a `.` export with `types` before `import`, and publishable files restricted to `dist`. Keep Zod as a runtime dependency and Orval/Redocly as development dependencies. Do not retain `openapi-typescript` or `openapi-fetch` dependencies.
 
 Expose project-owned `make({ baseUrl, fetch?, headers? })`, returning an instance with named generated operations. `Api` is its inferred client type. Export generated models and operation request/response types; retire `paths`, `components`, and `Schema` exports tied to the old generator. Use the factory/adapter qualified in milestone 1, keeping per-instance configuration isolated. Operations return the qualified status-discriminated envelope. Transport errors, invalid JSON, invalid payloads, and unsupported statuses are distinguishable from a valid declared HTTP error response.
 
 Use the shared TypeScript 7 compiler with `strict`, `exactOptionalPropertyTypes`, and `noUncheckedIndexedAccess`. Include source/tests in checking and source only in emission to `dist/`. A compiler-version check used by typecheck/build must reject versions below 7, print the selected executable/version, and download nothing. Private generator TypeScript 6 packages are allowed but must not shadow this compiler when package scripts prepend `node_modules/.bin`. Prefer direct shell `tsc` through the task runner or a Nix-owned named wrapper when needed. The independent consumer must also use 7.0.2. Do not expose a supported older-compiler path.
 
-Qualify emitted ESM under Node, not only Bun's more permissive module resolver. Orval's multi-file probe emitted extensionless directory imports; solve this with supported generator configuration or deterministic generation-time module-specifier handling covered by freshness checks. Authored source uses explicit `.js` imports. Never ship output that passes Bundler resolution but cannot load in the promised Node runtime. No declaration bundling plugin is required.
+Qualify emitted ESM under Node, not only Bun's more permissive module resolver. Orval's multi-file probe emitted extensionless directory imports; solve this with supported generator configuration, or a two-stage output layout: untouched Orval files in `src/generated/raw/` and deterministic Node-compatible copies plus registry in `src/generated/client/`. If the latter is needed, exclude raw files from TypeScript checking/emission and public exports; normalize internal imports in the client copies, and compare the complete expected client tree in memory during freshness checks. Never rewrite the raw tree and then compare it with raw Orval output. Authored source uses explicit `.js` imports. Never ship output that passes Bundler resolution but cannot load in the promised Node runtime. No declaration bundling plugin is required.
 
-Provide package scripts for schema validation, generation, freshness, typecheck, tests, emission/build, lint, format, and format-check, with corresponding `just` tasks `install`, `validate-schema`, `generate`, `generated-check`, `typecheck`, `test`, `build`, `lint`, `format`, `format-check`, and `check`. Validate the schema before generation. `generated-check` validates and invokes `--outdated`, never regenerating first. `check` runs freshness before any build that could repair output. If a registry/import-normalization helper follows Orval, its read-only comparison is part of freshness too; skip no generated files. Exclude generated files from independent Oxc rewrites and check only authored formatting. Never configure hooks/formatting that make `--outdated` inapplicable and then bypass freshness.
+Provide package scripts for schema validation, generation, freshness, typecheck, tests, emission/build, lint, format, and format-check, with corresponding `just` tasks `install`, `validate-schema`, `generate`, `generated-check`, `typecheck`, `test`, `build`, `lint`, `format`, `format-check`, and `check`. Validate the schema before generation. `generated-check` validates and invokes `--outdated`, never regenerating first. `check` runs freshness before any build that could repair output. If a registry/import-normalization helper follows Orval, its read-only comparison is part of freshness too; skip no generated files. Compare path sets and bytes, including missing and obsolete helper artifacts. Resolve configuration/schema paths consistently in generation and checking, and test that failed validation/checking leaves both trees unchanged. Exclude generated files from independent Oxc rewrites and check only authored formatting. Never configure hooks/formatting that make `--outdated` inapplicable and then bypass freshness.
 
 Run generated operations against a loopback Bun server on an allocated port and close it in `finally`. Prove URL/path/query/header/body serialization, success/error typing and decoding, invalid response rejection, and isolation between two client configurations. Exercise encoded path values and query array/object styles present in the fixture rather than assuming template interpolation is correct. Include negative compiler assertions, each required to fail if its expected error disappears.
 
@@ -155,23 +181,28 @@ Build and pack with `npm pack --ignore-scripts` into a temporary consumer. Impor
 
 ### Milestone 4: Publish catalog metadata and durable documentation
 
+
 Update `seihou-registry.dhall`, `mori.dhall`, `README.md`, and the new module README with matching dependency relationships and versions. Explain supported schema behavior, task commands, project ownership, TypeScript 7+ support, permitted private generator API dependencies, named operations, validation errors, and packaging. Explicitly distinguish source-schema linting from payload validation, and document unsupported schema/media features as diagnosed limitations.
 
-Extend the harness to default YAML and nested JSON/local references, both OpenAPI versions, invalid schema/path inputs, missing/stale output, edited/deleted seeds, repeated updates/force/removal, an unmanaged extension, and independent package consumption. Removing the client preserves seeds and generated project artifacts and keeps a base still required by another module. Use actual CLI previews/operations and inspect current help before choosing update/removal flags.
+Extend the harness to default YAML and nested JSON/local references, both OpenAPI versions, invalid schema/path inputs, missing/stale output, edited/deleted seeds, repeated updates/force/removal, an unmanaged extension, and independent package consumption. Removing the client preserves seeds and generated project artifacts and keeps a base still required by another module. After removal, verify the surviving base no longer imports or watches the removed managed client Nix file and its development shell still evaluates. Also test last-root removal: inherited base removal steps must not delete child seeds. If current dependency rebinding/ownership behavior fails, record the exact failure and fix the composition before acceptance; preserving files alone is insufficient. Use actual CLI previews/operations and inspect current help before choosing update/removal flags.
 
 Run the existing Bun/Fumadocs regressions after the base change, synchronize registry versions, and regenerate `okf-docs/`. Inspect incidental registry drift instead of releasing unrelated changes. Distill the managed Bun import seam and client correctness/ownership contract into ordinary Markdown ADRs at completion, updating ADR 3 where appropriate. Keep provisional findings in this plan until they become accepted architecture.
 
 
 ## Concrete Steps
 
+
 Use the repository root, `/Users/shinzui/Keikaku/bokuno/seihou-modules` on the planning machine. Required tools are Git, Mori, Python 3, Bun, Nix with flakes, the shared TypeScript 7.0.2 compiler, Node >=22.18.0, and Seihou >=0.11.0.0. Upgrade an older Seihou through the repository's normal installation process before seed acceptance. Copy the existing published seed-capable schema pin/hash from `modules/haskell/haskell-library/module.dhall`. Never traverse the filesystem root or `/nix/store` for sources.
 
-Discover dependencies before guessing APIs. Current replacement projects are absent from Mori, so inspect their authoritative sources when lookup has no match:
+Discover dependencies before guessing APIs. Orval is now registered; use its local source for orientation and the exact upstream release for pin-specific claims. Fall back to authoritative upstream sources when lookup has no match:
 
 ```bash
 seihou --version
 tsc --version
 mori registry search orval
+mori registry show orval-labs/orval --full
+mori registry docs orval-labs/orval
+mori path mori://orval-labs/orval/repos/orval
 mori registry search zod
 mori registry search openapi
 mori path mori://tan/mls-service-v2-ts-client/packages/mls-service-v2-ts-client
@@ -237,6 +268,7 @@ The package contains loadable ESM, declarations, validators, and declared runtim
 
 ## Validation and Acceptance
 
+
 The first release is gated by schema fidelity and transport behavior, not a compilation-only smoke test. The primary 3.0/3.1 fixtures must pass all required/optional/nullability, union/composition, object openness, directional-property, local-reference, and status-specific cases. TypeScript positive/negative assertions must remain strict under 7.0.2. Compare supported validator semantics against the source schema, including deliberately invalid counterexamples; unsupported semantics require diagnostics instead of silent widening. This is a defined supported subset, not a guarantee of arbitrary OpenAPI/JSON Schema equivalence.
 
 Valid 200 and 404 JSON responses both succeed with their own validators; malformed bodies of either status are rejected before typed data reaches the caller. Undeclared statuses, invalid JSON, empty responses, and content-type selection have explicit tested behavior. Custom transport injection preserves validation and per-client configuration. Test the valid-404 case that failed the research probe as a regression. Primitive/array and error validation must not disappear behind the built-in client's documented bypasses. Avoid numeric/date coercion that accepts a payload of the wrong wire type.
@@ -250,14 +282,16 @@ Real Seihou generation preserves the canonical lock and unmanaged extension. Edi
 
 ## Idempotence and Recovery
 
+
 Use temporary project-local module copies and consumers for automated checks. Installation and generation are explicit commands, not Nix shell hooks or module side effects. A fixture lock is separate from the consuming project's own `bun.lock`; frozen installation is demonstrated after the project creates its lock. Apply any needed Bun release-age override only to the temporary invocation, never global settings.
 
-`generated-check`, compiler checks, and style checks do not mutate source. Regeneration only changes `src/generated/` and any explicitly declared generated registry artifact; preserve project transport/facade code. If cleanup is needed, restrict it to owned generated output or `dist/`, with source inputs loaded before cleaning. Keep generated files out of unrelated formatter rewrites. Tests close local servers in `finally` and allocate free ports.
+`generated-check`, compiler checks, and style checks do not mutate source. Regeneration only changes `src/generated/` and any explicitly declared generated registry artifact; validate inputs and supported semantics before replacing the existing generated tree; preserve project transport/facade code. If cleanup is needed, restrict it to owned generated output or `dist/`, with source inputs loaded before cleaning. Keep generated files out of unrelated formatter rewrites. Tests close local servers in `finally` and allocate free ports.
 
 Do not edit manifests to invent ownership acceptance or force copies over authored conflicts. Revert only this work when abandoning a prototype, preserving unrelated changes. Implementation commits use Conventional Commits and include `ExecPlan: docs/plans/11-add-a-bun-based-openapi-typescript-client-module.md`. No Intention trailer is active because the user selected Skip. Triage implementation friction and distill accepted durable decisions into ADRs at completion.
 
 
 ## Interfaces and Dependencies
+
 
 The module is `modules/typescript/openapi-typescript-client/` with `module.dhall`, `README.md`, and the described `files/` templates. It depends on base 0.5.0 prepared here, binding optional `nix.package-module` to `nix/openapi-typescript-client.nix`. Share `project.name` and `project.description`; accept a validated local `openapi.schema`, default `openapi.yaml`. Generate source/validators under `src/generated/`.
 
@@ -268,3 +302,8 @@ The source facade provides `make(options)` with a required base URL and optional
 Seihou >=0.11.0.0 is a prerequisite for seed ownership. Its owner is `mori://shinzui/seihou`; the descriptor schema owner is `mori://shinzui/seihou-schema/packages/seihou-schema`. Use the existing library scaffold's published schema hash. This plan has no parent MasterPlan and no prerequisite feature plan.
 
 Revision note (2026-11-01): Replaced the original generator stack with proposed Orval after maintenance research and the user's preference. Prioritized type/schema fidelity and runtime response correctness; retained the observed valid-404 failure as an explicit qualification gate. The user clarified that private generator TypeScript 6 dependencies are allowed while project builds and consumers support TypeScript 7+ only. Earlier proposed legacy project compiler fallbacks and a blanket ban on private older APIs are superseded.
+
+
+Revision note (2026-11-01, review/update): Corrected Mori registration and installed Seihou facts; verified release pins against npm/upstream tags and inspected the pinned fetch generator/types. Resolved the conflict between raw Orval freshness and import normalization with an explicit two-stage fallback, required obsolete-file detection and early package consumption, made unsupported semantics fatal, and added surviving-shell/last-root removal acceptance. No implementation milestone is complete.
+
+Review validation (2026-11-01): The original author and both prior revisions are recorded as `gpt-6.1-sol`; no earlier review entry existed. The revised plan is ready for the bounded milestone-1 prototype, not evidence that Orval's complete correctness contract has passed. ADRs 2, 3, and 6 resolve and match the ownership/extension constraints. Base descriptor and registry validation pass. `python3 scripts/update-nix-bun-flake.py --check` passes: exact archive hashes, four identical feature-toggle locks, and shell evaluation on all three supported systems. Plan section/fence/local-link checks and `git diff --check` pass. The new harness does not exist yet; no new-client acceptance or full Fumadocs regression was run during this documentation review. npm and upstream tags confirm Orval 8.46.0, Zod 4.6.7, and Redocly CLI 2.72.1. The earlier runtime probe is retained as historical evidence, not rerun or promoted to acceptance by this review.
