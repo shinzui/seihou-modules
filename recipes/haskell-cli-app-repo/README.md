@@ -149,6 +149,25 @@ seihou run haskell-cli-app-repo --dry-run \
   --var project.namespace=AcmeTool
 ```
 
+## Extending this recipe
+
+A compatible Seihou release can specialize this recipe through one `extends`
+reference without copying its module list. The versioned real example is
+[haskell-cli-app-with-agents](mori://shinzui/agent-seihou/templates/haskell-cli-app-with-agents):
+it adds agent ignore rules and overrides an inherited GitHub owner binding.
+The base's first member, `haskell-cli-app`, remains primary.
+
+```sh
+seihou install https://github.com/shinzui/agent-seihou.git --module haskell-cli-app-with-agents
+seihou run haskell-cli-app-with-agents
+```
+
+Use [Seihou](mori://shinzui/seihou) 0.14.0.0 or newer for recipe inheritance. Install acquires the base
+and all members automatically. Existing applications use
+`seihou update haskell-cli-app-with-agents` for compatible base changes and
+fresh-clone cache restoration; no separate member installation is needed.
+The child accepts base versions in `[0.1.0, 0.2.0)` at default-branch HEAD.
+
 ## See Also
 
 - `recipe.dhall` — full recipe definition and authoritative source
