@@ -103,7 +103,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "haskell-keiro-project"
-        , version = Some "0.3.0"
+        , version = Some "0.4.1"
         , description = Some
             "Six-package Keiro seed with project-named workspace, injected probes, derived OpenAPI, Hurl/Hinagata testing, and optional initial Mori inventory"
         , modulePath = "modules/haskell/haskell-keiro-project"

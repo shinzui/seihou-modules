@@ -57,7 +57,9 @@ Use `domain/{{project.name}}.keiro-workspace` as the single command target. Pres
 `module {{project.namespace}}`, `layout collocated`, and `runtime-package {{project.name}}-core`.
 Keep shared declarations in `domain/{{project.name}}/shared.keiro`; each aggregate has one complete
 member in the same directory, registered once by a manifest-relative `spec` clause. All members
-share the same context and explicit language contract (the seed uses stable Language 5).
+share the same context and explicit Language 6 contract. Preserve the Language 6 preamble
+and the generated `--min-language 6` gate when adding members; do not copy Language 5
+examples into a new workspace without adapting them to Language 6.
 
 Choose domain newtypes and meaningful TypeID prefixes from the standard. Specify nominal bindings,
 wire values, commands, events, transitions, rejection behavior, read models, and operations using

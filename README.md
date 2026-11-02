@@ -66,7 +66,7 @@ commands, and an optional removal procedure.
 | [`nix-haskell-flake`](modules/haskell/nix-haskell-flake) | 0.37.0 | flake-parts Nix dev shell on the `haskell-nix-dev` base flake, with exact managed locks, an optional managed package-module seam, pinned nix2container service images, and toggleable local services/formatting/hooks |
 | [`haskell-library`](modules/haskell/haskell-library) | 0.3.0 | Single-package Haskell library on GHC 9.12 / GHC2024, `lens` + `generic-lens`, BSD-3, optional `tasty` suite |
 | [`haskell-cli-app`](modules/haskell/haskell-cli-app) | 0.4.0 | Tested two-package CLI with real core integration, GHC 9.12.4/9.14.1 shells, valid package metadata, and working Nix package/check outputs |
-| [`haskell-keiro-project`](modules/haskell/haskell-keiro-project) | 0.3.0 | Six-package Keiro seed, project-named workspace, injected probes, OpenAPI, Hurl/Hinagata testing, optional Mori inventory |
+| [`haskell-keiro-project`](modules/haskell/haskell-keiro-project) | 0.4.1 | Six-package Keiro Language 6 seed, project-named workspace, injected probes, OpenAPI, Hurl/Hinagata testing, optional Mori inventory |
 | [`git-init`](modules/git/git-init) | 0.2.0 | `git init -b master`, seed `.gitignore`, optional private GitHub repo via `gh repo create`, optional org-team access grant |
 | [`repo-dir`](modules/git/repo-dir) | 0.1.0 | Create `<parentDir>/<name>` and run `git-init` inside it with a matching GitHub repo; owner from the active context's `git.githubOwner` |
 | [`nix-bun-flake`](modules/typescript/nix-bun-flake) | 0.5.0 | Nix flake for Bun + TypeScript: oxlint, oxfmt, `just`, optional git-hooks.nix and pinned bun2nix builds |
@@ -165,7 +165,8 @@ promise; the bundle itself stays OKF-conformant regardless.
 - `scripts/check-keiro-bootstrap.py` — renders `haskell-keiro-project` into
   throwaway directories and asserts the six-package layout, idempotent
   regeneration, user-edit protection, and that the registry and Mori descriptors
-  still evaluate.
+  still evaluate. Set `KEIRO_DSL_BIN` to an actual Keiro DSL executable to also
+  exercise the generated Language 6 check and rejection of a Language 5 downgrade.
 
 ## Conventions
 

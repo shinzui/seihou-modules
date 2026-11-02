@@ -1,4 +1,4 @@
-language keiro-dsl 5
+language keiro-dsl 6
 context {{#if IsSet keiro.context}}{{keiro.context}}{{#else}}{{project.name}}{{/if}}
 
 # Add shared declarations here. Each aggregate belongs in its own complete

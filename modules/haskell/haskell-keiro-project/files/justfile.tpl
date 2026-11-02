@@ -22,7 +22,7 @@ create-database:
 
 keiro-check:
     mkdir -p .artifacts
-    .bin/keiro-dsl check domain/{{project.name}}.keiro-workspace --min-language 5 --deny-warnings --coverage-report .artifacts/keiro-coverage.json --report-out .artifacts/keiro-check.json
+    .bin/keiro-dsl check domain/{{project.name}}.keiro-workspace --min-language 6 --deny-warnings --coverage-report .artifacts/keiro-coverage.json --report-out .artifacts/keiro-check.json
 
 keiro-scaffold: keiro-check
     .bin/keiro-dsl scaffold domain/{{project.name}}.keiro-workspace --out {{project.name}}-core/src --runtime-package {{project.name}}-core --goldens domain/golden-payloads

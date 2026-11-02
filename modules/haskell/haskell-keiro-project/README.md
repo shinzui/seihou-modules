@@ -16,6 +16,10 @@ and Hackage index-state. Metadata defaults can be reviewed with `--confirm-defau
 with `domain/<name>/shared.keiro`. Optional `keiro.context` changes only the logical DSL
 context; no second naming prompt is required. Names use lowercase letters, digits and hyphens.
 The shared-only DSL seed is a place to author real members before scaffolding business code.
+Fresh members declare `language keiro-dsl 6`, and `just keiro-check` enforces
+`--min-language 6 --deny-warnings`. All workspace members must use Language 6.
+Existing shared members, justfiles and implementation briefs are project-owned seeds:
+updating this module preserves them, so review and align their language contract explicitly.
 
 An optional question offers an initial `mori.dhall`. Empty input or `mori.generate=false`
 skips it; true asks for the separate Mori organization/user namespace (`mori.namespace`).

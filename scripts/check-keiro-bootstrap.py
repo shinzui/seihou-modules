@@ -24,6 +24,31 @@ def snapshot(project):
     return {str(p.relative_to(project)): hashlib.sha256(p.read_bytes()).hexdigest()
             for p in project.rglob('*') if p.is_file() and '.seihou' not in p.parts}
 
+
+def check_language_contract(project, name):
+    """New sources pass the generated gate; a Language 5 downgrade must not."""
+    member = project / f'domain/{name}/shared.keiro'
+    original = member.read_text()
+    assert original.splitlines()[0] == 'language keiro-dsl 6', original
+    dry_run = run(['just', '--dry-run', 'keiro-check'], project)
+    assert '--min-language 6 --deny-warnings' in dry_run.stdout + dry_run.stderr
+
+    tool = os.environ.get('KEIRO_DSL_BIN')
+    if not tool:
+        return
+    binary = project / '.bin/keiro-dsl'
+    binary.parent.mkdir()
+    binary.symlink_to(Path(tool).resolve())
+    run(['just', 'keiro-check'], project)
+    try:
+        member.write_text(original.replace('language keiro-dsl 6', 'language keiro-dsl 5', 1))
+        rejected = run(['just', 'keiro-check'], project, success=False)
+        assert rejected.returncode != 0, 'Generated gate accepted a Language 5 source'
+        assert 'minimum' in (rejected.stdout + rejected.stderr).lower()
+    finally:
+        member.write_text(original)
+    run(['just', 'keiro-check'], project)
+
 def render(name="sample-service", namespace="SampleService", apply=True, **overrides):
     project = Path(tempfile.mkdtemp(prefix='seihou-keiro-bootstrap-'))
     modules = project / '.seihou/modules'
@@ -245,6 +270,7 @@ def main():
         run(['just', '--list'], project)
         just_dump = run(['just', '--dump'], project).stdout
         assert 'create-database:' in just_dump and f'domain/{name}.keiro-workspace' in just_dump
+        check_language_contract(project, name)
         for path in [project / 'README.md', project / 'docs/bootstrap-keiro.md', project / 'justfile']:
             assert '{{' not in path.read_text(), path
         # Exercise the process-compose entry point without touching a live database.

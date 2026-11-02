@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "haskell-keiro-project"
-    , version = Some "0.4.0"
+    , version = Some "0.4.1"
     , description = Some
         "Six-package Keiro seed with project-named domain paths, injected servant-health probes, OpenAPI generation, Hurl/Hinagata test setup, and optional initial Mori inventory on nix-haskell-flake. The blueprint implements the domain."
     , vars =

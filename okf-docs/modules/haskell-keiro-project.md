@@ -12,14 +12,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.15.0.0
-version: 0.4.0
+version: 0.4.1
 ---
 
 # haskell-keiro-project
 
 Six-package Keiro bootstrap with project-owned domain/API/test starters (Seihou 0.11.0.0+), OpenAPI, optional Mori inventory and managed Nix/test tooling
 
-**Version:** 0.4.0
+**Version:** 0.4.1
 
 ## Dependencies
 
