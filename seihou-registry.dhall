@@ -62,7 +62,7 @@
     , tags = [ "typescript", "fumadocs", "docs", "mermaid", "vite", "tanstack", "openapi" ]
     }
   , { name = "openapi-typescript-client-dir"
-    , version = Some "0.1.0"
+    , version = Some "0.1.1"
     , path = "modules/typescript/openapi-typescript-client-dir"
     , description = Some "Create a new client directory and compose openapi-typescript-client with git-init inside it, including GitHub creation under a configurable owner"
     , tags = [ "typescript", "openapi", "client", "git", "github", "bootstrap" ]
@@ -88,7 +88,7 @@
     , tags = [ "git", "github", "bootstrap", "context" ]
     }
   , { name = "openapi-typescript-client-repo"
-    , version = Some "0.1.0"
+    , version = Some "0.1.1"
     , path = "recipes/openapi-typescript-client-repo"
     , description = Some "Create a folder, scaffold an OpenAPI TypeScript client, and push its initial commit to a matching GitHub repository under git.githubOwner"
     , tags = [ "typescript", "openapi", "client", "git", "github", "bootstrap", "context" ]

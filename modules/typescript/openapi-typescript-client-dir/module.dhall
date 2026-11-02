@@ -4,10 +4,14 @@ let S =
 
 in S.Module::{
     , name = "openapi-typescript-client-dir"
-    , version = Some "0.1.0"
+    , version = Some "0.1.1"
     , description = Some "Create a new client folder and run openapi-typescript-client with git-init inside it, including GitHub creation under a configurable owner."
     , vars =
       [ S.VarDecl::{
+        , name = "repo.postCreateScript", type = "text", required = False
+        , description = Some "Optional Python script in the invocation directory, run after successful repository creation."
+        }
+      , S.VarDecl::{
         , name = "repo.parentDir", type = "text", required = True
         , description = Some "Parent directory for the new client folder; a leading ~ is expanded."
         , default = Some "."
@@ -89,6 +93,7 @@ in S.Module::{
       ]
     , steps =
       [ S.Step::{ strategy = "copy", src = "create-client-repo.py", dest = ".seihou/openapi-typescript-client-dir/create-client-repo.py" }
+      , S.Step::{ strategy = "template", src = "repo.postCreateScript.conf.tpl", dest = ".seihou/openapi-typescript-client-dir/repo.postCreateScript.conf" }
       , S.Step::{ strategy = "template", src = "repo.parentDir.conf.tpl", dest = ".seihou/openapi-typescript-client-dir/repo.parentDir.conf" }
       , S.Step::{ strategy = "template", src = "project.name.conf.tpl", dest = ".seihou/openapi-typescript-client-dir/project.name.conf" }
       , S.Step::{ strategy = "template", src = "project.description.conf.tpl", dest = ".seihou/openapi-typescript-client-dir/project.description.conf" }

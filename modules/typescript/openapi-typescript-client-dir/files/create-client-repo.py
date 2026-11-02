@@ -15,6 +15,11 @@ def main():
             values[path.stem] = value
 
     name = values['project.name']
+    post_create = values.pop('repo.postCreateScript', None)
+    if post_create:
+        post_create = Path(post_create).expanduser().absolute()
+        if not post_create.is_file():
+            raise ValueError(f'Post-creation script does not exist: {post_create}')
     if values['mori.generate'] == 'true':
         for key in ['mori.namespace', 'mori.source-namespace', 'mori.source-project']:
             if not values.get(key):
@@ -33,6 +38,8 @@ def main():
     for key, value in values.items():
         args.extend(['--var', f'{key}={value}'])
     subprocess.run(args, cwd=target, check=True)
+    if post_create:
+        subprocess.run([sys.executable, str(post_create)], check=True)
     print(f'Created {target} -> https://github.com/{values["git.githubOwner"]}/{name}')
 
 

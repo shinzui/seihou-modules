@@ -1,6 +1,6 @@
 # openapi-typescript-client-dir
 
-**Version:** `0.1.0`
+**Version:** `0.1.1`
 
 Directory-creation wrapper for the
 [`openapi-typescript-client-repo`](../../../recipes/openapi-typescript-client-repo)
@@ -16,6 +16,7 @@ which would generate their files in the invocation directory.
 | Variable | Default | Purpose |
 |---|---|---|
 | `repo.parentDir` | `.` | Parent directory; relative to invocation directory, leading `~` expanded |
+| `repo.postCreateScript` | unset | Python script run from the invocation directory after successful creation and push |
 | `project.name` | required | Folder, package and GitHub repo name; lowercase letters, digits and hyphens, starting with a letter |
 | `project.description` | required | One-line client description |
 | `git.githubOwner` | required | GitHub user or organization; CLI, context or global config, or prompt |
@@ -36,6 +37,11 @@ and quotes in directory names without shell interpolation. The wrapper refuses
 nonempty targets and symlinks. It always requests an initial commit and GitHub
 creation with a matching repository name. The module seeds `openapi.yaml`; schema
 replacement and client generation follow the generated project's README.
+
+Extending recipes can stage a Python script and bind `repo.postCreateScript` to
+its path. The wrapper validates the script before creating the target and runs it
+only after the nested client/Git invocation succeeds. Script failures propagate;
+the created repository is retained for inspection and recovery.
 
 The wrapper and its configuration are recorded in the invocation directory;
 the nested run records the client, its Nix dependency and `git-init` in the new

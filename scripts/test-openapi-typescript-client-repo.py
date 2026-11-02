@@ -108,6 +108,27 @@ if sys.argv[1:3] == ['repo', 'create']:
                            ['--var', 'git.githubOwner=example-owner', '--var', f'{key}={value}'], False)
             assert 'validation' in output.lower() or 'invalid' in output.lower()
             assert not (work / ('invalid-' + key) / 'invalid-client').exists()
+
+        # Post-creation hooks run from the invocation directory after the initial push.
+        hook = work / "post-create's $(touch should-not-exist).py"
+        hook.write_text('''from pathlib import Path
+assert Path('hook-client/.git').is_dir()
+Path('hook-ran').write_text('yes')
+''')
+        invocation = work / 'hook'
+        apply(invocation, 'hook-client', ['--var', 'git.githubOwner=example-owner',
+              '--var', f'repo.postCreateScript={hook}'])
+        assert (invocation / 'hook-ran').read_text() == 'yes'
+        assert not (invocation / 'should-not-exist').exists()
+        calls_before = len((work / 'gh.jsonl').read_text().splitlines())
+        apply(work / 'missing-hook', 'missing-client',
+              ['--var', 'git.githubOwner=example-owner', '--var', 'repo.postCreateScript=absent.py'], False)
+        assert not (work / 'missing-hook/missing-client').exists()
+        assert len((work / 'gh.jsonl').read_text().splitlines()) == calls_before
+        hook.write_text('raise SystemExit(17)\n')
+        apply(work / 'failed-hook', 'failed-client', ['--var', 'git.githubOwner=example-owner',
+              '--var', f'repo.postCreateScript={hook}'], False)
+        assert (work / 'failed-hook/failed-client/.git').exists()
         print('OpenAPI TypeScript client repo recipe passed (real Seihou/git, offline GitHub stub).')
 
 

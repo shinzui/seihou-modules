@@ -3,7 +3,7 @@
 Create `<repo.parentDir>/<project.name>`, generate an OpenAPI TypeScript client
 inside it, and create a matching GitHub repository under a configurable owner.
 
-**Version:** `0.1.0`
+**Version:** `0.1.1`
 
 ## Usage
 
@@ -40,6 +40,11 @@ seihou run openapi-typescript-client-repo --context work
 The selected owner is passed explicitly to `git-init` in the new directory.
 Optional `git.githubTeam` and `git.githubTeamPermission` settings grant an
 organization team access after the repository is created.
+
+An extending recipe may set `repo.postCreateScript` to a Python script staged in
+the invocation directory. The wrapper checks that it exists before creating the
+client, runs it from the invocation directory after successful creation and push,
+and propagates failure. Paths are passed as arguments, without shell evaluation.
 
 ## Composition and generated project
 
