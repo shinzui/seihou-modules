@@ -14,15 +14,15 @@ tags:
 - nix
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
-version: 0.2.0
+  by: seihou-okf-extension/0.13.0.0
+version: 0.2.1
 ---
 
 # openapi-typescript-client
 
 Reusable ESM TypeScript 7 client with Orval generation, status-specific Zod validation, and project-owned Bun workflows on nix-bun-flake
 
-**Version:** 0.2.0
+**Version:** 0.2.1
 
 ## Dependencies
 

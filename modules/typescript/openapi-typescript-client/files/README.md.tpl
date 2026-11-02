@@ -9,7 +9,10 @@ Generation is explicit. No dependencies or schemas are downloaded by entering th
 Custom schema paths must exist before `just generate`; only the default path gets an example.
 
 If this project includes a seeded `mori.dhall`, it records the client package and its
-OpenAPI source project using `apiSource`, with `specPath` set to `{{openapi.schema}}`.
+OpenAPI source project using `apiSource`. Declare the API and its spec path in the
+provider's Mori descriptor. Set `apiSource.api` to its declared API name if needed;
+an omitted name selects the provider's single API. The local generator input is
+configured separately through `{{openapi.schema}}`.
 Keep that project-owned inventory aligned with the client and run `mori validate`
 after editing it. Register the project with Mori separately when ready.
 

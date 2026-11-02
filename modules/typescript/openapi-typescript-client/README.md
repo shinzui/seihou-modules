@@ -1,6 +1,6 @@
 # openapi-typescript-client
 
-**Version:** `0.2.0` — depends on `nix-bun-flake` 0.5.0.
+**Version:** `0.2.1` — depends on `nix-bun-flake` 0.5.0.
 
 Requires [Seihou](mori://shinzui/seihou) >=0.15.0.0 for conditional removal and recorded-root retirement.
 Update to the published 0.15.0.0 release before applying this module.
@@ -37,11 +37,14 @@ The source values identify the provider's existing Mori project, independently o
 the client's namespace and name.
 
 The inventory declares a private TypeScript `Client` package, its Zod runtime
-dependency, and `apiSource` with a typed source-project reference and the configured
-`openapi.schema` path. It also records the provider as a project dependency. It does
-not claim the provider API as its own or register either project. Like the MLS
-example, the spec path points to the client's local schema copy. Only the existing
-README is listed as documentation; no GitHub repository or changelog is invented.
+dependency, and `apiSource` with a typed source-project reference. Declare the API
+and its spec path in the provider's Mori descriptor, and list the client among that
+API's consumers. The client resolves the provider's single API by default; set
+`apiSource.api` to its declared name when needed. `openapi.schema` configures the
+client's local generator input and is not a Mori source path. The inventory also
+records the provider as a project dependency. It does not claim the provider API
+as its own or register either project. Only the existing README is listed as
+documentation; no local checkout path, GitHub repository or changelog is invented.
 
 The descriptor is a project-owned seed: existing files, authored edits and intentional
 deletion survive reruns, forced updates, opt-out and module removal. Edit it as the

@@ -14,7 +14,7 @@ in Schema.Project::{
     , description = Some "{{project.name}} OpenAPI TypeScript client"
     , lifecycle = Schema.Lifecycle.Experimental
     }
-  , repos = [ Schema.Repo::{ name = "{{project.name}}", localPath = Some "." } ]
+  , repos = [ Schema.Repo::{ name = "{{project.name}}" } ]
   , packages = [ Schema.Package::{
     , name = "{{project.name}}"
     , type = Schema.PackageType.Client, language = Schema.Language.TypeScript
@@ -24,7 +24,6 @@ in Schema.Project::{
     , apiSource = Some Schema.ApiSource::{
       , project = "{{mori.source-namespace}}/{{mori.source-project}}"
       , projectRef = Some source
-      , specPath = Some "{{openapi.schema}}"
       }
     } ]
   , dependencies = [ "{{mori.source-namespace}}/{{mori.source-project}}" ]

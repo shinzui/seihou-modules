@@ -4,7 +4,7 @@ let S =
 
 in S.Module::{
     , name = "openapi-typescript-client"
-    , version = Some "0.2.0"
+    , version = Some "0.2.1"
     , description = Some "Generate a reusable ESM TypeScript 7 client with Orval, status-specific Zod response validation, strict schema qualification, and project-owned Bun workflows"
     , vars =
       [ S.VarDecl::{ name = "project.name", type = "text", required = True, validation = Some "[a-z][a-z0-9-]*" }

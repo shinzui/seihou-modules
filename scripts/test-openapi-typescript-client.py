@@ -291,7 +291,8 @@ def mori_render(work):
         assert source['project'] == 'provider/widgets-service'
         assert source['projectRef']['namespace'] == 'provider'
         assert source['projectRef']['name'] == 'widgets-service'
-        assert source['specPath'] == schema
+        assert source.get('specPath') is None, 'API source paths belong to the producer, not the local generator input'
+        assert all(repo.get('localPath') is None for repo in data['repos'])
         assert source.get('api') is None
         assert data['dependencies'] == ['provider/widgets-service']
         assert data['dependencyRefs'] == [source['projectRef']]
