@@ -14,15 +14,15 @@ tags:
 - devshell
 status: stable
 generated:
-  by: seihou-okf-extension/0.14.0.0
-version: 0.4.0
+  by: seihou-okf-extension/0.15.0.0
+version: 0.5.0
 ---
 
 # nix-bun-flake
 
 Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, optional git-hooks.nix pre-commit checks, and opt-in pinned bun2nix build helpers
 
-**Version:** 0.4.0
+**Version:** 0.5.0
 
 ## Dependencies
 
@@ -32,6 +32,8 @@ This module has no dependencies.
 
 - `project.name` — text, required, matching `[a-z][a-z0-9-]*`. Project name (used in flake description and package.json name)
 - `project.description` — text, required. One-line project description
+- `nix.package-module` — text, optional, matching `([A-Za-z0-9][A-Za-z0-9_-]*/)*[A-Za-z0-9][A-Za-z0-9_-]*[.]nix`. Optional project-relative managed flake-parts module, imported before the unmanaged flake.module.nix extension
+- `bun.starter-files` — boolean, required, default `true`. Generate the base package, TypeScript, Oxc and task-runner files; composing seed owners disable these outputs
 - `nix.bun2nix` — boolean, required, default `false`. Include the pinned bun2nix generator and build helpers (project build recipes remain user-owned)
 - `nix.pre-commit` — boolean, required, default `true`. Include pre-commit-hooks (git-hooks.nix) wiring oxlint and oxfmt --check as git hooks
 
@@ -58,12 +60,12 @@ This module has no dependencies.
 - `Copy` `nix/bun2nix-module.nix` → `nix/bun2nix-module.nix` — when `Eq nix.bun2nix true`
 - `Copy` `flake.module.nix.example` → `flake.module.nix.example`
 - `Copy` `flake.lock` → `flake.lock`
-- `Template` `package.json.tpl` → `package.json`
-- `Copy` `tsconfig.json` → `tsconfig.json`
-- `Copy` `oxlintrc.json` → `.oxlintrc.json`
-- `Copy` `oxfmtrc.json` → `.oxfmtrc.json`
-- `Copy` `justfile` → `justfile`
-- `Copy` `envrc` → `.envrc`
+- `Template` `package.json.tpl` → `package.json` — when `Eq bun.starter-files true`
+- `Copy` `tsconfig.json` → `tsconfig.json` — when `Eq bun.starter-files true`
+- `Copy` `oxlintrc.json` → `.oxlintrc.json` — when `Eq bun.starter-files true`
+- `Copy` `oxfmtrc.json` → `.oxfmtrc.json` — when `Eq bun.starter-files true`
+- `Copy` `justfile` → `justfile` — when `Eq bun.starter-files true`
+- `Template` `envrc.tpl` → `.envrc`
 - `Template` `gitignore-bun.tpl` → `.gitignore` (appends one line to a file another module owns, if absent)
 - `Template` `gitignore-precommit.tpl` → `.gitignore` (appends one line to a file another module owns, if absent) — when `Eq nix.pre-commit true`
 
@@ -78,9 +80,9 @@ This module has no dependencies.
 - delete `nix/bun2nix-package.nix`
 - delete `nix/bun2nix-module.nix`
 - delete `flake.module.nix.example`
-- delete `package.json`
-- delete `tsconfig.json`
-- delete `.oxlintrc.json`
-- delete `.oxfmtrc.json`
-- delete `justfile`
+- delete `package.json` — when `Eq bun.starter-files true`
+- delete `tsconfig.json` — when `Eq bun.starter-files true`
+- delete `.oxlintrc.json` — when `Eq bun.starter-files true`
+- delete `.oxfmtrc.json` — when `Eq bun.starter-files true`
+- delete `justfile` — when `Eq bun.starter-files true`
 - delete `.envrc`

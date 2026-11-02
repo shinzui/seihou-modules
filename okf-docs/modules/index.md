@@ -8,5 +8,6 @@
 - [haskell-library](haskell-library.md) - Single-package Haskell library with project-owned starters (Seihou 0.11.0.0+), optional tasty tests and a managed Nix dev shell
 - [nix-bun-flake](nix-bun-flake.md) - Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, optional git-hooks.nix pre-commit checks, and opt-in pinned bun2nix build helpers
 - [nix-haskell-flake](nix-haskell-flake.md) - Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, pinned nix2container service image support, local services, treefmt, and pre-commit hooks
+- [openapi-typescript-client](openapi-typescript-client.md) - Reusable ESM TypeScript 7 client with Orval generation, status-specific Zod validation, and project-owned Bun workflows on nix-bun-flake
 - [repo-dir](repo-dir.md) - Create <repo.parentDir>/<repo.name> and bootstrap it by running git-init inside it with a matching GitHub repo; the GitHub user or organization comes from git.githubOwner, so per-context config picks the owner
 

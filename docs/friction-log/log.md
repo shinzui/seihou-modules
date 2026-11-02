@@ -1,5 +1,9 @@
 # Bundle Update Log
 
+## 2026-11-02
+* **Update**: FRIC-8 accepted: Accepted explicit output ownership as the composition contract; publication of the conditional-removal runtime remains tracked by FRIC-9.
+* **Update**: FRIC-7 accepted: Accepted the owned compatibility adapter after semantic, compiler, HTTP and packed-consumer qualification.
+
 ## 2026-11-01
 * **Addition**: FRIC-9 records blocked interface friction with mori://shinzui/seihou: Seihou retirement retains bound base wiring and later deletes released seeds
 * **Addition**: FRIC-8 records detour interface friction with mori://shinzui/seihou: Seihou rejects managed base starters overlapping child seeds

@@ -8,7 +8,7 @@ tags:
 - seihou
 status: stable
 generated:
-  by: seihou-okf-extension/0.14.0.0
+  by: seihou-okf-extension/0.15.0.0
 ---
 
 # seihou-modules
@@ -27,6 +27,7 @@ Every artifact below is published by the `seihou-modules` registry and documente
 - [git-init](/modules/git-init.md)
 - [repo-dir](/modules/repo-dir.md)
 - [nix-bun-flake](/modules/nix-bun-flake.md)
+- [openapi-typescript-client](/modules/openapi-typescript-client.md)
 - [fumadocs](/modules/fumadocs.md)
 
 ## Recipes

@@ -59,6 +59,9 @@ client module leaves any surviving base shell valid. The user's unmanaged
 `bun.starter-files` defaults to true. A dependent module providing its own project
 seeds disables the base's five starter outputs and their matching removal steps.
 Mixed managed/seed destinations are rejected; overwrite order cannot establish
-ownership. Removal conditions use recorded instance inputs and require the new
-runtime/schema contract. Separate applications sharing a configured base must
-use identical dependency bindings; conflicting instances still fail safely.
+ownership. Accepted run/update settles removal conditions from typed inputs and
+records Boolean results per application instance. Removal reuses those results;
+flattened text or a shared module summary cannot recover the accepted decision.
+This requires the 0.15.0.0/schema-14 contract from `mori://shinzui/seihou`.
+Separate applications sharing a configured base must use identical dependency
+bindings; conflicting instances still fail safely.
