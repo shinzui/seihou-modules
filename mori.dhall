@@ -28,6 +28,23 @@ in  Schema.Project::{
       ]
     , templates =
       [ Schema.SeihouTemplate::{
+        , name = "openapi-typescript-client-dir"
+        , version = Some "0.1.0"
+        , description = Some "Create a new client directory and run openapi-typescript-client with git-init inside it under a configurable GitHub owner"
+        , modulePath = "modules/typescript/openapi-typescript-client-dir"
+        , tags = [ "typescript", "openapi", "client", "git", "github", "bootstrap" ]
+        , requiredVars = [ "repo.parentDir", "project.name", "project.description", "git.githubOwner", "git.githubVisibility", "git.defaultBranch", "nix.bun2nix" ]
+        }
+      , Schema.SeihouTemplate::{
+        , name = "openapi-typescript-client-repo"
+        , version = Some "0.1.0"
+        , description = Some "Create a folder and scaffold an OpenAPI TypeScript client with an initial commit and a matching GitHub repository under git.githubOwner"
+        , modulePath = "recipes/openapi-typescript-client-repo"
+        , tags = [ "typescript", "openapi", "client", "git", "github", "bootstrap", "context" ]
+        , dependencies = [ "openapi-typescript-client-dir" ]
+        , requiredVars = [ "project.name", "project.description", "git.githubOwner" ]
+        }
+      , Schema.SeihouTemplate::{
         , name = "gcp-kube-env"
         , version = Some "0.1.1"
         , description = Some "Checkout-local GCP project and Kubernetes context through direnv, with a private kubeconfig and a configurable env filename defaulting to .envrc.local"

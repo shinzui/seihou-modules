@@ -61,6 +61,12 @@
     , description = Some "Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, and optional OpenAPI reference pages"
     , tags = [ "typescript", "fumadocs", "docs", "mermaid", "vite", "tanstack", "openapi" ]
     }
+  , { name = "openapi-typescript-client-dir"
+    , version = Some "0.1.0"
+    , path = "modules/typescript/openapi-typescript-client-dir"
+    , description = Some "Create a new client directory and compose openapi-typescript-client with git-init inside it, including GitHub creation under a configurable owner"
+    , tags = [ "typescript", "openapi", "client", "git", "github", "bootstrap" ]
+    }
   ]
 , recipes =
   [ { name = "haskell-library-repo"
@@ -80,6 +86,12 @@
     , path = "recipes/github-repo"
     , description = Some "Prompt for a parent directory and folder name, create the folder, and run git-init inside it so it becomes a git repo with a matching GitHub repo under the context's git.githubOwner"
     , tags = [ "git", "github", "bootstrap", "context" ]
+    }
+  , { name = "openapi-typescript-client-repo"
+    , version = Some "0.1.0"
+    , path = "recipes/openapi-typescript-client-repo"
+    , description = Some "Create a folder, scaffold an OpenAPI TypeScript client, and push its initial commit to a matching GitHub repository under git.githubOwner"
+    , tags = [ "typescript", "openapi", "client", "git", "github", "bootstrap", "context" ]
     }
   ]
 , blueprints =

@@ -71,6 +71,7 @@ commands, and an optional removal procedure.
 | [`repo-dir`](modules/git/repo-dir) | 0.1.0 | Create `<parentDir>/<name>` and run `git-init` inside it with a matching GitHub repo; owner from the active context's `git.githubOwner` |
 | [`nix-bun-flake`](modules/typescript/nix-bun-flake) | 0.5.0 | Nix flake for Bun + TypeScript: oxlint, oxfmt, `just`, optional git-hooks.nix and pinned bun2nix builds |
 | [`openapi-typescript-client`](modules/typescript/openapi-typescript-client) | 0.2.0 | Bun workflow for reusable ESM TypeScript 7 clients, Orval generation, status-specific Zod response validation, and optional Mori inventory |
+| [`openapi-typescript-client-dir`](modules/typescript/openapi-typescript-client-dir) | 0.1.0 | Create a client folder and compose the client scaffold with `git-init` inside it under a configurable GitHub owner |
 | [`fumadocs`](modules/typescript/fumadocs) | 0.3.0 | Fumadocs site on TanStack Start + Vite, layered on `nix-bun-flake`, with mermaid diagrams, a zoom/pan widget, and optional OpenAPI reference pages |
 
 ### Recipes
@@ -83,6 +84,7 @@ generation logic.
 | [`haskell-library-repo`](recipes/haskell-library-repo) | 0.1.0 | `haskell-library` + `git-init`, so the initial commit captures the full scaffold |
 | [`haskell-cli-app-repo`](recipes/haskell-cli-app-repo) | 0.1.1 | Tested two-package CLI scaffold plus `git-init`, with working Nix builds/checks in the initial commit |
 | [`github-repo`](recipes/github-repo) | 0.1.0 | Prompt for a location and folder name, create it, and make it a git repo with a matching GitHub repo under the context's owner |
+| [`openapi-typescript-client-repo`](recipes/openapi-typescript-client-repo) | 0.1.0 | Create a folder, scaffold the TypeScript client, and push its initial commit to GitHub under `git.githubOwner` |
 
 ### Blueprints
 
@@ -149,6 +151,9 @@ promise; the bundle itself stays OKF-conformant regardless.
 
 ### Scripts
 
+- `scripts/test-openapi-typescript-client-repo.py` — exercises real recipe generation
+  and Git commits with an offline GitHub stub, including owner/context selection,
+  team access, directory creation and existing-target protection.
 - `scripts/test-gcp-kube-env.py` — exercises real Seihou generation, kubectl
   configuration and direnv loading against offline fixtures, including custom
   filenames, reconfiguration, credential isolation, Git protection, write failures,
