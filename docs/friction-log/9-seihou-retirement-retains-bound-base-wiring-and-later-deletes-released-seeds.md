@@ -6,13 +6,18 @@ generated:
   by: "codex-cli/gpt-6.1-sol"
   at: "2026-11-01T23:54:08Z"
 frictionId: FRIC-9
-status: logged
+status: "resolved"
 impact: blocked
 kind: interface
 origin: "mori://shinzui/seihou-modules"
 affects: "mori://shinzui/seihou"
 affectedVersion: "0.14.0.0"
 plan: "docs/plans/11-add-a-bun-based-openapi-typescript-client-module.md"
+resolution: "Published and installed mori://shinzui/seihou 0.15.0.0 with typed per-application cleanup policies and root retirement, plus the matching mori://shinzui/seihou-schema commit e9f9143; the unmodified client harness preserves former child seeds and evaluates surviving shells after both shared-base and last-root removal."
+amended:
+  - by: "codex-cli/gpt-6.1-sol"
+    at: "2026-11-02T01:21:43Z"
+    change: "Resolved by released runtime/schema fixes and installed acceptance without local overrides; no permanent seed tombstones or weakened base cleanup contract."
 ---
 # Seihou retirement retains bound base wiring and later deletes released seeds
 

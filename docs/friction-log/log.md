@@ -1,6 +1,7 @@
 # Bundle Update Log
 
 ## 2026-11-02
+* **Update**: FRIC-9 resolved: Resolved by released runtime/schema fixes and installed acceptance without local overrides; no permanent seed tombstones or weakened base cleanup contract.
 * **Update**: FRIC-8 accepted: Accepted explicit output ownership as the composition contract; publication of the conditional-removal runtime remains tracked by FRIC-9.
 * **Update**: FRIC-7 accepted: Accepted the owned compatibility adapter after semantic, compiler, HTTP and packed-consumer qualification.
 

@@ -2,8 +2,8 @@
 
 **Version:** `0.1.0` — depends on `nix-bun-flake` 0.5.0.
 
-Requires Seihou >=0.15.0.0 for conditional removal and recorded-root retirement.
-The source implementation is under qualification; released Seihou 0.14.0.0 is insufficient.
+Requires [Seihou](mori://shinzui/seihou) >=0.15.0.0 for conditional removal and recorded-root retirement.
+Update to the published 0.15.0.0 release before applying this module.
 
 ```bash
 seihou run openapi-typescript-client --var project.name=example-api-client \

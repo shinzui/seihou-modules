@@ -2,8 +2,8 @@
 
 ## Status
 
-Accepted for the client architecture on 2026-11-01. Runtime publication and
-installed ownership acceptance remain tracked by plan 11.
+Accepted on 2026-11-01, with published/installed ownership acceptance verified
+against `mori://shinzui/seihou` 0.15.0.0. Plan 11 records the delivery evidence.
 
 ## Context
 
