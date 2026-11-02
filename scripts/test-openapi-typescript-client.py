@@ -236,12 +236,14 @@ console.log('Reproduced built-in valid-404 ZodError.')
     print('OpenAPI client toolchain qualification passed.', flush=True)
 
 
-def application(project, schema='openapi.yaml', force=False):
+def application(project, schema='openapi.yaml', force=False, variables=None, succeeds=True):
     args = ['seihou', 'run', 'openapi-typescript-client', '--no-save-prompted', '--no-commands',
             '--var', 'project.name=example-api-client', '--var', 'project.description=Example API client',
             '--var', f'openapi.schema={schema}']
     if force: args.append('--force')
-    return run(args, project)
+    for name, value in (variables or {}).items():
+        args.extend(['--var', f'{name}={value}'])
+    return run(args, project, succeeds, input='')
 
 
 def copy_modules(project):
@@ -263,6 +265,74 @@ def evaluate(project, systems=SYSTEMS):
                               '--apply', 'xs: map (p: p.name) xs'], project))
         assert any(name.startswith('typescript-7.') for name in names), names
     assert (project / 'flake.lock').read_bytes() == (BASE / 'files/flake.lock').read_bytes()
+
+
+def mori_render(work):
+    variables = {'mori.generate': 'true', 'mori.namespace': 'example',
+                 'mori.source-namespace': 'provider', 'mori.source-project': 'widgets-service'}
+    for index, schema in enumerate(['openapi.yaml', 'spec/api.json']):
+        project = work / f'mori-{index}'
+        copy_modules(project)
+        if schema != 'openapi.yaml':
+            (project / schema).parent.mkdir()
+            (project / schema).write_bytes((FIXTURE / 'openapi.json').read_bytes())
+        application(project, schema, variables=variables)
+        run(['mori', 'validate'], project)
+        data = json.loads(run(['dhall-to-json', '--file', 'mori.dhall'], project))
+        assert data['project']['name'] == 'example-api-client'
+        assert data['project']['namespace'] == 'example'
+        assert data['project']['type'] == 'Client'
+        assert data['project']['language'] == 'TypeScript'
+        package, = data['packages']
+        assert package['name'] == 'example-api-client'
+        assert package['type'] == 'Client' and package['language'] == 'TypeScript'
+        assert package['runtime'] == {'deployable': False, 'exposesApi': False}
+        source = package['apiSource']
+        assert source['project'] == 'provider/widgets-service'
+        assert source['projectRef']['namespace'] == 'provider'
+        assert source['projectRef']['name'] == 'widgets-service'
+        assert source['specPath'] == schema
+        assert source.get('api') is None
+        assert data['dependencies'] == ['provider/widgets-service']
+        assert data['dependencyRefs'] == [source['projectRef']]
+        assert data['apis'] == [], 'Client must not claim ownership of the provider API'
+        path = project / 'mori.dhall'
+        authored = path.read_text() + '\n-- project-owned metadata\n'
+        path.write_text(authored)
+        changed = {**variables, 'mori.source-project': 'another-service'}
+        application(project, schema, force=True, variables=changed)
+        run(['seihou', 'update', 'openapi-typescript-client', '--no-commands', '--force', '--json'], project)
+        application(project, schema, variables={'mori.generate': 'false'})
+        assert path.read_text() == authored, 'Rerun/update/opt-out changed authored inventory'
+        run(['seihou', 'remove', 'openapi-typescript-client'], project)
+        assert path.read_text() == authored, 'Removal deleted project inventory'
+
+    for missing in ['mori.namespace', 'mori.source-namespace', 'mori.source-project']:
+        project = work / f'missing-{missing}'
+        copy_modules(project)
+        output = application(project, variables={k: v for k, v in variables.items() if k != missing}, succeeds=False)
+        assert missing in output, output
+        assert not (project / 'package.json').exists(), 'Missing metadata must fail before writes'
+    for name in ['mori.namespace', 'mori.source-namespace', 'mori.source-project']:
+        project = work / f'invalid-{name}'
+        copy_modules(project)
+        output = application(project, variables={**variables, name: '../bad'}, succeeds=False)
+        assert 'validation' in output.lower() or 'invalid' in output.lower(), output
+        assert not (project / 'package.json').exists()
+
+    project = work / 'mori-existing'
+    copy_modules(project)
+    application(project)
+    assert not (project / 'mori.dhall').exists(), 'Default application must skip Mori'
+    path = project / 'mori.dhall'
+    authored = '-- existing project inventory\n'
+    path.write_text(authored)
+    application(project, force=True, variables=variables)
+    assert path.read_text() == authored, 'First opt-in overwrote existing inventory'
+    path.unlink()
+    application(project, force=True, variables=variables)
+    assert not path.exists(), 'Rerun recreated intentionally deleted inventory'
+    print('OpenAPI client Mori inventory rendering passed.', flush=True)
 
 
 def render(work, bootstrap=False):
@@ -371,9 +441,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--toolchain-only', action='store_true')
     parser.add_argument('--render-only', action='store_true')
+    parser.add_argument('--mori-only', action='store_true', help='Qualify optional Mori inventory without the client toolchain or Nix evaluations')
     args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix='openapi-client-acceptance-') as temp:
         work = Path(temp)
+        if not args.toolchain_only or args.mori_only:
+            mori_render(work)
+        if args.mori_only:
+            return
         if not args.render_only:
             qualify(work)
         if not args.toolchain_only:

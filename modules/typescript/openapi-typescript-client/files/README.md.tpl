@@ -8,6 +8,11 @@ Commit the resulting `bun.lock`; subsequent installs can use `bun install --froz
 Generation is explicit. No dependencies or schemas are downloaded by entering the shell.
 Custom schema paths must exist before `just generate`; only the default path gets an example.
 
+If this project includes a seeded `mori.dhall`, it records the client package and its
+OpenAPI source project using `apiSource`, with `specPath` set to `{{openapi.schema}}`.
+Keep that project-owned inventory aligned with the client and run `mori validate`
+after editing it. Register the project with Mori separately when ready.
+
 ```typescript
 import { make } from '{{project.name}}'
 

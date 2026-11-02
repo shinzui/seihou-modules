@@ -1,6 +1,6 @@
 # openapi-typescript-client
 
-**Version:** `0.1.0` — depends on `nix-bun-flake` 0.5.0.
+**Version:** `0.2.0` — depends on `nix-bun-flake` 0.5.0.
 
 Requires [Seihou](mori://shinzui/seihou) >=0.15.0.0 for conditional removal and recorded-root retirement.
 Update to the published 0.15.0.0 release before applying this module.
@@ -19,7 +19,37 @@ the base compiler/lock, disables base starters and pre-commit hooks, and leaves 
 All other client outputs are project-owned seeds. The tests below apply to the default
 example; custom schemas own their tests.
 
+To seed a `mori.dhall` describing the client and its OpenAPI source, opt in on
+application (following [the MLS client](mori://tan/mls-service-v2-ts-client)):
+
 ```bash
+seihou run openapi-typescript-client --var project.name=example-api-client \
+  --var 'project.description=Example API client' \
+  --var openapi.schema=spec/api.json \
+  --var mori.generate=true --var mori.namespace=example \
+  --var mori.source-namespace=example --var mori.source-project=example-service
+```
+
+`mori.generate` defaults to `false`. When enabled, `mori.namespace`,
+`mori.source-namespace`, and `mori.source-project` are required; interactive runs
+prompt for missing values. Each uses lowercase names with optional digits and hyphens.
+The source values identify the provider's existing Mori project, independently of
+the client's namespace and name.
+
+The inventory declares a private TypeScript `Client` package, its Zod runtime
+dependency, and `apiSource` with a typed source-project reference and the configured
+`openapi.schema` path. It also records the provider as a project dependency. It does
+not claim the provider API as its own or register either project. Like the MLS
+example, the spec path points to the client's local schema copy. Only the existing
+README is listed as documentation; no GitHub repository or changelog is invented.
+
+The descriptor is a project-owned seed: existing files, authored edits and intentional
+deletion survive reruns, forced updates, opt-out and module removal. Edit it as the
+client evolves. The initial description uses the client name; customize it after creation.
+Run `mori validate` to check it, then register the project separately if desired.
+
+```bash
+python3 scripts/test-openapi-typescript-client.py --mori-only
 python3 scripts/test-openapi-typescript-client.py --toolchain-only
 python3 scripts/test-openapi-typescript-client.py --render-only
 python3 scripts/test-openapi-typescript-client.py

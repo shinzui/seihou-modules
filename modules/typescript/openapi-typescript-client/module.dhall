@@ -4,7 +4,7 @@ let S =
 
 in S.Module::{
     , name = "openapi-typescript-client"
-    , version = Some "0.1.0"
+    , version = Some "0.2.0"
     , description = Some "Generate a reusable ESM TypeScript 7 client with Orval, status-specific Zod response validation, strict schema qualification, and project-owned Bun workflows"
     , vars =
       [ S.VarDecl::{ name = "project.name", type = "text", required = True, validation = Some "[a-z][a-z0-9-]*" }
@@ -17,6 +17,30 @@ in S.Module::{
         , validation = Some "([A-Za-z0-9][A-Za-z0-9_-]*/)*[A-Za-z0-9][A-Za-z0-9_-]*[.](yaml|yml|json)"
         , description = Some "Local OpenAPI document. Custom paths must already exist; only the default openapi.yaml is seeded."
         }
+      , S.VarDecl::{
+        , name = "mori.generate", type = "bool", default = Some "false"
+        , description = Some "Seed an initial mori.dhall describing the client and its OpenAPI source; does not register the project."
+        }
+      , S.VarDecl::{
+        , name = "mori.namespace", type = "text"
+        , validation = Some "[a-z][a-z0-9-]*"
+        , description = Some "Client project's Mori namespace; required when mori.generate=true."
+        }
+      , S.VarDecl::{
+        , name = "mori.source-namespace", type = "text"
+        , validation = Some "[a-z][a-z0-9-]*"
+        , description = Some "Mori namespace of the project providing the OpenAPI schema; required when mori.generate=true."
+        }
+      , S.VarDecl::{
+        , name = "mori.source-project", type = "text"
+        , validation = Some "[a-z][a-z0-9-]*"
+        , description = Some "Mori project name of the API provider (without its namespace); required when mori.generate=true."
+        }
+      ]
+    , prompts =
+      [ S.Prompt::{ var = "mori.namespace", text = "Mori namespace for this client?", when = Some "Eq mori.generate true" }
+      , S.Prompt::{ var = "mori.source-namespace", text = "Mori namespace of the OpenAPI source project?", when = Some "Eq mori.generate true" }
+      , S.Prompt::{ var = "mori.source-project", text = "Mori project name of the OpenAPI provider (without namespace)?", when = Some "Eq mori.generate true" }
       ]
     , dependencies = [ S.Dependency::{
         , module = "nix-bun-flake"
@@ -42,6 +66,7 @@ in S.Module::{
       , S.Step::{ strategy = "copy", src = "tests/client.test.ts", dest = "tests/client.test.ts", lifecycle = Some "seed", when = Some "Eq openapi.schema openapi.yaml" }
       , S.Step::{ strategy = "copy", src = "tests/types.ts", dest = "tests/types.ts", lifecycle = Some "seed", when = Some "Eq openapi.schema openapi.yaml" }
       , S.Step::{ strategy = "template", src = "README.md.tpl", dest = "README.md", lifecycle = Some "seed" }
+      , S.Step::{ strategy = "template", src = "mori.dhall.tpl", dest = "mori.dhall", lifecycle = Some "seed", when = Some "Eq mori.generate true" }
       , S.Step::{ strategy = "copy", src = "openapi.yaml", dest = "openapi.yaml", lifecycle = Some "seed", when = Some "Eq openapi.schema openapi.yaml" }
       , S.Step::{ strategy = "copy", src = "nix/openapi-typescript-client.nix", dest = "nix/openapi-typescript-client.nix" }
       , S.Step::{ strategy = "copy", src = "gitignore-client", dest = ".gitignore", patch = Some "append-line-if-absent" } ]

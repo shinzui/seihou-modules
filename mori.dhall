@@ -121,7 +121,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "openapi-typescript-client"
-        , version = Some "0.1.0"
+        , version = Some "0.2.0"
         , description = Some "Reusable ESM TypeScript 7 client with Orval generation, status-specific Zod validation, and project-owned Bun workflows"
         , modulePath = "modules/typescript/openapi-typescript-client"
         , tags = [ "typescript", "bun", "openapi", "orval", "zod", "client" ]
