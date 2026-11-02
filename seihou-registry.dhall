@@ -44,10 +44,16 @@
     , tags = [ "git", "github", "bootstrap", "context" ]
     }
   , { name = "nix-bun-flake"
-    , version = Some "0.4.0"
+    , version = Some "0.5.0"
     , path = "modules/typescript/nix-bun-flake"
     , description = Some "Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, optional git-hooks.nix pre-commit checks, and opt-in pinned bun2nix build helpers"
     , tags = [ "typescript", "bun", "nix", "flake", "oxc", "devshell" ]
+    }
+  , { name = "openapi-typescript-client"
+    , version = Some "0.1.0"
+    , path = "modules/typescript/openapi-typescript-client"
+    , description = Some "Reusable ESM TypeScript 7 client with Orval generation, status-specific Zod validation, and project-owned Bun workflows on nix-bun-flake"
+    , tags = [ "typescript", "bun", "openapi", "orval", "zod", "client", "nix" ]
     }
   , { name = "fumadocs"
     , version = Some "0.3.0"

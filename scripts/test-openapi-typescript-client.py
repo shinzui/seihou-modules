@@ -21,8 +21,10 @@ BASE = ROOT / 'modules/typescript/nix-bun-flake'
 SYSTEMS = ['aarch64-darwin', 'aarch64-linux', 'x86_64-linux']
 
 
-def run(args, cwd, succeeds=True, env=None):
-    result = subprocess.run(args, cwd=cwd, text=True, capture_output=True, env=env)
+def run(args, cwd, succeeds=True, env=None, input=None):
+    if args[0] == 'seihou':
+        args = [os.environ.get('SEIHOU', 'seihou'), *args[1:]]
+    result = subprocess.run(args, cwd=cwd, text=True, capture_output=True, env=env, input=input)
     if (result.returncode == 0) != succeeds:
         raise AssertionError(f'{args}: exit {result.returncode}\n{result.stdout}\n{result.stderr}')
     return result.stdout + result.stderr
@@ -38,7 +40,7 @@ def task(project, name, succeeds=True):
     return run(['bun', 'run', name], project, succeeds)
 
 
-def consumer(project, work):
+def consumer(project, work, revision=False):
     consumer = work / 'consumer'
     consumer.mkdir(exist_ok=True, parents=True)
     run(['npm', 'pack', '--ignore-scripts', '--pack-destination', str(consumer)], project)
@@ -63,6 +65,19 @@ async function example() {{
   }}
 }}
 void example
+''')
+    if revision:
+        with (consumer / 'test.ts').open('a') as handle:
+            handle.write('''\nasync function changedSchema() {
+  const result = await api.getWidget('id')
+  if (result.status === 200) {
+    const revision: number | undefined = result.data.revision
+    // @ts-expect-error revised schema retains a numeric field
+    const wrong: string = result.data.revision
+    return revision
+  }
+}
+void changedSchema
 ''')
     (consumer / 'tsconfig.json').write_text(json.dumps({'compilerOptions': {
         'strict': True, 'exactOptionalPropertyTypes': True, 'noUncheckedIndexedAccess': True,
@@ -94,6 +109,10 @@ try {{
 
 
 def qualify(work):
+    # The shipped starter and the qualified fixture must share the same implementation.
+    for name in ['orval.config.ts', 'scripts/compiler.ts', 'scripts/schema.ts', 'src/client.ts', 'src/index.ts', 'src/transport.ts', 'redocly.yaml', 'tsconfig.json', 'tsconfig.build.json']:
+        assert (FIXTURE / name).read_bytes() == (MODULE / 'files' / name).read_bytes(), f'Fixture/template drift: {name}'
+    assert (FIXTURE / 'scripts/generate.ts').read_text().replace('const schema = "openapi.json"', 'const schema = "{{openapi.schema}}"') == (MODULE / 'files/scripts/generate.ts.tpl').read_text()
     project = work / 'toolchain'
     shutil.copytree(FIXTURE, project)
     run(['bun', 'install', '--frozen-lockfile', '--minimum-release-age', '0'], project)
@@ -147,6 +166,7 @@ console.log('Reproduced built-in valid-404 ZodError.')
         target.unlink()
     changed = json.loads(original)
     changed['info']['title'] = 'Changed widgets'
+    changed['components']['schemas']['Widget']['properties']['revision'] = {'type': 'integer'}
     (project / 'openapi.json').write_text(json.dumps(changed))
     task(project, 'generated-check', False)
     assert snapshot(project) == baseline
@@ -156,7 +176,7 @@ console.log('Reproduced built-in valid-404 ZodError.')
     task(project, 'generate')
     assert snapshot(project) == once
     task(project, 'build')
-    consumer(project, work / 'second')
+    consumer(project, work / 'second', revision=True)
     (project / 'openapi.json').write_bytes(original)
     # Invalid documents and unqualified semantics leave BOTH generated trees alone.
     def invalid_document(change, label):
@@ -177,6 +197,7 @@ console.log('Reproduced built-in valid-404 ZodError.')
         (lambda d: d['paths']['/widgets/{id}']['get']['parameters'].append(copy.deepcopy(d['paths']['/widgets/{id}']['get']['parameters'][0])), 'duplicate parameter'),
         (lambda d: d['components']['schemas']['Widget'].update(unevaluatedProperties=False), 'unsupported keyword'),
         (lambda d: d['components']['schemas']['Widget']['properties']['id'].update({'$ref':'https://example.invalid/schema.json'}), 'remote ref'),
+        (lambda d: d['paths']['/widgets/{id}']['get']['parameters'][1].update(explode=False), 'unsupported query serialization'),
         (lambda d: d['paths']['/widgets/{id}']['get']['responses'].update(default={'description':'Default'}), 'default status'),
         (lambda d: d['paths']['/widgets/{id}']['get']['responses'].update({'4XX':{'description':'Range'}}), 'range status'),
         (lambda d: d['paths']['/widgets/{id}']['get']['responses']['200'].update(content={'text/plain':{'schema':{'type':'string'}}}), 'non-JSON media'),
@@ -207,7 +228,7 @@ console.log('Reproduced built-in valid-404 ZodError.')
     document['components']['schemas']['Widget'] = {'$ref': './schemas/widget.json'}
     (spec / 'api.json').write_text(json.dumps(document))
     script = project / 'scripts/generate.ts'
-    script.write_text(script.read_text().replace("const schema = 'openapi.json'", "const schema = 'spec/api.json'"))
+    script.write_text(script.read_text().replace('const schema = "openapi.json"', 'const schema = "spec/api.json"'))
     task(project, 'generate')
     task(project, 'typecheck')
     task(project, 'test')
@@ -215,9 +236,136 @@ console.log('Reproduced built-in valid-404 ZodError.')
     print('OpenAPI client toolchain qualification passed.', flush=True)
 
 
-def render(work):
-    raise NotImplementedError('Rendering follows successful toolchain qualification')
+def application(project, schema='openapi.yaml', force=False):
+    args = ['seihou', 'run', 'openapi-typescript-client', '--no-save-prompted', '--no-commands',
+            '--var', 'project.name=example-api-client', '--var', 'project.description=Example API client',
+            '--var', f'openapi.schema={schema}']
+    if force: args.append('--force')
+    return run(args, project)
 
+
+def copy_modules(project):
+    project.mkdir(parents=True, exist_ok=True)
+    for name in ['nix-bun-flake', 'openapi-typescript-client']:
+        shutil.copytree(ROOT / 'modules/typescript' / name, project / '.seihou/modules' / name)
+        if os.environ.get('SEIHOU_SCHEMA_PACKAGE'):
+            descriptor = project / '.seihou/modules' / name / 'module.dhall'
+            text = descriptor.read_text()
+            text = 'let S = ' + os.environ['SEIHOU_SCHEMA_PACKAGE'] + '\n' + text[text.index('in '):]
+            descriptor.write_text(text)
+
+
+def evaluate(project, systems=SYSTEMS):
+    for system in systems:
+        prefix = f'.#devShells.{system}.default'
+        run(['nix', 'eval', '--no-write-lock-file', '--raw', prefix + '.drvPath'], project)
+        names = json.loads(run(['nix', 'eval', '--no-write-lock-file', '--json', prefix + '.nativeBuildInputs',
+                              '--apply', 'xs: map (p: p.name) xs'], project))
+        assert any(name.startswith('typescript-7.') for name in names), names
+    assert (project / 'flake.lock').read_bytes() == (BASE / 'files/flake.lock').read_bytes()
+
+
+def render(work, bootstrap=False):
+    project = work / 'rendered'
+    copy_modules(project)
+    sentinel = b'{ ... }: { } # unmanaged client fixture\n'
+    (project / 'flake.module.nix').write_bytes(sentinel)
+    application(project)
+    assert (project / 'flake.lock').read_bytes() == (BASE / 'files/flake.lock').read_bytes()
+    assert not (project / 'nix/pre-commit.nix').exists()
+    assert not (project / 'nix/bun2nix-module.nix').exists()
+    assert './nix/openapi-typescript-client.nix' in (project / 'flake.nix').read_text()
+    assert 'watch_file nix/openapi-typescript-client.nix' in (project / '.envrc').read_text()
+    manifest = json.loads((project / '.seihou/manifest.json').read_text())
+    assert not any(path.startswith(('src/generated/', 'dist/')) or path == 'bun.lock' for path in manifest['files'])
+    evaluate(project)
+    print(run(['nix', 'develop', '--command', 'bash', '-c',
+               'command -v node && node --version && tsc --version && bun --version'], project).strip(), flush=True)
+    if bootstrap:
+        output = run(['nix', 'develop', '--command', 'bash', '-c',
+                      'bun install --minimum-release-age 0 && just generate && just check'], project)
+        print(output[-1800:], flush=True)
+        run(['bun', 'install', '--frozen-lockfile', '--minimum-release-age', '0'], project)
+        consumer(project, work / 'scaffold-package')
+    # Edit every base-overlapping seed and delete both an overlapping and a client-only seed.
+    seeds = ['package.json', 'tsconfig.json', '.oxlintrc.json', '.oxfmtrc.json', 'justfile',
+             'tsconfig.build.json', 'src/client.ts', 'README.md', 'scripts/schema.ts']
+    for path in seeds:
+        file = project / path
+        if path in ['tsconfig.json', 'tsconfig.build.json']:
+            file.unlink()
+        else:
+            file.write_bytes(file.read_bytes() + b'\n')
+    expected = {path: (project / path).read_bytes() if (project / path).exists() else None for path in seeds}
+    for force in [False, True]:
+        application(project, force=force)
+        output = run(['seihou', 'update', 'openapi-typescript-client', '--no-commands', '--json',
+                      *(['--force'] if force else [])], project)
+        for path, data in expected.items():
+            actual = (project / path).read_bytes() if (project / path).exists() else None
+            assert actual == data, f'Seed changed on rerun/update: {path}\n{output}'
+    assert (project / 'flake.module.nix').read_bytes() == sentinel
+    # Actual command products are project-owned and survive removal.
+    for path in ['src/generated/sentinel.ts', 'dist/sentinel.js', 'bun.lock']:
+        file = project / path
+        if not file.exists():
+            file.parent.mkdir(parents=True, exist_ok=True)
+            file.write_text('project-owned\n')
+    products = {path: (project / path).read_bytes() for path in ['src/generated/sentinel.ts', 'dist/sentinel.js', 'bun.lock']}
+    # A separate root keeps the base alive. Its default binding must survive client retirement.
+    coowner = project / '.seihou/modules/fixture-client-coowner'
+    (coowner / 'files').mkdir(parents=True)
+    schema_import = (project / '.seihou/modules/nix-bun-flake/module.dhall').read_text().split('in ', 1)[0]
+    (coowner / 'module.dhall').write_text(schema_import + '''in S.Module::{
+      , name = "fixture-client-coowner"
+      , version = Some "0.1.0"
+      , dependencies = [ S.Dependency::{ module = "nix-bun-flake", vars = [ { name = "nix.pre-commit", value = "false" }, { name = "bun.starter-files", value = "false" }, { name = "nix.package-module", value = "nix/openapi-typescript-client.nix" } ] } ]
+      , steps = [] : List S.Step.Type
+      }''')
+    run(['seihou', 'run', 'fixture-client-coowner', '--no-save-prompted', '--no-commands',
+         '--var', 'project.name=example-api-client', '--var', 'project.description=Example API client'], project)
+    preview = run(['seihou', 'remove', 'openapi-typescript-client', '--dry-run'], project)
+    assert 'openapi-typescript-client' in preview
+    run(['seihou', 'remove', 'openapi-typescript-client'], project)
+    for path, data in {**expected, **products, 'flake.module.nix': sentinel}.items():
+        actual = (project / path).read_bytes() if (project / path).exists() else None
+        assert actual == data, f'Removal changed seed/product: {path}'
+    assert (project / 'nix/bun.nix').exists()
+    assert not (project / 'nix/openapi-typescript-client.nix').exists()
+    watched = run(['bash', '-c', 'watch_file() { printf "%s\\n" "$@"; }; use() { :; }; source_env_if_exists() { :; }; shellHook=""; source .envrc'], project)
+    assert 'nix/openapi-typescript-client.nix' not in watched.splitlines(), 'Surviving base watches a removed module'
+    names = run(['nix', 'eval', '--no-write-lock-file', '--json', '.#devShells.aarch64-darwin.default.nativeBuildInputs', '--apply', 'xs: map (p: p.name) xs'], project)
+    assert 'nodejs-' not in names, 'Surviving shell still imports the removed client tool module'
+    evaluate(project)
+    run(['seihou', 'remove', 'nix-bun-flake', '--force'], project, input='y\n')
+    for path, data in expected.items():
+        actual = (project / path).read_bytes() if (project / path).exists() else None
+        assert actual == data, f'Later base removal changed a retired client seed: {path}'
+    # Last-root removal must preserve child seeds despite inherited base removal steps.
+    last = work / 'last-root'
+    copy_modules(last)
+    application(last)
+    package = (last / 'package.json').read_bytes()
+    run(['seihou', 'remove', 'openapi-typescript-client', '--dry-run'], last)
+    run(['seihou', 'remove', 'openapi-typescript-client'], last)
+    assert (last / 'package.json').read_bytes() == package
+    assert (last / 'tsconfig.json').exists() and (last / 'justfile').exists()
+    assert not (last / 'flake.nix').exists()
+    # Custom schema paths are validated by Seihou and do not get an invented schema/example test.
+    custom = work / 'custom-path'
+    copy_modules(custom)
+    (custom / 'spec').mkdir()
+    (custom / 'spec/api.json').write_bytes((FIXTURE / 'openapi.json').read_bytes())
+    application(custom, 'spec/api.json')
+    assert not (custom / 'openapi.yaml').exists()
+    assert not (custom / 'tests/client.test.ts').exists()
+    assert 'const schema = "spec/api.json"' in (custom / 'scripts/generate.ts').read_text()
+    for invalid in ['/tmp/spec.json', '../api.json', 'x/../api.json', 'x spec.json', 'x;echo.json', 'x$(echo).yaml', 'x.yml/../../z.json']:
+        output = run(['seihou', 'run', 'openapi-typescript-client', '--no-save-prompted', '--no-commands',
+                      '--var', 'project.name=example-api-client', '--var', 'project.description=Example',
+                      '--var', f'openapi.schema={invalid}'], custom, False)
+        assert 'validation' in output.lower() or 'invalid' in output.lower(), output
+    print('OpenAPI client rendering passed.', flush=True)
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
@@ -229,7 +377,7 @@ def main():
         if not args.render_only:
             qualify(work)
         if not args.toolchain_only:
-            render(work)
+            render(work, bootstrap=not args.render_only)
         if not args.render_only and not args.toolchain_only:
             print('OpenAPI client bootstrap passed.', flush=True)
 

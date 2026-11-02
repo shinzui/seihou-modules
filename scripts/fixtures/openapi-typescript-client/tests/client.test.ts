@@ -89,3 +89,18 @@ test('real HTTP serialization, status validation, empty/primitive/array data and
     await expect(broken.getWidget('1')).rejects.toMatchObject({ code: 'transport' })
   } finally { await server.stop(true) }
 })
+
+
+test("injected transports cannot bypass status, media or primitive/array validation", async () => {
+  for (const [operation, response, code] of [
+    ["getPrimitive", Response.json(42), "invalid-payload"],
+    ["getArray", Response.json([widget, { ...widget, id: 1 }]), "invalid-payload"],
+    ["getEmpty", new Response(null, { status: 202 }), "unsupported-status"],
+  ] as const) {
+    const api = make({ baseUrl: "http://localhost", fetch: async () => response })
+    await expect(api[operation]()).rejects.toMatchObject({ code })
+  }
+  const api = make({ baseUrl: "http://localhost", fetch: async () => Response.json({ name: 1 }, { status: 422 }) })
+  await expect(api.createWidget(input)).rejects.toMatchObject({ code: "invalid-payload" })
+  await expect(api.getWidget("..")).rejects.toThrow("dot segments")
+})

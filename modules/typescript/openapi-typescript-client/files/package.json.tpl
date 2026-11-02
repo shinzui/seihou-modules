@@ -1,0 +1,37 @@
+{
+  "name": "{{project.name}}",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "orval": "8.46.0",
+    "@redocly/cli": "2.72.1",
+    "@types/bun": "1.4.2"
+  },
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "validate-schema": "bun scripts/generate.ts validate",
+    "generate": "bun scripts/generate.ts generate",
+    "generated-check": "bun scripts/generate.ts check",
+    "typecheck": "bun scripts/compiler.ts --noEmit",
+    "test": "bun test",
+    "build": "bun scripts/compiler.ts -p tsconfig.build.json",
+    "lint": "oxlint src/client.ts src/index.ts src/transport.ts scripts tests",
+    "format": "oxfmt src/client.ts src/index.ts src/transport.ts scripts tests orval.config.ts",
+    "format-check": "oxfmt --check src/client.ts src/index.ts src/transport.ts scripts tests orval.config.ts",
+    "check": "bun run generated-check && bun run typecheck && bun run test && bun run lint && bun run format-check && bun run build"
+  },
+  "description": "{{project.description}}"
+}

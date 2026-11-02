@@ -1,6 +1,8 @@
 # Bundle Update Log
 
 ## 2026-11-01
+* **Addition**: FRIC-9 records blocked interface friction with mori://shinzui/seihou: Seihou retirement retains bound base wiring and later deletes released seeds
+* **Addition**: FRIC-8 records detour interface friction with mori://shinzui/seihou: Seihou rejects managed base starters overlapping child seeds
 * **Addition**: FRIC-7 records detour tooling friction with mori://orval-labs/orval: Pinned Orval output needs fidelity and ESM adapters
 
 ## 2026-10-27

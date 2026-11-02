@@ -31,6 +31,10 @@
         {{#if Eq nix.pre-commit true}}
         ./nix/pre-commit.nix
         {{/if}}
-      ] ++ nixpkgs.lib.optional (builtins.pathExists ./flake.module.nix) ./flake.module.nix;
+      ]
+      {{#if IsSet nix.package-module}}
+      ++ nixpkgs.lib.optional (builtins.pathExists ./{{nix.package-module}}) ./{{nix.package-module}}
+      {{/if}}
+      ++ nixpkgs.lib.optional (builtins.pathExists ./flake.module.nix) ./flake.module.nix;
     };
 }

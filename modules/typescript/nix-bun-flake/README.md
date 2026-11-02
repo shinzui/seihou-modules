@@ -2,7 +2,7 @@
 
 > Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a `just` task runner, optional git-hooks.nix pre-commit checks, and opt-in pinned bun2nix build helpers.
 
-**Version:** `0.4.0`
+**Version:** `0.5.0`
 
 ## Overview
 
@@ -85,10 +85,28 @@ and checks Bun/just in nixpkgs. A new bun2nix release stops refresh until its pa
 fixtures are qualified; enabling this feature needs no toolchain refresh. Bump module,
 registry, Mori and catalog versions together when releasing.
 
+## Composing project scaffolds
+
+`nix.package-module` accepts a validated relative `.nix` path. The flake imports that
+managed file before the unmanaged extension, and `.envrc` watches it only while it
+exists. Missing optional files contribute no imports or watches, so removing a
+contributing scaffold leaves a surviving base shell evaluable. Add tools through
+`perSystem.bunProject.extraDevPackages`; this does not change the shared lock/compiler.
+
+`bun.starter-files` defaults to `true`, preserving standalone base generation and removal.
+A composing module that owns package.json, tsconfig.json, Oxc configs and justfile as seeds
+binds it `false`; this suppresses both base outputs and their conditional removal steps.
+It must provide its own starters. Shared applications use identical base dependency
+bindings. Different configured instances that write the same paths remain conflicts.
+Conditional removal requires Seihou >=0.15.0.0 and the corresponding schema; install it
+before using this module release. The lock and tooling-source pins remain unchanged.
+
 ## Variables
 
 | Name | Type | Default | Required | Validation | Description |
 |------|------|---------|----------|------------|-------------|
+| `nix.package-module` | text | unset | no | relative `.nix` path without traversal | Optional managed extension |
+| `bun.starter-files` | bool | true | yes | | Generate/remove base starters; composing seed owners disable it |
 | `project.name` | `text` | — | yes | `[a-z][a-z0-9-]*` | Project name (used in flake description and `package.json` name) |
 | `project.description` | `text` | — | yes | — | One-line project description |
 | `nix.bun2nix` | `bool` | `false` | yes | — | Include the pinned generator, hook and dependency-cache helper; build recipes remain project-owned |

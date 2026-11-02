@@ -113,11 +113,20 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "nix-bun-flake"
-        , version = Some "0.4.0"
+        , version = Some "0.5.0"
         , description = Some "Shared Bun/TypeScript/Oxc flake-parts environment with revision-pinned locks, optional bun2nix builds, and an unmanaged project extension"
         , modulePath = "modules/typescript/nix-bun-flake"
         , tags = [ "typescript", "bun", "nix", "flake-parts" ]
         , requiredVars = [ "project.name", "project.description" ]
+        }
+      , Schema.SeihouTemplate::{
+        , name = "openapi-typescript-client"
+        , version = Some "0.1.0"
+        , description = Some "Reusable ESM TypeScript 7 client with Orval generation, status-specific Zod validation, and project-owned Bun workflows"
+        , modulePath = "modules/typescript/openapi-typescript-client"
+        , tags = [ "typescript", "bun", "openapi", "orval", "zod", "client" ]
+        , dependencies = [ "nix-bun-flake" ]
+        , requiredVars = [ "project.name", "project.description", "openapi.schema" ]
         }
       , Schema.SeihouTemplate::{
         , name = "fumadocs"

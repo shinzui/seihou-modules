@@ -1,0 +1,36 @@
+# Enter nix develop first; TypeScript 7+ comes from that shared toolchain.
+default:
+    @just --list
+
+install:
+    bun install
+
+validate-schema:
+    bun run validate-schema
+
+generate:
+    bun run generate
+
+generated-check:
+    bun run generated-check
+
+typecheck:
+    bun run typecheck
+
+test:
+    bun run test
+
+build:
+    bun run build
+
+lint:
+    bun run lint
+
+format:
+    bun run format
+
+format-check:
+    bun run format-check
+
+check:
+    bun run check

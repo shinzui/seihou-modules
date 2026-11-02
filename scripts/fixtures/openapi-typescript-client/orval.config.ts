@@ -1,25 +1,25 @@
-import { defineConfig } from 'orval'
+import { defineConfig } from "orval"
 
 const input = process.env.OPENAPI_INPUT
 const output = process.env.OPENAPI_RAW
-if (!input || !output) throw new Error('Use the generate or generated-check task')
+if (!input || !output) throw new Error("Use the generate or generated-check task")
 export default defineConfig({
   client: {
     input,
     output: {
       target: `${output}/api.ts`,
       schemas: `${output}/models`,
-      client: 'fetch',
-      mode: 'split',
+      client: "fetch",
+      mode: "split",
       urlEncodeParameters: true,
       override: {
-        title: () => 'Operations',
+        title: () => "Operations",
         useDates: false,
         fetch: {
           includeHttpResponseReturnType: true,
           forceSuccessResponse: false,
           useRuntimeFetcher: true,
-          httpClientInjection: 'factory',
+          httpClientInjection: "factory",
         },
       },
     },
@@ -28,8 +28,8 @@ export default defineConfig({
     input,
     output: {
       target: `${output}/validators.ts`,
-      client: 'zod',
-      mode: 'single',
+      client: "zod",
+      mode: "single",
       override: {
         zod: {
           version: 4,

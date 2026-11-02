@@ -1,6 +1,6 @@
-export { make } from './client.js'
-export type { Api } from './client.js'
-export { ClientError } from './transport.js'
-export type { Options, Fetch } from './transport.js'
-export type * from './generated/client/api.js'
-export type * from './generated/client/models/index.js'
+export { make } from "./client.js"
+export type { Api } from "./client.js"
+export { ClientError } from "./transport.js"
+export type { Options, Fetch } from "./transport.js"
+export type * from "./generated/client/api.js"
+export type * from "./generated/client/models/index.js"

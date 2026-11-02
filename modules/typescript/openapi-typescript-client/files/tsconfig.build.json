@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {"types": [], "noEmit": false, "declaration": true, "rootDir": "src", "outDir": "dist"},
+  "include": ["src"], "exclude": ["src/generated/raw", "tests"]
+}

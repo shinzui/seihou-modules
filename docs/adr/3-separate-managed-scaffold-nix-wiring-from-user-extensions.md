@@ -46,3 +46,19 @@ conflict with direct edits to that managed file. Users who need additional proje
 behavior extend `flake.module.nix` instead. A project must not enable the base root package output
 and a dependent package module that both define `packages.default`, because flake-parts will
 reject the duplicate definition.
+
+## Bun scaffold extension (2026-11-01)
+
+The Bun base exposes the same optional `nix.package-module` seam. Its managed
+module contributes tools through `perSystem.bunProject.extraDevPackages`, keeping
+one Bun/TypeScript/Oxc toolchain and the canonical lock. The optional import and
+`.envrc` watch are conditional on the contributing file existing, so removing a
+client module leaves any surviving base shell valid. The user's unmanaged
+`flake.module.nix` remains last in import order.
+
+`bun.starter-files` defaults to true. A dependent module providing its own project
+seeds disables the base's five starter outputs and their matching removal steps.
+Mixed managed/seed destinations are rejected; overwrite order cannot establish
+ownership. Removal conditions use recorded instance inputs and require the new
+runtime/schema contract. Separate applications sharing a configured base must
+use identical dependency bindings; conflicting instances still fail safely.

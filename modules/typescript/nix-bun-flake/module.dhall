@@ -1,10 +1,10 @@
 let S =
-      https://raw.githubusercontent.com/shinzui/seihou-schema/2b4035b7e720a9b30642a8a27551592175732ee5/package.dhall
-        sha256:21716b4aee783d8eb8b12c754050880fa710e881ecda85925f855ef34cc34a55
+      https://raw.githubusercontent.com/shinzui/seihou-schema/e9f91438f081fba90f40f987de93df9f74c7117d/package.dhall
+        sha256:00f822087302b53f7ffe74e6505a633c59a0c2f206d12bfadb58a2fe211c0e40
 
 in  S.Module::{
     , name = "nix-bun-flake"
-    , version = Some "0.4.0"
+    , version = Some "0.5.0"
     , description = Some "Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, optional git-hooks.nix pre-commit checks, and opt-in pinned bun2nix build helpers"
     , vars =
       [ S.VarDecl::{
@@ -19,6 +19,20 @@ in  S.Module::{
         , type = "text"
         , description = Some "One-line project description"
         , required = True
+        }
+      , S.VarDecl::{
+        , name = "nix.package-module"
+        , type = "text"
+        , description = Some "Optional project-relative managed flake-parts module, imported before the unmanaged flake.module.nix extension"
+        , required = False
+        , validation = Some "([A-Za-z0-9][A-Za-z0-9_-]*/)*[A-Za-z0-9][A-Za-z0-9_-]*[.]nix"
+        }
+      , S.VarDecl::{
+        , name = "bun.starter-files"
+        , type = "bool"
+        , default = Some "true"
+        , required = True
+        , description = Some "Generate the base package, TypeScript, Oxc and task-runner files; composing seed owners disable these outputs"
         }
       , S.VarDecl::{
         , name = "nix.bun2nix"
@@ -67,12 +81,12 @@ in  S.Module::{
       , S.Step::{ strategy = "copy", src = "nix/bun2nix-module.nix", dest = "nix/bun2nix-module.nix", when = Some "Eq nix.bun2nix true" }
       , S.Step::{ strategy = "copy", src = "flake.module.nix.example", dest = "flake.module.nix.example" }
       , S.Step::{ strategy = "copy", src = "flake.lock", dest = "flake.lock" }
-      , S.Step::{ strategy = "template", src = "package.json.tpl", dest = "package.json" }
-      , S.Step::{ strategy = "copy", src = "tsconfig.json", dest = "tsconfig.json" }
-      , S.Step::{ strategy = "copy", src = "oxlintrc.json", dest = ".oxlintrc.json" }
-      , S.Step::{ strategy = "copy", src = "oxfmtrc.json", dest = ".oxfmtrc.json" }
-      , S.Step::{ strategy = "copy", src = "justfile", dest = "justfile" }
-      , S.Step::{ strategy = "copy", src = "envrc", dest = ".envrc" }
+      , S.Step::{ strategy = "template", src = "package.json.tpl", dest = "package.json", when = Some "Eq bun.starter-files true" }
+      , S.Step::{ strategy = "copy", src = "tsconfig.json", dest = "tsconfig.json", when = Some "Eq bun.starter-files true" }
+      , S.Step::{ strategy = "copy", src = "oxlintrc.json", dest = ".oxlintrc.json", when = Some "Eq bun.starter-files true" }
+      , S.Step::{ strategy = "copy", src = "oxfmtrc.json", dest = ".oxfmtrc.json", when = Some "Eq bun.starter-files true" }
+      , S.Step::{ strategy = "copy", src = "justfile", dest = "justfile", when = Some "Eq bun.starter-files true" }
+      , S.Step::{ strategy = "template", src = "envrc.tpl", dest = ".envrc" }
       , S.Step::{
         , strategy = "template"
         , src = "gitignore-bun.tpl"
@@ -98,11 +112,11 @@ in  S.Module::{
         , S.RemovalStep::{ action = "remove-file", dest = "nix/bun2nix-package.nix" }
         , S.RemovalStep::{ action = "remove-file", dest = "nix/bun2nix-module.nix" }
         , S.RemovalStep::{ action = "remove-file", dest = "flake.module.nix.example" }
-        , S.RemovalStep::{ action = "remove-file", dest = "package.json" }
-        , S.RemovalStep::{ action = "remove-file", dest = "tsconfig.json" }
-        , S.RemovalStep::{ action = "remove-file", dest = ".oxlintrc.json" }
-        , S.RemovalStep::{ action = "remove-file", dest = ".oxfmtrc.json" }
-        , S.RemovalStep::{ action = "remove-file", dest = "justfile" }
+        , S.RemovalStep::{ action = "remove-file", dest = "package.json", when = Some "Eq bun.starter-files true" }
+        , S.RemovalStep::{ action = "remove-file", dest = "tsconfig.json", when = Some "Eq bun.starter-files true" }
+        , S.RemovalStep::{ action = "remove-file", dest = ".oxlintrc.json", when = Some "Eq bun.starter-files true" }
+        , S.RemovalStep::{ action = "remove-file", dest = ".oxfmtrc.json", when = Some "Eq bun.starter-files true" }
+        , S.RemovalStep::{ action = "remove-file", dest = "justfile", when = Some "Eq bun.starter-files true" }
         , S.RemovalStep::{ action = "remove-file", dest = ".envrc" }
         ]
       }
