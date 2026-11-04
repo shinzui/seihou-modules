@@ -4,9 +4,9 @@ let S =
 
 in  S.Module::{
     , name = "fumadocs"
-    , version = Some "0.3.0"
+    , version = Some "0.4.0"
     , description = Some
-        "Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, and optional OpenAPI reference pages"
+        "Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container"
     , vars =
       [ S.VarDecl::{
         , name = "docs.starter-content"
@@ -39,6 +39,14 @@ in  S.Module::{
             "Docs folder holding the generated OpenAPI pages (served under /docs/<dir>/). Pick one no authored content uses."
         , required = True
         , validation = Some "[a-z][a-z0-9-]*"
+        }
+      , S.VarDecl::{
+        , name = "docs.container"
+        , type = "bool"
+        , default = Some "false"
+        , description = Some
+            "Generate a Nix build of the static site and a non-root Caddy image built with nix2container; also requires nix.bun2nix=true and nix.package-module=nix/fumadocs-container.nix"
+        , required = True
         }
       , S.VarDecl::{
         , name = "project.name"
@@ -150,6 +158,30 @@ in  S.Module::{
         , dest = "linkinator.config.json"
         }
       , S.Step::{ strategy = "copy", src = "serve.json", dest = "serve.json" }
+      , S.Step::{
+        , strategy = "template"
+        , src = "nix/fumadocs-container.nix.tpl"
+        , dest = "nix/fumadocs-container.nix"
+        , when = Some "Eq docs.container true"
+        }
+      , S.Step::{
+        , strategy = "copy"
+        , src = "nix/fumadocs-site.nix"
+        , dest = "nix/fumadocs-site.nix"
+        , when = Some "Eq docs.container true"
+        }
+      , S.Step::{
+        , strategy = "copy"
+        , src = "nix/caddy-config.nix"
+        , dest = "nix/caddy-config.nix"
+        , when = Some "Eq docs.container true"
+        }
+      , S.Step::{
+        , strategy = "copy"
+        , src = "nix/container.nix"
+        , dest = "nix/container.nix"
+        , when = Some "Eq docs.container true"
+        }
       , S.Step::{
         , strategy = "template"
         , src = "scripts/copy-fonts.mjs.tpl"
@@ -278,6 +310,10 @@ in  S.Module::{
         , S.RemovalStep::{ action = "remove-file", dest = "source.config.ts" }
         , S.RemovalStep::{ action = "remove-file", dest = "linkinator.config.json" }
         , S.RemovalStep::{ action = "remove-file", dest = "serve.json" }
+        , S.RemovalStep::{ action = "remove-file", dest = "nix/fumadocs-container.nix" }
+        , S.RemovalStep::{ action = "remove-file", dest = "nix/fumadocs-site.nix" }
+        , S.RemovalStep::{ action = "remove-file", dest = "nix/caddy-config.nix" }
+        , S.RemovalStep::{ action = "remove-file", dest = "nix/container.nix" }
         , S.RemovalStep::{ action = "remove-file", dest = "scripts/copy-fonts.mjs" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/router.tsx" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/routeTree.gen.ts" }

@@ -3,8 +3,8 @@ type: SeihouModule
 title: fumadocs
 description: 'Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake''s
   dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams,
-  an interactive zoom/pan/expand widget for every diagram, and optional OpenAPI reference
-  pages'
+  an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference
+  pages, and an optional Caddy container image built with nix2container'
 resource: seihou://seihou-modules/modules/typescript/fumadocs
 tags:
 - typescript
@@ -17,14 +17,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.15.0.0
-version: 0.3.0
+version: 0.4.0
 ---
 
 # fumadocs
 
-Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, and optional OpenAPI reference pages
+Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container
 
-**Version:** 0.3.0
+**Version:** 0.4.0
 
 ## Dependencies
 
@@ -38,6 +38,7 @@ Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's
 - `docs.openapi-base-dir` — text, required, default `api`, matching `[a-z][a-z0-9-]*`. Docs folder holding the generated OpenAPI pages (served under /docs/<dir>/). Pick one no authored content uses.
 - `project.name` — text, required, matching `[a-z][a-z0-9-]*`. Project name (package.json name). Re-declared so step `dest` paths and templates validate; the value is shared with `nix-bun-flake` via the dependency graph (it exports `project.name`).
 - `project.description` — text, required. One-line project description (package.json description, home page intro). Inherited from `nix-bun-flake`, which exports `project.description`.
+- `docs.container` — boolean, required, default `false`. Generate a Nix build of the static site and a non-root Caddy image built with nix2container; also requires nix.bun2nix=true and nix.package-module=nix/fumadocs-container.nix
 - `docs.site-name` — text, required. Human-readable site/nav title shown in the navbar and browser tab (e.g. "keiro runtime docs").
 - `docs.github-user` — text, required, default `shinzui`. GitHub owner used for the navbar GitHub link and per-page "edit on GitHub" links (https://github.com/<user>/<project.name>).
 - `docs.github-branch` — text, required, default `master`. Branch used in per-page "edit on GitHub" links.
@@ -67,6 +68,10 @@ No exports declared.
 - `Copy` `source.config.ts` → `source.config.ts`
 - `Copy` `linkinator.config.json` → `linkinator.config.json`
 - `Copy` `serve.json` → `serve.json`
+- `Template` `nix/fumadocs-container.nix.tpl` → `nix/fumadocs-container.nix` — when `Eq docs.container true`
+- `Copy` `nix/fumadocs-site.nix` → `nix/fumadocs-site.nix` — when `Eq docs.container true`
+- `Copy` `nix/caddy-config.nix` → `nix/caddy-config.nix` — when `Eq docs.container true`
+- `Copy` `nix/container.nix` → `nix/container.nix` — when `Eq docs.container true`
 - `Template` `scripts/copy-fonts.mjs.tpl` → `scripts/copy-fonts.mjs`
 - `Copy` `src/router.tsx` → `src/router.tsx`
 - `Copy` `src/routeTree.gen.ts` → `src/routeTree.gen.ts`
@@ -99,6 +104,10 @@ No exports declared.
 - delete `source.config.ts`
 - delete `linkinator.config.json`
 - delete `serve.json`
+- delete `nix/fumadocs-container.nix`
+- delete `nix/fumadocs-site.nix`
+- delete `nix/caddy-config.nix`
+- delete `nix/container.nix`
 - delete `scripts/copy-fonts.mjs`
 - delete `src/router.tsx`
 - delete `src/routeTree.gen.ts`

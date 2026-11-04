@@ -1,8 +1,8 @@
 # fumadocs
 
-> Fumadocs documentation site on TanStack Start + Vite, layered on `nix-bun-flake`'s dev shell: a static-SPA docs app with self-hosted custom fonts, `zombie-mermaid` diagrams, an interactive zoom/pan/expand widget for every diagram, and optional OpenAPI reference pages.
+> Fumadocs documentation site on TanStack Start + Vite, layered on `nix-bun-flake`'s dev shell: a static-SPA docs app with self-hosted custom fonts, `zombie-mermaid` diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container.
 
-**Version:** `0.3.0`
+**Version:** `0.4.0`
 
 ## Overview
 
@@ -96,6 +96,7 @@ Maintainers can exercise actual module composition and the static output with:
 python3 scripts/test-fumadocs-bootstrap.py
 python3 scripts/test-fumadocs-openapi.py
 python3 scripts/test-fumadocs-adoption.py
+python3 scripts/test-fumadocs-container.py --native-linux x86_64-linux
 ```
 
 Existing sites can set `docs.starter-content=false` to keep their documentation
@@ -121,6 +122,64 @@ very large specification grows every operation's static payload. The interactive
 playground sends requests from the reader's browser, which needs the API to allow
 cross-origin requests from the docs host.
 
+## Container image
+
+Three variables together build the static site in the Nix sandbox and serve it from a
+non-root Caddy image built with `nix2container`. Without them, a site is unchanged by this
+feature, and the lock is the same either way. Seihou dependency bindings are static literals,
+and adding one changes a dependency's identity, so this module cannot set the other two for you.
+
+```bash
+seihou update fumadocs --dry-run --var docs.container=true --var nix.bun2nix=true \
+  --var nix.package-module=nix/fumadocs-container.nix
+seihou update fumadocs --var docs.container=true --var nix.bun2nix=true \
+  --var nix.package-module=nix/fumadocs-container.nix
+bun install
+nix run .#bun2nix -- --lock-file bun.lock --output-file bun-deps.nix
+git add flake.nix flake.lock nix/ bun.lock bun-deps.nix
+nix build .#docs-site
+```
+
+`bun-deps.nix` is yours to generate and commit, and `docs-site` stays absent until Git tracks
+it. Regenerate it whenever `bun.lock` changes. On Linux:
+
+```bash
+nix build .#dockerImage
+nix run .#dockerImage.copyToDockerDaemon
+nix run .#dockerImage.copyToRegistry
+nix run .#dockerImage.copyTo -- oci-archive:/absolute/artifacts/docs.tar:docs:latest
+```
+
+The build result is an image description, so `docker load < result` does not work. macOS
+omits `dockerImage`; build it in Linux CI or with a matching Linux builder. The site build
+fails if prerendering did not produce `/docs` and its server-function data. Prerendering uses a local preview server, and
+concurrent builds on one machine have produced incomplete sites, so build one site at a time.
+
+The image runs as `65532:65532` on port 8080, with Caddy and the site in separate layers. It
+serves plain HTTP, has no Caddy admin API, and runs on a read-only root filesystem. `nix/caddy-config.nix` validates a Caddyfile
+that matches `serve.json`: pages resolve to their prerendered HTML and anything else falls
+back to `_shell.html`. Missing `/assets/*` and `/fonts/*` files return 404 and are not cached.
+Terminate TLS in front of the container.
+
+Three limits apply to the sandboxed build:
+
+- **Fonts.** `scripts/copy-fonts.mjs` cannot reach the font flake from the sandbox and falls
+  back to system monospace. To include fonts, track a directory holding the files `app.css`
+  references (`<docs.font-basename>-Regular.otf` and so on) and set
+  `perSystem.docsContainer.fonts = ./fonts;` in `flake.module.nix`. Check that the font's
+  license permits redistributing them in an image.
+- **Remote OpenAPI documents.** The sandbox has no network, so `docs.openapi-spec` must be a
+  project-relative path.
+- **Lifecycle scripts.** They do not run. The build runs `fumadocs-mdx` itself, so a
+  `postinstall` you add to `package.json` is skipped.
+
+To turn the feature off, first remove any `docsContainer` setting from `flake.module.nix`,
+because the option disappears with the module and Nix would reject the flake. Then set
+`docs.container` and `nix.bun2nix` to false. Unedited managed files are removed; `bun.lock`, `bun-deps.nix` and `flake.module.nix` are kept. The
+`nix.package-module` import remains but is guarded by the file's existence, so it is inert. Keep `nix-bun-flake` at 0.6.0 or
+later, which provides the `nix2container` input. The image recipe is managed by this module,
+so customize it by changing `docsContainer` options rather than editing `nix/container.nix`.
+
 ## Variables
 
 | Name | Type | Default | Required | Validation | Description |
@@ -131,6 +190,7 @@ cross-origin requests from the docs host.
 | `docs.openapi` | `bool` | `false` | yes | — | Generate API reference pages from an OpenAPI document with `fumadocs-openapi`. |
 | `docs.openapi-spec` | `text` | `openapi.yaml` | yes | — | OpenAPI document (project-relative path or URL); new sites with starter content get an example. |
 | `docs.openapi-base-dir` | `text` | `api` | yes | `[a-z][a-z0-9-]*` | Docs folder for the generated pages, served under `/docs/<dir>/`. |
+| `docs.container` | `bool` | `false` | yes | — | Generate the Nix site build and Caddy image; also requires `nix.bun2nix=true` and `nix.package-module=nix/fumadocs-container.nix`. |
 | `docs.site-name` | `text` | — | yes | — | Site/nav title shown in the navbar and browser tab. |
 | `docs.github-user` | `text` | `shinzui` | yes | — | GitHub owner for the navbar + edit-on-GitHub links. |
 | `docs.github-branch` | `text` | `master` | yes | — | Branch used in edit-on-GitHub links. |
@@ -177,6 +237,8 @@ When run (after the `nix-bun-flake` dependency), this module writes:
 - `content/docs/index.mdx`, `content/docs/meta.json` — strategy: `template`, when `docs.starter-content=true`
 - `content/docs/diagram-demo.mdx` — strategy: `copy`, when `docs.starter-content=true`
 - `openapi.yaml` — strategy: `copy`, when `docs.openapi=true`, `docs.starter-content=true`, and `docs.openapi-spec` is the default
+- `nix/fumadocs-container.nix` — strategy: `template`, when `docs.container=true`
+- `nix/fumadocs-site.nix`, `nix/caddy-config.nix`, `nix/container.nix` — strategy: `copy`, when `docs.container=true`
 - `.gitignore` — strategy: `template`, patch mode: `append-line-if-absent` (adds `.source`, `.output`, `.nitro`, `public/fonts`, …)
 
 ## Removal

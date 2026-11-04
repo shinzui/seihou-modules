@@ -72,7 +72,7 @@ commands, and an optional removal procedure.
 | [`nix-bun-flake`](modules/typescript/nix-bun-flake) | 0.6.0 | Nix flake for Bun + TypeScript: oxlint, oxfmt, `just`, optional git-hooks.nix, pinned bun2nix builds and nix2container images |
 | [`openapi-typescript-client`](modules/typescript/openapi-typescript-client) | 0.2.1 | Bun workflow for reusable ESM TypeScript 7 clients, Orval generation, status-specific Zod response validation, and optional Mori inventory |
 | [`openapi-typescript-client-dir`](modules/typescript/openapi-typescript-client-dir) | 0.1.0 | Create a client folder and compose the client scaffold with `git-init` inside it under a configurable GitHub owner |
-| [`fumadocs`](modules/typescript/fumadocs) | 0.3.0 | Fumadocs site on TanStack Start + Vite, layered on `nix-bun-flake`, with mermaid diagrams, a zoom/pan widget, and optional OpenAPI reference pages |
+| [`fumadocs`](modules/typescript/fumadocs) | 0.4.0 | Fumadocs site on TanStack Start + Vite, layered on `nix-bun-flake`, with mermaid diagrams, a zoom/pan widget, optional OpenAPI reference pages, and an optional Caddy container image |
 
 ### Recipes
 

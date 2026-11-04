@@ -147,8 +147,8 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "fumadocs"
-        , version = Some "0.3.0"
-        , description = Some "Current Fumadocs static documentation site on the shared Bun environment, with optional starter content for existing-site adoption and optional OpenAPI reference pages"
+        , version = Some "0.4.0"
+        , description = Some "Current Fumadocs static documentation site on the shared Bun environment, with optional starter content for existing-site adoption, optional OpenAPI reference pages, and an optional Caddy container image"
         , modulePath = "modules/typescript/fumadocs"
         , tags = [ "typescript", "fumadocs", "docs" ]
         , dependencies = [ "nix-bun-flake" ]

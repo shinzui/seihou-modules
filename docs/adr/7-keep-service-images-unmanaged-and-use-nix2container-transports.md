@@ -45,6 +45,14 @@ extension. That example layers the runtime and application separately over a pro
 package instead of assembling a root tree. It has no consumer migration blueprint because
 the module shipped no earlier image example to migrate from.
 
+`fumadocs` 0.4.0 is a deliberate exception to keeping images unmanaged. A static site has no
+project-specific executable, entrypoint or runtime to choose, so the module owns an opt-in
+Caddy image, Caddyfile and sandboxed site build behind `docs.container`. Projects still own
+`bun.lock` and `bun-deps.nix`. Opting in also sets `nix.bun2nix` and `nix.package-module`
+explicitly. Seihou dependency bindings are static literals, and they are part of a dependency's
+identity: binding `nix.package-module` for every site made `seihou update fumadocs` lose the
+saved inputs of existing projects.
+
 ## Consequences
 
 Updating the module refreshes its managed inputs and example but does not rewrite an
