@@ -4,8 +4,8 @@ let S =
 
 in  S.Module::{
     , name = "nix-bun-flake"
-    , version = Some "0.5.0"
-    , description = Some "Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, optional git-hooks.nix pre-commit checks, and opt-in pinned bun2nix build helpers"
+    , version = Some "0.6.0"
+    , description = Some "Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, optional git-hooks.nix pre-commit checks, opt-in pinned bun2nix build helpers, and pinned nix2container image support"
     , vars =
       [ S.VarDecl::{
         , name = "project.name"
@@ -79,7 +79,7 @@ in  S.Module::{
       , S.Step::{ strategy = "copy", src = "nix/pre-commit.nix", dest = "nix/pre-commit.nix", when = Some "Eq nix.pre-commit true" }
       , S.Step::{ strategy = "copy", src = "nix/bun2nix-package.nix", dest = "nix/bun2nix-package.nix", when = Some "Eq nix.bun2nix true" }
       , S.Step::{ strategy = "copy", src = "nix/bun2nix-module.nix", dest = "nix/bun2nix-module.nix", when = Some "Eq nix.bun2nix true" }
-      , S.Step::{ strategy = "copy", src = "flake.module.nix.example", dest = "flake.module.nix.example" }
+      , S.Step::{ strategy = "template", src = "flake.module.nix.example.tpl", dest = "flake.module.nix.example" }
       , S.Step::{ strategy = "copy", src = "flake.lock", dest = "flake.lock" }
       , S.Step::{ strategy = "template", src = "package.json.tpl", dest = "package.json", when = Some "Eq bun.starter-files true" }
       , S.Step::{ strategy = "copy", src = "tsconfig.json", dest = "tsconfig.json", when = Some "Eq bun.starter-files true" }

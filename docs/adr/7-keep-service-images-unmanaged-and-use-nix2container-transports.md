@@ -39,6 +39,12 @@ and update load/export/CI consumers explicitly. Keep custom input nodes and exis
 image semantics. Native Linux image build/export, configuration/root-file inspection
 and daemon smoke evidence remain distinct from evaluation and migration attendance.
 
+`nix-bun-flake` 0.6.0 applies the same decision to Bun and Node servers: the same pinned
+input, always declared across toggles, and a commented Linux-only example in the unmanaged
+extension. That example layers the runtime and application separately over a project-owned
+package instead of assembling a root tree. It has no consumer migration blueprint because
+the module shipped no earlier image example to migrate from.
+
 ## Consequences
 
 Updating the module refreshes its managed inputs and example but does not rewrite an

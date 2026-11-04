@@ -3,7 +3,7 @@ type: SeihouModule
 title: nix-bun-flake
 description: Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting
   (semicolon-free, sorted imports), a just task runner, optional git-hooks.nix pre-commit
-  checks, and opt-in pinned bun2nix build helpers
+  checks, opt-in pinned bun2nix build helpers, and pinned nix2container image support
 resource: seihou://seihou-modules/modules/typescript/nix-bun-flake
 tags:
 - typescript
@@ -15,14 +15,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.15.0.0
-version: 0.5.0
+version: 0.6.0
 ---
 
 # nix-bun-flake
 
-Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, optional git-hooks.nix pre-commit checks, and opt-in pinned bun2nix build helpers
+Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, optional git-hooks.nix pre-commit checks, opt-in pinned bun2nix build helpers, and pinned nix2container image support
 
-**Version:** 0.5.0
+**Version:** 0.6.0
 
 ## Dependencies
 
@@ -58,7 +58,7 @@ This module has no dependencies.
 - `Copy` `nix/pre-commit.nix` → `nix/pre-commit.nix` — when `Eq nix.pre-commit true`
 - `Copy` `nix/bun2nix-package.nix` → `nix/bun2nix-package.nix` — when `Eq nix.bun2nix true`
 - `Copy` `nix/bun2nix-module.nix` → `nix/bun2nix-module.nix` — when `Eq nix.bun2nix true`
-- `Copy` `flake.module.nix.example` → `flake.module.nix.example`
+- `Template` `flake.module.nix.example.tpl` → `flake.module.nix.example`
 - `Copy` `flake.lock` → `flake.lock`
 - `Template` `package.json.tpl` → `package.json` — when `Eq bun.starter-files true`
 - `Copy` `tsconfig.json` → `tsconfig.json` — when `Eq bun.starter-files true`

@@ -18,6 +18,7 @@ spec = importlib.util.spec_from_file_location('bun_updater', ROOT / 'scripts/upd
 updater = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(updater)
 FEATURE_FILES = ['nix/bun2nix-package.nix', 'nix/bun2nix-module.nix']
+PREVIOUS_RELEASE = '62f792c2da2e0bbb608518164629cdfe8d52942d'  # Last commit that shipped 0.5.0, without the nix2container input.
 
 
 def run(args, cwd, input=None, succeeds=True):
@@ -167,6 +168,138 @@ def ownership(work):
     print('Ownership: enable/disable/update/removal preserve authored files, custom inputs and edited orphans.', flush=True)
 
 
+def image_extension(project):
+    """Exercise the shipped example verbatim around a tiny server, skipping a real app build."""
+    example = (project / 'flake.module.nix.example').read_text()
+    start = example.index('    #   packages = pkgs.lib.optionalAttrs')
+    end = example.index('    #   };', start) + len('    #   };')
+    block = '\n'.join(line.replace('    #   ', '    ', 1) for line in example[start:end].splitlines())
+    assert 'nix2container.buildLayer { deps = [ pkgs.nodejs_22 ]; }' in block
+    block = block.replace('packages = pkgs.lib.optionalAttrs', """packages = {
+      default = pkgs.writeTextDir "server/index.mjs" "console.log('fixture-server')";
+    } // pkgs.lib.optionalAttrs""")
+    head = example[:start].replace('bunProject.extraDevPackages = [ pkgs.jq ];',
+                                   'bunProject.extraDevPackages = [ pkgs.ripgrep ];')
+    return head + block + '\n  };\n}\n'
+
+
+def image_checks(project, name):
+    for system in ['x86_64-linux', 'aarch64-linux']:
+        result = json.loads(nix(project, 'eval', '--json', f'.#packages.{system}.dockerImage', '--apply', """i: {
+          name = i.imageName;
+          tag = i.imageTag;
+          image = i.drvPath;
+          docker = i.copyToDockerDaemon.drvPath;
+          registry = i.copyToRegistry.drvPath;
+          archive = i.copyTo.drvPath;
+        }"""))
+        assert (result['name'], result['tag']) == (name, 'latest'), result
+        assert all(result[key].endswith('.drv') for key in ['image', 'docker', 'registry', 'archive'])
+    names = json.loads(nix(project, 'eval', '--json', '.#packages.aarch64-darwin', '--apply', 'builtins.attrNames'))
+    assert 'dockerImage' not in names and 'default' in names, names
+
+
+def upgrade(work):
+    """Real update from the last release without the input, then the shipped image example."""
+    project = work / 'upgrade'
+    project.mkdir()
+    target = project / '.seihou/modules/nix-bun-flake'
+    prefix = 'modules/typescript/nix-bun-flake/'
+    tracked = run(['git', 'ls-tree', '-r', '--name-only', PREVIOUS_RELEASE, '--', prefix], ROOT).stdout.splitlines()
+    for file in tracked:
+        path = target / file.removeprefix(prefix)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(subprocess.check_output(['git', 'show', f'{PREVIOUS_RELEASE}:{file}'], cwd=ROOT))
+    assert 'version = Some "0.5.0"' in (target / 'module.dhall').read_text()
+    run(['seihou', 'run', 'nix-bun-flake', '--no-save-prompted', '--no-commands',
+         '--var', 'project.name=image-check', '--var', 'project.description=Image check',
+         '--var', 'nix.pre-commit=false', '--var', 'nix.bun2nix=true'], project)
+    run(['git', 'init', '-q'], project)
+    original_lock = json.loads((project / 'flake.lock').read_text())
+    assert 'nix2container' not in original_lock['nodes']
+    authored = b'{ ... }: { perSystem = { pkgs, ... }: { bunProject.extraDevPackages = [ pkgs.jq ]; }; }\n'
+    (project / 'flake.module.nix').write_bytes(authored)
+    shutil.rmtree(target)
+    shutil.copytree(updater.MODULE, target)
+    args = ['seihou', 'update', 'nix-bun-flake', '--no-commands', '--json']
+    run(args + ['--dry-run'], project)
+    run(args, project)
+    assert (project / 'flake.module.nix').read_bytes() == authored, 'Update took over the extension'
+    # An unedited lock moves to the canonical lock without any extra locking.
+    assert (project / 'flake.lock').read_bytes() == (updater.FILES / 'flake.lock').read_bytes()
+    locked = json.loads((project / 'flake.lock').read_text())
+    for node, value in original_lock['nodes'].items():
+        if node != 'root':
+            assert locked['nodes'][node] == value, f'Moved existing pin: {node}'
+    n2c = locked['nodes'][locked['nodes']['root']['inputs']['nix2container']]
+    assert n2c['inputs']['nixpkgs'] == ['nixpkgs']
+    assert n2c['locked']['rev'] == updater.NIX2CONTAINER_REV
+    run(['git', 'add', '-A'], project)
+    before = nix(project, 'eval', '--raw', '.#devShells.x86_64-linux.default.drvPath')
+    assert before.endswith('.drv')
+    migrated = image_extension(project)
+    assert 'name = "image-check";' in migrated
+    (project / 'flake.module.nix').write_text(migrated)
+    run(['git', 'add', '-A'], project)
+    image_checks(project, 'image-check')
+    run(args, project)
+    assert (project / 'flake.module.nix').read_text() == migrated
+    assert (project / 'flake.lock').read_bytes() == (updater.FILES / 'flake.lock').read_bytes()
+    print('Upgrade: 0.5.0 update, preserved extension and pins, Linux image/helpers, Darwin exclusion.', flush=True)
+    return project
+
+
+NATIVE_IMAGE_CHECK = r"""
+    checks.fixtureArchiveCheck = pkgs.runCommand "nix2container-archive-check" {
+      nativeBuildInputs = [ config.packages.dockerImage.copyTo pkgs.python3 ];
+    } ''
+      copy-to oci-archive:$TMPDIR/image.tar:image-check:latest --tmpdir "$TMPDIR"
+      python3 - "$TMPDIR/image.tar" <<'PY'
+import json, posixpath, sys, tarfile
+def blob(archive, digest):
+    return archive.extractfile('blobs/' + digest.replace(':', '/'))
+with tarfile.open(sys.argv[1]) as archive:
+    index = json.load(archive.extractfile('index.json'))
+    manifest = json.load(blob(archive, index['manifests'][0]['digest']))
+    config = json.load(blob(archive, manifest['config']['digest']))['config']
+    assert config['User'] == '65532:65532', config
+    node, server = config['Entrypoint']
+    assert node.endswith('/bin/node') and server.endswith('/server/index.mjs'), config
+    assert config['ExposedPorts'] == {'8080/tcp': {}}, config
+    assert 'NODE_ENV=production' in config['Env'] and 'PORT=8080' in config['Env'], config
+    layers = []
+    for layer in manifest['layers']:
+        with tarfile.open(fileobj=blob(archive, layer['digest'])) as contents:
+            layers.append({item.name.removeprefix('./').lstrip('/'): item for item in contents})
+    assert len(layers) == 2, 'Expected a runtime layer and an application layer'
+    holders = lambda path: [layer for layer in layers if path.lstrip('/') in layer]
+    assert len(holders(node)) == 1, 'The runtime must live in exactly one layer: ' + node
+    assert len(holders(server)) == 1, 'The application must live in exactly one layer: ' + server
+    assert holders(node)[0] is not holders(server)[0], 'Runtime and application share a layer'
+    # nixpkgs links bin/node to its versioned binary; follow that link inside the layer.
+    entry = holders(node)[0][node.lstrip('/')]
+    if entry.issym():
+        target = posixpath.normpath(posixpath.join(posixpath.dirname(entry.name), entry.linkname))
+        entry = holders(node)[0][target.removeprefix('./').lstrip('/')]
+    assert entry.isfile() and entry.mode & 0o111, node
+print('Archive verified: user, entrypoint, ports, environment and separate layers')
+PY
+      mkdir -p "$out"
+      touch "$out/passed"
+    '';
+"""
+
+
+def native_image(project, system):
+    path = project / 'flake.module.nix'
+    path.write_text(path.read_text().replace('    bunProject.extraDevPackages',
+                                             NATIVE_IMAGE_CHECK + '\n    bunProject.extraDevPackages'))
+    run(['git', 'add', '-A'], project)
+    run(['nix', 'build', f'.#checks.{system}.fixtureArchiveCheck', '--no-link',
+         '--no-write-lock-file', '--print-build-logs'], project)
+    print(f'Native image {system}: built, exported to oci-archive and inspected.', flush=True)
+
+
 def prepare_native(project, layout):
     project.mkdir()
     updater.render(project, 'false', 'true')
@@ -245,12 +378,17 @@ def native(project, layout, fixtures=FIXTURES):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--native', action='store_true', help='Also build both consumers on the host system')
+    parser.add_argument('--native-linux', choices=['x86_64-linux', 'aarch64-linux'],
+                        help='Also build, export and inspect the example image on a Linux system')
     args = parser.parse_args()
     with tempfile.TemporaryDirectory(prefix='nix-bun-acceptance-') as tmp:
         work = Path(tmp)
         run(['seihou', 'validate-module', str(updater.MODULE)], ROOT)
         evaluate_matrix(work)
         ownership(work)
+        upgraded = upgrade(work)
+        if args.native_linux:
+            native_image(upgraded, args.native_linux)
         if args.native:
             for layout in ['single', 'workspace']:
                 project = work / layout

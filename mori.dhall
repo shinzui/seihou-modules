@@ -130,8 +130,8 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "nix-bun-flake"
-        , version = Some "0.5.0"
-        , description = Some "Shared Bun/TypeScript/Oxc flake-parts environment with revision-pinned locks, optional bun2nix builds, and an unmanaged project extension"
+        , version = Some "0.6.0"
+        , description = Some "Shared Bun/TypeScript/Oxc flake-parts environment with revision-pinned locks, optional bun2nix builds, pinned nix2container image support, and an unmanaged project extension"
         , modulePath = "modules/typescript/nix-bun-flake"
         , tags = [ "typescript", "bun", "nix", "flake-parts" ]
         , requiredVars = [ "project.name", "project.description" ]

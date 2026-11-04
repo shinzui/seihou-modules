@@ -22,6 +22,9 @@ MODULE = ROOT / 'modules/typescript/nix-bun-flake'
 FILES = MODULE / 'files'
 BUN2NIX_VERSION = '2.1.2'
 BUN2NIX_REV = '0f2a1f0b6f42cebe3b149bf62d38754c5e0e9729'
+# Moves only by a deliberate release: refresh() never rewrites this input.
+NIX2CONTAINER_VERSION = 'v1.1.0'
+NIX2CONTAINER_REV = 'e503eb81630a0c5d7ec244e08e0733650235d8f1'
 
 
 def get(url):
@@ -121,6 +124,12 @@ def verify_helper_pin():
         tag = get(tag['url'])['object']
     assert tag['type'] == 'commit' and tag['sha'] == BUN2NIX_REV
     print('Verified qualified bun2nix pin against the exact npm release and upstream tag.', flush=True)
+    assert f'github:nlewo/nix2container/{NIX2CONTAINER_REV}' in template
+    tag = get(f'https://api.github.com/repos/nlewo/nix2container/git/ref/tags/{NIX2CONTAINER_VERSION}')['object']
+    while tag['type'] == 'tag':
+        tag = get(tag['url'])['object']
+    assert tag['type'] == 'commit' and tag['sha'] == NIX2CONTAINER_REV
+    print('Verified nix2container pin against the exact upstream tag.', flush=True)
 
 
 def verify_archives():

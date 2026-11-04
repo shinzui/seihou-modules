@@ -18,6 +18,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-parts.follows = "flake-parts";
     };
+    # nix2container v1.1.0; available to unmanaged image definitions.
+    nix2container = {
+      url = "github:nlewo/nix2container/e503eb81630a0c5d7ec244e08e0733650235d8f1";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = inputs@{ flake-parts, nixpkgs, ... }:

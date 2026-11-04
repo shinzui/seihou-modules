@@ -1,8 +1,8 @@
 # nix-bun-flake
 
-> Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a `just` task runner, optional git-hooks.nix pre-commit checks, and opt-in pinned bun2nix build helpers.
+> Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a `just` task runner, optional git-hooks.nix pre-commit checks, opt-in pinned bun2nix build helpers, and pinned nix2container image support.
 
-**Version:** `0.5.0`
+**Version:** `0.6.0`
 
 ## Overview
 
@@ -40,8 +40,9 @@ flake.module.nix.example     # example for unmanaged project customizations
 ```
 
 All inputs are pinned by revision in `flake.nix`. The flake-parts and git-hooks
-inputs follow the same nixpkgs. bun2nix follows nixpkgs and flake-parts. Both optional
-inputs remain declared when disabled, so all four feature combinations share one lock.
+inputs follow the same nixpkgs. bun2nix follows nixpkgs and flake-parts, and nix2container
+follows nixpkgs. All of them remain declared when unused, so all four feature combinations
+share one lock.
 Disabled bun2nix adds no generator to the shell and exposes no `packages.bun2nix`.
 `nix flake update` cannot move module-owned revisions. Update projects together
 by installing a new module release and running:
@@ -112,6 +113,9 @@ before using this module release. The lock and tooling-source pins remain unchan
 | `nix.bun2nix` | `bool` | `false` | yes | — | Include the pinned generator, hook and dependency-cache helper; build recipes remain project-owned |
 | `nix.pre-commit` | `bool` | `true` | yes | — | Include pre-commit-hooks (git-hooks.nix) wiring `oxlint` and `oxfmt --check` as git hooks |
 
+Container images need no variable: the `nix2container` input is always locked and the
+image stays in unmanaged `flake.module.nix`. See [Container images](#container-images).
+
 ## Prompts
 
 The following values are asked interactively (unless supplied via `--var`):
@@ -138,7 +142,7 @@ When run, this module writes:
 - `nix/tooling.nix` and `nix/tooling-sources.json` — strategy: `copy`
 - `nix/pre-commit.nix` — strategy: `copy`, when hooks are enabled
 - `nix/bun2nix-package.nix` and `nix/bun2nix-module.nix` — strategy: `copy`, only with bun2nix enabled
-- `flake.module.nix.example` — strategy: `copy`
+- `flake.module.nix.example` — strategy: `template`
 - `package.json` — strategy: `template`
 - `tsconfig.json` — strategy: `copy`
 - `.oxlintrc.json` — strategy: `copy`
@@ -199,7 +203,8 @@ The default is `nix.bun2nix=false`. Opting in exposes the exact same patched hel
 `fetchBunDeps`. It does not install dependencies, generate `bun-deps.nix`, change
 `packageManager` or scripts, or infer `packages.default`. The base scaffold has no
 application entry point or production build command; those choices belong to your
-unmanaged `flake.module.nix`. Container and deployment recipes remain project-owned.
+unmanaged `flake.module.nix`. [Container](#container-images) and deployment recipes
+remain project-owned.
 
 For a fresh project:
 
@@ -483,6 +488,7 @@ Maintainer acceptance:
 python3 scripts/update-nix-bun-flake.py --check
 python3 scripts/test-nix-bun-flake.py          # rendering, ownership and evaluation
 python3 scripts/test-nix-bun-flake.py --native # actual host-system sandbox builds
+python3 scripts/test-nix-bun-flake.py --native-linux x86_64-linux # build and inspect an image archive
 python3 scripts/test-fumadocs-adoption.py
 ```
 
@@ -491,6 +497,42 @@ evaluation alone does not establish native build support. The fixtures compare
 generator bytes, reject v3, preserve real locks, run registry-backed outputs, and
 check app/shared edits and dependency changes against cache derivation identities.
 Fumadocs remains disabled by default and ordinary build/test commands do not use bun2nix.
+
+## Container images
+
+The always-locked `nix2container` input pins upstream v1.1.0 at
+`e503eb81630a0c5d7ec244e08e0733650235d8f1` and follows the application's nixpkgs. It adds
+no variable, shell tool or package output, and nothing is built until a project uses it.
+Image definitions stay in unmanaged `flake.module.nix`. Copy `flake.module.nix.example`
+and uncomment its Linux-only `dockerImage` block, which places `nodejs_22` and the
+application in separate layers and runs as `65532:65532`. It wraps your `packages.default`,
+normally a [bun2nix](#optional-sandbox-builds-with-bun2nix) package, and assumes the
+entrypoint `${app}/server/index.mjs`. A package that installs its server elsewhere, such as
+under `share/<name>/server/`, must change that path; a different package output must change
+`app`. Set the ports and environment to match as well. Add `copyToRoot` for anything else
+the server needs, such as TLS roots or a writable `/tmp`.
+
+On Linux:
+
+```bash
+nix build .#dockerImage
+nix run .#dockerImage.copyToDockerDaemon
+nix run .#dockerImage.copyToRegistry
+nix run .#dockerImage.copyTo -- oci-archive:/absolute/artifacts/app.tar:app:latest
+```
+
+The build result is an image description, so `docker load < result` does not work.
+`copyToRegistry` pushes the configured name and tag. macOS evaluation omits the image;
+build Linux outputs in Linux CI or with a matching Linux builder. The builder API and
+transports are owned by `mori://nlewo/nix2container` (artifact-level URI pending for
+`README.md` and `default.nix`). [ADR 7](../../../docs/adr/7-keep-service-images-unmanaged-and-use-nix2container-transports.md)
+records the decision.
+
+## Migrations
+
+| From | To | Effect |
+|------|----|--------|
+| `0.5.0` | `0.6.0` | Pins nix2container v1.1.0 with application nixpkgs follows and adds a Linux-only image example. An unedited `flake.lock` becomes the shipped lock. With other custom inputs, run `nix flake lock` after the update. Remove a hand-added `nix2container` input from `flake.nix` before updating: the merge otherwise declares it twice without a conflict marker, and Nix rejects the flake. `flake.module.nix` is preserved, existing pins stay fixed, and there are no new variables or automatic migration operations. |
 
 ## See Also
 
