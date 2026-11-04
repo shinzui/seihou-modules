@@ -8,7 +8,7 @@
     , tags = [ "gcp", "kubernetes", "direnv", "environment" ]
     }
   , { name = "nix-haskell-flake"
-    , version = Some "0.37.0"
+    , version = Some "0.37.1"
     , path = "modules/haskell/nix-haskell-flake"
     , description = Some "Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, pinned nix2container service image support, local services, treefmt, and pre-commit hooks"
     , tags = [ "haskell", "nix", "flake", "devshell" ]
@@ -44,7 +44,7 @@
     , tags = [ "git", "github", "bootstrap", "context" ]
     }
   , { name = "nix-bun-flake"
-    , version = Some "0.6.0"
+    , version = Some "0.6.1"
     , path = "modules/typescript/nix-bun-flake"
     , description = Some "Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, optional git-hooks.nix pre-commit checks, opt-in pinned bun2nix build helpers, and pinned nix2container image support"
     , tags = [ "typescript", "bun", "nix", "flake", "oxc", "devshell" ]

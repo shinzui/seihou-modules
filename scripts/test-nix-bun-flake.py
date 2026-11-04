@@ -17,6 +17,7 @@ FIXTURES = ROOT / 'scripts/fixtures/nix-bun-flake'
 spec = importlib.util.spec_from_file_location('bun_updater', ROOT / 'scripts/update-nix-bun-flake.py')
 updater = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(updater)
+UNANCHORED_RELEASE = '09e5728'  # Last commit that shipped 0.6.0, with unanchored result rules.
 FEATURE_FILES = ['nix/bun2nix-package.nix', 'nix/bun2nix-module.nix']
 PREVIOUS_RELEASE = '62f792c2da2e0bbb608518164629cdfe8d52942d'  # Last commit that shipped 0.5.0, without the nix2container input.
 
@@ -249,6 +250,56 @@ def upgrade(work):
     return project
 
 
+def anchored_result_rules(work):
+    """Installs and plain updates from 0.6.0 ignore nix links at the root, never source files.
+
+    Seihou cannot yet remove a .gitignore line in a migration (a shell one rolls the update back),
+    so the template overrides the old lines by order: the last matching rule wins.
+    """
+    def assert_rules(project):
+        run(['git', 'init', '-q'], project)
+        run(['git', 'check-ignore', 'result', 'result-1'], project)
+        for path in ['src/result-table.tsx', 'src/result/index.ts']:
+            run(['git', 'check-ignore', path], project, succeeds=False)
+
+    args = ['seihou', 'run', 'nix-bun-flake', '--no-save-prompted', '--no-commands',
+            '--var', 'project.name=ignore-check', '--var', 'project.description=Ignore check',
+            '--var', 'nix.pre-commit=false', '--var', 'nix.bun2nix=false']
+    fresh = work / 'ignore-fresh'
+    fresh.mkdir()
+    shutil.copytree(updater.MODULE, fresh / '.seihou/modules/nix-bun-flake')
+    run(args, fresh)
+    assert_rules(fresh)
+
+    updated = work / 'ignore-update'
+    updated.mkdir()
+    target = updated / '.seihou/modules/nix-bun-flake'
+    prefix = 'modules/typescript/nix-bun-flake/'
+    tracked = run(['git', 'ls-tree', '-r', '--name-only', UNANCHORED_RELEASE, '--', prefix], ROOT).stdout.splitlines()
+    for file in tracked:
+        path = target / file.removeprefix(prefix)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(subprocess.check_output(['git', 'show', f'{UNANCHORED_RELEASE}:{file}'], cwd=ROOT))
+    assert 'version = Some "0.6.0"' in (target / 'module.dhall').read_text()
+    run(args, updated)
+    run(['git', 'init', '-q'], updated)
+    # The defect, before the update.
+    run(['git', 'check-ignore', 'src/result-table.tsx'], updated)
+    with (updated / '.gitignore').open('a') as ignore:
+        ignore.write('.project-line\n')
+    shutil.rmtree(target)
+    shutil.copytree(updater.MODULE, target)
+    update = ['seihou', 'update', 'nix-bun-flake', '--no-commands', '--json']
+    run(update + ['--dry-run'], updated)
+    run(update, updated)
+    assert_rules(updated)
+    text = (updated / '.gitignore').read_text()
+    assert '.project-line' in text, 'Update removed a project line'
+    run(update, updated)
+    assert (updated / '.gitignore').read_text() == text, 'A second update changed .gitignore'
+    print('Ignore rules: anchored on install and after a real 0.6.0 update; project lines kept.', flush=True)
+
+
 NATIVE_IMAGE_CHECK = r"""
     checks.fixtureArchiveCheck = pkgs.runCommand "nix2container-archive-check" {
       nativeBuildInputs = [ config.packages.dockerImage.copyTo pkgs.python3 ];
@@ -386,6 +437,7 @@ def main():
         run(['seihou', 'validate-module', str(updater.MODULE)], ROOT)
         evaluate_matrix(work)
         ownership(work)
+        anchored_result_rules(work)
         upgraded = upgrade(work)
         if args.native_linux:
             native_image(upgraded, args.native_linux)

@@ -78,7 +78,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "nix-haskell-flake"
-        , version = Some "0.37.0"
+        , version = Some "0.37.1"
         , description = Some
             "Nix flake for Haskell projects with optional explicit checked runtime scopes, exact managed locks, a managed package-module seam for composed scaffolds, an unmanaged user extension point, pinned nix2container service image support, and toggleable local services, treefmt-nix, and pre-commit hooks"
         , modulePath = "modules/haskell/nix-haskell-flake"
@@ -130,7 +130,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "nix-bun-flake"
-        , version = Some "0.6.0"
+        , version = Some "0.6.1"
         , description = Some "Shared Bun/TypeScript/Oxc flake-parts environment with revision-pinned locks, optional bun2nix builds, pinned nix2container image support, and an unmanaged project extension"
         , modulePath = "modules/typescript/nix-bun-flake"
         , tags = [ "typescript", "bun", "nix", "flake-parts" ]

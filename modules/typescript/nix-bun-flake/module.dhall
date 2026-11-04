@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "nix-bun-flake"
-    , version = Some "0.6.0"
+    , version = Some "0.6.1"
     , description = Some "Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, optional git-hooks.nix pre-commit checks, opt-in pinned bun2nix build helpers, and pinned nix2container image support"
     , vars =
       [ S.VarDecl::{

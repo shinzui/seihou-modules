@@ -2,7 +2,7 @@
 
 > Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a `just` task runner, optional git-hooks.nix pre-commit checks, opt-in pinned bun2nix build helpers, and pinned nix2container image support.
 
-**Version:** `0.6.0`
+**Version:** `0.6.1`
 
 ## Overview
 
@@ -150,6 +150,9 @@ When run, this module writes:
 - `justfile` — strategy: `copy`
 - `.envrc` — strategy: `copy`
 - `.gitignore` — strategy: `template`, patch mode: `append-line-if-absent`
+  - `nix build` links are ignored only at the root (`/result`, `/result-*`), so source files such
+    as `src/result-table.tsx` stay tracked. The `!result` and `!result-*` lines before them undo
+    the unanchored rules earlier versions wrote, which an update cannot remove.
 - `.gitignore` — strategy: `template`, patch mode: `append-line-if-absent`
   - Applied when: `Eq nix.pre-commit true`
 
@@ -533,6 +536,7 @@ records the decision.
 | From | To | Effect |
 |------|----|--------|
 | `0.5.0` | `0.6.0` | Pins nix2container v1.1.0 with application nixpkgs follows and adds a Linux-only image example. An unedited `flake.lock` becomes the shipped lock. With other custom inputs, run `nix flake lock` after the update. Remove a hand-added `nix2container` input from `flake.nix` before updating: the merge otherwise declares it twice without a conflict marker, and Nix rejects the flake. `flake.module.nix` is preserved, existing pins stay fixed, and there are no new variables or automatic migration operations. |
+| `0.6.0` | `0.6.1` | Anchors the `nix build` ignore rules to the root, so source files named `result-*` stay tracked. An ordinary update fixes existing projects: the appended `!result` and `!result-*` override the old lines, which remain and are safe to delete. |
 
 ## See Also
 

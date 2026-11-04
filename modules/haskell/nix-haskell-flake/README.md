@@ -2,7 +2,7 @@
 
 > Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects on the `haskell-nix-dev` base flake (prebuilt GHC/HLS/cabal toolchains). Module-owned inputs are rev-pinned or follow that base, producing one exact lock across feature combinations. Base wiring and dependent scaffold package outputs live in managed `nix/*.nix` modules, while user customizations stay in an unmanaged `flake.module.nix`. Includes toggleable local services, treefmt-nix, and pre-commit hooks.
 
-**Version:** `0.37.0`
+**Version:** `0.37.1`
 
 ## Overview
 
@@ -375,7 +375,7 @@ When run, this module writes:
   based on the namespace's alphabetical position
 - `.gitignore` — strategy: `template`, patch `append-line-if-absent`
   - Appends `.envrc`, `.envrc.local`, Haskell build artifacts (`dist`, `dist-*`, `cabal-dev`,
-    `.direnv`, `cabal.project.local`, `result`, `result-*`), (when `nix.pre-commit`)
+    `.direnv`, `cabal.project.local`, and `/result` and `/result-*`, anchored to the root with `!result` and `!result-*` undoing the unanchored rules of earlier versions), (when `nix.pre-commit`)
     `.pre-commit-config.yaml`, (when `nix.redis`) `redis/`, and (when `nix.clickhouse`)
     `clickhouse/`
 
@@ -402,6 +402,7 @@ that the socket path is too long.
 |------|----|--------|
 | `0.35.0` | `0.36.0` | Moves the shared `mori://shinzui/haskell-nix` channel pin to `dedd4d81589e99d97137eb36f88423c70c7d69f5`, making retained runtime generation 6 available with the latest release cohort and inspection packages. Toolchain and Nixpkgs pins stay fixed. Existing explicit runtime and complementary selections are preserved; adopting generation 6 requires an explicit selection with `kioku = 9` and the matching Cabal imports. No migration operations; regenerate managed files through Seihou. |
 | `0.36.0` | `0.37.0` | Pins nix2container v1.1.0 with application nixpkgs follows and replaces the Linux-only service image example. Build results are image descriptions; use copy helpers for Docker, registries or explicit archive export. Existing unmanaged images require the upgrade-haskell-nix2container blueprint. Haskell toolchain/runtime pins stay fixed; no automatic migration operations. |
+| `0.37.0` | `0.37.1` | Anchors the `nix build` ignore rules to the root, so source files named `result-*` stay tracked. An ordinary update fixes existing projects: the appended `!result` and `!result-*` override the old lines, which remain and are safe to delete. |
 | `0.34.0` | `0.35.0` | Removes the obsolete `.envrc` ignore entry while preserving `.envrc.local`, so fresh clones retain the managed development environment. |
 | `0.33.0` | `0.34.0` | Moves only the shared `mori://shinzui/haskell-nix` registry pin to `d13245db8a3e2c1c559185c0adf87285259b7ab2`, adding immutable Kiroku generation 4 with Store 0.11.0.1 and migrations 0.7.1.0. Consumers can select Keiro generation 7, Kiroku 4, and Shibuya 3 together. Existing explicit family selections stay unchanged; toolchain and nixpkgs pins stay fixed. Regenerate managed files through Seihou. |
 | `0.30.0` | `0.31.0` | Moves the shared `mori://shinzui/haskell-nix` channel to `58a2c26c5be7cdf222fba6323939a67d3c62f193`, supplying the generated 462-package cohort, current Kioku/Shikumi patches and coherent CLI/WAI dependencies. Toolchain and nixpkgs pins remain fixed. Regenerate managed files; remove consumer Hackage replacements only after composing the shared extension and passing application checks. Linux and fresh-CI cache acceptance remain pending in the channel. |

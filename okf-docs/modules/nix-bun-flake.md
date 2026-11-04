@@ -15,14 +15,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.15.0.0
-version: 0.6.0
+version: 0.6.1
 ---
 
 # nix-bun-flake
 
 Nix flake for Bun + TypeScript projects with oxlint linting, oxfmt formatting (semicolon-free, sorted imports), a just task runner, optional git-hooks.nix pre-commit checks, opt-in pinned bun2nix build helpers, and pinned nix2container image support
 
-**Version:** 0.6.0
+**Version:** 0.6.1
 
 ## Dependencies
 
