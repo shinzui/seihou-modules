@@ -1,5 +1,11 @@
 # Bundle Update Log
 
+## 2026-11-04
+* **Update**: FRIC-11 promoted: Promoted to an improvement request for a non-zero exit and a hint when an update has no terminal to confirm on.
+* **Update**: FRIC-10 promoted: Promoted to an improvement request after a minimal reproduction showed that supplying the missing value silently resets saved optional inputs.
+* **Addition**: FRIC-11 records nuisance interface friction with mori://shinzui/seihou: Seihou update silently cancels and exits 0 without a terminal
+* **Addition**: FRIC-10 records detour interface friction with mori://shinzui/seihou: Seihou treats a new dependency binding as a new instance and breaks update
+
 ## 2026-11-02
 * **Update**: FRIC-9 resolved: Resolved by released runtime/schema fixes and installed acceptance without local overrides; no permanent seed tombstones or weakened base cleanup contract.
 * **Update**: FRIC-8 accepted: Accepted explicit output ownership as the composition contract; publication of the conditional-removal runtime remains tracked by FRIC-9.
