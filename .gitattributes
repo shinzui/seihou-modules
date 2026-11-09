@@ -1,0 +1,3 @@
+
+# Preserve original upstream font-license bytes, including their line-end spacing.
+modules/typescript/docs-microapp/files/apps/docs/public/fonts/*-OFL.txt -whitespace

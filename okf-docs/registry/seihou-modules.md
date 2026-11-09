@@ -8,7 +8,7 @@ tags:
 - seihou
 status: stable
 generated:
-  by: seihou-okf-extension/0.13.0.0
+  by: seihou-okf-extension/0.15.0.0
 ---
 
 # seihou-modules
@@ -30,6 +30,8 @@ Every artifact below is published by the `seihou-modules` registry and documente
 - [openapi-typescript-client](/modules/openapi-typescript-client.md)
 - [fumadocs](/modules/fumadocs.md)
 - [openapi-typescript-client-dir](/modules/openapi-typescript-client-dir.md)
+- [docs-microapp](/modules/docs-microapp.md)
+- [nagare-docs-config](/modules/nagare-docs-config.md)
 
 ## Recipes
 
@@ -37,6 +39,7 @@ Every artifact below is published by the `seihou-modules` registry and documente
 - [haskell-cli-app-repo](/recipes/haskell-cli-app-repo.md)
 - [github-repo](/recipes/github-repo.md)
 - [openapi-typescript-client-repo](/recipes/openapi-typescript-client-repo.md)
+- [docs-microapp-labs](/recipes/docs-microapp-labs.md)
 
 ## Blueprints
 

@@ -61,3 +61,20 @@ consumer's custom behavior; unresolved unsupported settings prevent parity accep
 Image definitions and helper resolution stay inside the Linux guard so macOS builds
 can enumerate ordinary package outputs. Linux builds need a matching Linux builder.
 Image publication is a separate authorized action from preparing or testing a migration.
+
+## Documentation reader extension (2026-11-09)
+
+`docs-microapp` 0.1.0 extends the scaffold-specific exception: its known Bun server,
+client assets, fonts and explicit publication snapshot permit managed image helpers.
+The unmanaged `flake.module.nix` configures `docsMicroapp.contentSource`,
+`docsMicroapp.contentConfig` and `docsMicroapp.imageName`; it remains the consumer's
+extension point. Application and registry-cache sources exclude documentation and
+release metadata. A separately built content snapshot owns the approved-file inventory
+and full release commit. Clean Git revisions produce `git-<12 hex characters>` tags;
+dirty source still supports ordinary application/development builds.
+
+The Linux image uses separate runtime/application/content layers, an unprivileged
+numeric user and an explicit `/content` root. macOS exposes no image package.
+Native build, explicit archive export, archive inspection and actual container/browser
+startup are separate acceptance checks. A remote builder does not make Linux export
+executables runnable on a macOS client: export on a Linux runner, then copy the archive.

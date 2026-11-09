@@ -36,9 +36,9 @@ Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's
 - `docs.openapi` — boolean, required, default `false`. Generate API reference pages from an OpenAPI document with fumadocs-openapi
 - `docs.openapi-spec` — text, required, default `openapi.yaml`. OpenAPI document rendered when docs.openapi is true: a project-relative path or a URL. New sites with starter content get an example at openapi.yaml.
 - `docs.openapi-base-dir` — text, required, default `api`, matching `[a-z][a-z0-9-]*`. Docs folder holding the generated OpenAPI pages (served under /docs/<dir>/). Pick one no authored content uses.
+- `docs.container` — boolean, required, default `false`. Generate a Nix build of the static site and a non-root Caddy image built with nix2container; also requires nix.bun2nix=true and nix.package-module=nix/fumadocs-container.nix
 - `project.name` — text, required, matching `[a-z][a-z0-9-]*`. Project name (package.json name). Re-declared so step `dest` paths and templates validate; the value is shared with `nix-bun-flake` via the dependency graph (it exports `project.name`).
 - `project.description` — text, required. One-line project description (package.json description, home page intro). Inherited from `nix-bun-flake`, which exports `project.description`.
-- `docs.container` — boolean, required, default `false`. Generate a Nix build of the static site and a non-root Caddy image built with nix2container; also requires nix.bun2nix=true and nix.package-module=nix/fumadocs-container.nix
 - `docs.site-name` — text, required. Human-readable site/nav title shown in the navbar and browser tab (e.g. "keiro runtime docs").
 - `docs.github-user` — text, required, default `shinzui`. GitHub owner used for the navbar GitHub link and per-page "edit on GitHub" links (https://github.com/<user>/<project.name>).
 - `docs.github-branch` — text, required, default `master`. Branch used in per-page "edit on GitHub" links.

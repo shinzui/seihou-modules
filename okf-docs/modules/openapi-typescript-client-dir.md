@@ -13,15 +13,15 @@ tags:
 - bootstrap
 status: stable
 generated:
-  by: seihou-okf-extension/0.13.0.0
-version: 0.1.0
+  by: seihou-okf-extension/0.15.0.0
+version: 0.1.1
 ---
 
 # openapi-typescript-client-dir
 
 Create a new client directory and compose openapi-typescript-client with git-init inside it, including GitHub creation under a configurable owner
 
-**Version:** 0.1.0
+**Version:** 0.1.1
 
 ## Dependencies
 
@@ -29,6 +29,7 @@ This module has no dependencies.
 
 ## Variables
 
+- `repo.postCreateScript` — text, optional. Optional Python script in the invocation directory, run after successful repository creation.
 - `repo.parentDir` — text, required, default `.`. Parent directory for the new client folder; a leading ~ is expanded.
 - `project.name` — text, required, matching `[a-z][a-z0-9-]*`. Client package, folder and GitHub repository name.
 - `project.description` — text, required. One-line client description.
@@ -63,6 +64,7 @@ No exports declared.
 ## Generation steps
 
 - `Copy` `create-client-repo.py` → `.seihou/openapi-typescript-client-dir/create-client-repo.py`
+- `Template` `repo.postCreateScript.conf.tpl` → `.seihou/openapi-typescript-client-dir/repo.postCreateScript.conf`
 - `Template` `repo.parentDir.conf.tpl` → `.seihou/openapi-typescript-client-dir/repo.parentDir.conf`
 - `Template` `project.name.conf.tpl` → `.seihou/openapi-typescript-client-dir/project.name.conf`
 - `Template` `project.description.conf.tpl` → `.seihou/openapi-typescript-client-dir/project.description.conf`

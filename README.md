@@ -5,7 +5,7 @@
 This repository is a **Seihou registry**: a multi-artifact repo whose
 `seihou-registry.dhall` publishes every scaffolding artifact used to start and
 maintain shinzui projects — Haskell libraries, CLI apps and Keiro services,
-Bun/TypeScript flakes, Fumadocs sites, and the agent-driven migrations that keep
+Bun/TypeScript flakes, documentation microapps, Fumadocs sites, and the agent-driven migrations that keep
 existing repos on the current conventions.
 
 Nothing here is a library you depend on at build time. Artifacts are *applied*
@@ -73,6 +73,8 @@ commands, and an optional removal procedure.
 | [`openapi-typescript-client`](modules/typescript/openapi-typescript-client) | 0.2.1 | Bun workflow for reusable ESM TypeScript 7 clients, Orval generation, status-specific Zod response validation, and optional Mori inventory |
 | [`openapi-typescript-client-dir`](modules/typescript/openapi-typescript-client-dir) | 0.1.0 | Create a client folder and compose the client scaffold with `git-init` inside it under a configurable GitHub owner |
 | [`fumadocs`](modules/typescript/fumadocs) | 0.4.0 | Fumadocs site on TanStack Start + Vite, layered on `nix-bun-flake`, with mermaid diagrams, a zoom/pan widget, optional OpenAPI reference pages, and an optional Caddy container image |
+| [`docs-microapp`](modules/typescript/docs-microapp) | 0.1.0 | TanStack Start reader with explicit Markdown/bundle publication, React Aria, Highlights, local Geist Serif/Paper Mono and immutable Linux images |
+| [`nagare-docs-config`](modules/cloud/nagare-docs-config) | 0.1.0 | Protected typed Nagare Application with independent service/domain and immutable image tag |
 
 ### Recipes
 
@@ -85,6 +87,7 @@ generation logic.
 | [`haskell-cli-app-repo`](recipes/haskell-cli-app-repo) | 0.1.1 | Tested two-package CLI scaffold plus `git-init`, with working Nix builds/checks in the initial commit |
 | [`github-repo`](recipes/github-repo) | 0.1.0 | Prompt for a location and folder name, create it, and make it a git repo with a matching GitHub repo under the context's owner |
 | [`openapi-typescript-client-repo`](recipes/openapi-typescript-client-repo) | 0.1.0 | Create a folder, scaffold the TypeScript client, and push its initial commit to GitHub under `git.githubOwner` |
+| [`docs-microapp-labs`](recipes/docs-microapp-labs) | 0.1.0 | Reader, native content image and protected Nagare starter with separate image/deployment reviews |
 
 ### Blueprints
 

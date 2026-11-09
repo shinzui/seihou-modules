@@ -1,5 +1,9 @@
 # Bundle Update Log
 
+## 2026-11-09
+* **Update**: FRIC-12 accepted: Accepted the scoped scaffold workaround; original release bytes and licenses remain auditable and browser tests verify the decoded fonts.
+* **Addition**: FRIC-12 records detour interface friction with mori://shinzui/seihou: Seihou copy decodes binary font assets as text
+
 ## 2026-11-04
 * **Update**: FRIC-11 promoted: Promoted to an improvement request for a non-zero exit and a hint when an update has no terminal to confirm on.
 * **Update**: FRIC-10 promoted: Promoted to an improvement request after a minimal reproduction showed that supplying the missing value silently resets saved optional inputs.

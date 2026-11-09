@@ -14,15 +14,15 @@ tags:
 - context
 status: stable
 generated:
-  by: seihou-okf-extension/0.13.0.0
-version: 0.1.0
+  by: seihou-okf-extension/0.15.0.0
+version: 0.1.1
 ---
 
 # openapi-typescript-client-repo
 
 Create a folder, scaffold an OpenAPI TypeScript client, and push its initial commit to a matching GitHub repository under git.githubOwner
 
-**Version:** 0.1.0
+**Version:** 0.1.1
 
 ## Composes
 

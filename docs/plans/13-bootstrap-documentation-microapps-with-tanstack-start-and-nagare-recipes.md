@@ -9,6 +9,12 @@ provenance:
     model: "gpt-6.1-sol"
     harness: "codex-cli"
     at: 2026-11-09T14:21:42Z
+  revisions:
+    - model: "gpt-6.1-sol"
+      harness: "codex-cli"
+      at: 2026-11-09T14:52:29Z
+      mode: "implement"
+      note: "Implement the documentation reader scaffold, content packaging, and Labs recipe with real consumer verification."
 ---
 
 # Bootstrap documentation microapps with TanStack Start and Nagare recipes
@@ -26,24 +32,30 @@ Add a `docs-microapp` Seihou module, depending on `nix-bun-flake`, that creates 
 
 The generated project can render its starter documentation, read an explicitly selected documentation collection, and build a Linux container with nix2container. Add a `docs-microapp-labs` recipe that composes this module with a small `nagare-docs-config` module to generate `nagare/Config.hs`. The recipe accepts a full domain and a service name independently of the package name. A user can prepare an image publication and Nagare deployment review using those values.
 
-This is plan creation only. Implementation delivers a reusable scaffold, container proof and deployment instructions; changing the two reference applications or applying a live Labs deployment is separate work. The user skipped intention association.
+Implementation delivers a reusable scaffold, container proof and deployment instructions; changing the two reference applications or applying a live Labs deployment is separate work. The user skipped intention association.
 
 
 ## Progress
 
 
-- [ ] Milestone 1: A real Seihou run creates a Bun workspace whose production TanStack Start server renders one documentation page, highlighted code and both self-hosted fonts.
-- [ ] Milestone 2: The reusable reader supports explicit Markdown and bundle inputs, navigation and search; project edits and content survive Seihou rerun, update and removal.
-- [ ] Milestone 3: The generated Nix outputs build the application and content snapshot, and a native Linux nix2container image serves the same pages, assets, fonts and health endpoint.
-- [ ] Milestone 4: The Labs recipe generates valid Nagare configuration for two distinct service/domain pairs, passes offline config checks, and ships complete discovery metadata and an image-to-deployment runbook.
+- [x] Milestone 1 (2026-11-09): Real Seihou generation builds and runs the production reader. `python3 scripts/test-docs-microapp.py` passes SSR, CSS/JS/font responses and Chromium font-loading, highlighting, copy and hydration checks.
+- [x] Milestone 2 (2026-11-09): Explicit Markdown/bundle selection, scoped identities, anchored/reference links, search, mobile navigation, path boundaries and edited/deleted seed preservation pass the real consumer script. The container script also verifies a nested Git `web/` flake selecting parent-repository content.
+- [x] Milestone 3 (2026-11-09): `python3 scripts/test-docs-microapp-container.py --native-linux x86_64-linux` passes all-system evaluation, Darwin sandbox app/snapshot smoke, nested content, cache comparisons, native x86_64 Linux build/export/archive inspection and live container Chromium/HTTP checks. The independent Apple Container archive check also passes locally.
+- [x] Milestone 4 (2026-11-09): `python3 scripts/test-docs-microapp-labs.py` passes real isolated recipe installation, two independent emitted Applications, seed preservation and invalid-input/tag checks through released Nagare v0.16.2. Descriptors/catalogs validate and the OKF generator produces the new discovery pages and runbooks.
 
-Handoff (2026-11-09): Research and plan creation are complete; implementation has not started. Resolve versions again when implementing. The installed Seihou is 0.15.0.0; `nagarectl` is not installed in the planning shell. Use its released Nix executable for offline acceptance rather than assuming a global command exists.
+Completed on 2026-11-09. All four milestones are verified. No image was published and no live Labs context, grant or deployment was changed. The user subsequently directed local Linux work toward Apple Container; its additional archive/runtime/browser check passed in 3.26 seconds for amd64 via Rosetta, and the repeatable `--apple-archive` path is available for fast local iteration.
 
 
 ## Surprises & Discoveries
 
 
-(None yet.)
+2026-11-09: Seihou 0.15.0.0 documents binary copy support but compiles copy sources as text; real generation rejects both WOFF2 files. FRIC-12 in `docs/friction-log/` records the observed error. Seed base64 representations with checksums and decode/emit the original WOFF2 bytes in Vite instead. The source module retains the original release assets and licenses; generation and builds require no font network access.
+
+2026-11-09: The released Start API uses `.validator`, and keeping unrelated filesystem exports in the server-function wrapper retains Node imports in the browser bundle. Server handlers now import a separate `reader.server.ts` inside the server-function body. Production HTTP and browser tests pass with filesystem access absent from the client build.
+
+2026-11-09: Font-table inspection confirms Geist Serif Regular is static and Paper Mono's weight axis is 100..800, default 400. CSS declares those actual ranges.
+
+2026-11-09: Full container/browser acceptance exposed two packaging boundaries missed by a health-only probe. Symlinking individual snapshot files outside `/content` correctly trips the reader's root confinement; the image instead links the entire snapshot at `/content`. Tailwind automatic discovery also produced different server/client CSS URLs after client output existed. Explicit `source(none)` and source declarations keep the stylesheet identical; HTTP acceptance now requests every SSR-linked CSS/JS asset before browser checks.
 
 
 ## Decision Log
@@ -57,13 +69,28 @@ Handoff (2026-11-09): Research and plan creation are complete; implementation ha
 
 2026-11-09: The Labs configuration uses Nagare login protection and port 8080, matching the reference readers. Service name, full hostname and namespace are configurable; the image repository follows `project.name`, so a different service name does not silently select a different image. An immutable release tag is supplied through `DOCS_IMAGE_TAG` for checking and deployment.
 
+2026-11-09: Prefer Apple Container for local Linux iteration and new local build checks whose architecture matches the requirement, following the user's implementation-time direction. Keep the completed native x86_64 acceptance evidence and use the local archive/Rosetta browser path for fast repeat checks.
+
 2026-11-09: The user's final font choice supersedes the earlier Paper Mono-only request: Geist Serif is the text family and Paper Mono is the code family. Vendor released WOFF2 font assets with their licenses and source/checksum metadata, making local and container rendering independent of a private fonts checkout or a live download.
 
 
 ## Outcomes & Retrospective
 
 
-(To be filled during and after implementation.)
+The reusable scaffold, explicit publication loader, separately cached application/content packages, unprivileged Linux image and protected Nagare recipe are delivered and verified. The full consumer script, native container script and offline Labs script pass. Registry validation reports 13 modules, 5 recipes and 6 blueprints with aligned versions; the generator writes 25 OKF concepts. Source/artifact ownership, content selection and deployment boundaries are distilled into ADR 9 and the scaffold-image extension to ADR 7.
+
+The native fixture demonstrates concrete cache boundaries: content edits preserve the app and registry cache, while application edits preserve the registry cache. The accepted final native run recorded:
+
+```text
+app baseline/content edit: skxfv9m2gf9rj3im1d536n2rsdds85kz-docs-app-0.1.0.drv
+app source edit: djsdy2wpja3al67nm504d8vcivq9s7mq-docs-app-0.1.0.drv
+registry in all three cases: wyfgp4wlqlnjpfprsmbbdizymiz2vg30-bun-cache.drv
+content baseline/edit: yiq65140nx7395j53bqfsc41m4v4cnkl-docs-content.drv -> 9ngf13lnhhz440c7p9b42mqimh98wy3a-docs-content.drv
+```
+
+FRIC-12 in `docs/friction-log/` is triaged **accepted**: keep checksummed base64 font seeds and local Vite decoding until released Seihou supports binary payloads. Original release bytes/licenses remain in the module and actual decoded fonts are verified in browsers.
+
+Apple Container was already available but was not checked before choosing the configured remote builder for native x86_64 acceptance. The user's correction established Apple as the preferred local Linux environment when architecture permits; a local amd64/Rosetta runtime check passed in 3.26 seconds. Native architecture evidence and fast local iteration are recorded separately. No remaining acceptance is pending; live publication/deployment remains outside this plan.
 
 
 ## Context and Orientation
@@ -106,7 +133,7 @@ Start with a single Markdown page and the minimal reader shell. Implement `apps/
 
 Place shadcn `aria-nova` configuration and a small usable set of React Aria primitives in `packages/ui/`: button/link, search field and a navigation dialog for small screens. Preserve attribution for copied component source. Build `apps/docs/src/components/code-block.tsx` using Highlights tokens, light/dark themes, exact source copy and a plain-text fallback. Qualify WebAssembly initialization in server rendering and browser hydration immediately, before adding the rest of the reader. The first fixture page includes TypeScript, Haskell, shell and an unknown fenced language, plus literal markup inside code.
 
-Vendor fonts into `modules/typescript/docs-microapp/files/apps/docs/public/fonts/` using stable filenames such as `geist-serif.woff2` and `paper-mono.woff2`, plus separate license files. Record immutable upstream tag/commit, original path and SHA-256 for each in `font-sources.json`. Deliver these as seeded application assets so project typography remains editable. In `packages/ui/src/styles/globals.css`, define `@font-face` for `Geist Serif` and `Paper Mono`, `font-display: swap`, local `/fonts/` URLs, a serif fallback for text and a monospace fallback for code. Set body/prose/navigation text to Geist Serif; set `pre`, `code` and code-block controls to Paper Mono. Use the regular Geist Serif face or verified variation axes; do not invent bold/italic font files or weight ranges. Keep styles for prose, focus and theme readable at ordinary document sizes.
+Vendor fonts into `modules/typescript/docs-microapp/files/apps/docs/public/fonts/` using stable filenames such as `geist-serif.woff2` and `paper-mono.woff2`, plus separate license files. Record immutable upstream tag/commit, original path and SHA-256 for each in `font-sources.json`. Deliver their base64 representations as seeded application assets so project typography remains editable; Seihou 0.15 cannot copy the binary originals. A seeded Vite plugin verifies checksums and decodes the same WOFF2 bytes for dev and production. Changing a font requires updating its manifest checksum. In `packages/ui/src/styles/globals.css`, define `@font-face` for `Geist Serif` and `Paper Mono`, `font-display: swap`, local `/fonts/` URLs, a serif fallback for text and a monospace fallback for code. Set body/prose/navigation text to Geist Serif; set `pre`, `code` and code-block controls to Paper Mono. Use the regular Geist Serif face or verified variation axes; do not invent bold/italic font files or weight ranges. Keep styles for prose, focus and theme readable at ordinary document sizes.
 
 Add `scripts/test-docs-microapp.py` with temporary project-local copies of modules, following existing test scripts. Its first acceptance path executes the real Seihou resolver, installs one exact dependency set, builds, starts the production server, and requests the page, one static JS asset, `/healthz` and both WOFF2 files. A browser check must prove code hydration and the actual loaded font families. A passing dev server alone does not accept this milestone.
 

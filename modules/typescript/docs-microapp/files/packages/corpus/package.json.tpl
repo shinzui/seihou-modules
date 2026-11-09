@@ -1,0 +1,14 @@
+{
+  "name": "@{{project.name}}/corpus",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts",
+    "./links": "./src/links.ts"
+  },
+  "dependencies": {
+    "gray-matter": "4.0.3"
+  }
+}

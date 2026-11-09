@@ -27,7 +27,10 @@ in  Schema.Project::{
         }
       ]
     , templates =
-      [ Schema.SeihouTemplate::{
+      [ Schema.SeihouTemplate::{ name = "docs-microapp-labs", version = Some "0.1.0", description = Some "Documentation reader and protected Nagare configuration with a native image and two-review deployment workflow", modulePath = "recipes/docs-microapp-labs", tags = [ "docs", "nagare", "labs", "recipe" ], requiredVars = [ "project.name", "project.description", "docs.site-name", "nagare.service-name", "nagare.domain", "nagare.namespace" ], dependencies = [ "docs-microapp", "nagare-docs-config" ] }
+      , Schema.SeihouTemplate::{ name = "nagare-docs-config", version = Some "0.1.0", description = Some "Project-owned protected Nagare Application config with independent service, hostname and image values", modulePath = "modules/cloud/nagare-docs-config", tags = [ "nagare", "docs", "deployment" ], requiredVars = [ "project.name", "nagare.service-name", "nagare.domain", "nagare.namespace" ] }
+      , Schema.SeihouTemplate::{ name = "docs-microapp", version = Some "0.1.0", description = Some "Documentation reader with TanStack Start, React Aria, Highlights, local fonts and immutable content images", modulePath = "modules/typescript/docs-microapp", tags = [ "typescript", "docs", "bun", "tanstack", "nix" ], requiredVars = [ "project.name", "project.description", "docs.site-name" ], dependencies = [ "nix-bun-flake" ] }
+      , Schema.SeihouTemplate::{
         , name = "openapi-typescript-client-dir"
         , version = Some "0.1.0"
         , description = Some "Create a new client directory and run openapi-typescript-client with git-init inside it under a configurable GitHub owner"

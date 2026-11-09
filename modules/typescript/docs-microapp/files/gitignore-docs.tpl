@@ -1,0 +1,9 @@
+node_modules/
+apps/docs/dist/
+apps/docs/.tanstack/
+apps/docs/src/routeTree.gen.ts
+playwright-report/
+test-results/
+docs-content/
+result-docs-*
+/*.tar
