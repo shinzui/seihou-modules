@@ -75,6 +75,7 @@ commands, and an optional removal procedure.
 | [`fumadocs`](modules/typescript/fumadocs) | 0.4.0 | Fumadocs site on TanStack Start + Vite, layered on `nix-bun-flake`, with mermaid diagrams, a zoom/pan widget, optional OpenAPI reference pages, and an optional Caddy container image |
 | [`docs-microapp`](modules/typescript/docs-microapp) | 0.1.0 | TanStack Start reader with explicit Markdown/bundle publication, React Aria, Highlights, local Geist Serif/Paper Mono and immutable Linux images |
 | [`nagare-docs-config`](modules/cloud/nagare-docs-config) | 0.1.0 | Protected typed Nagare Application with independent service/domain and immutable image tag |
+| [`docs-mori-bootstrap`](modules/mori/docs-mori-bootstrap) | 0.1.0 | Project-owned documentation manifest, documented-project association and verified local Mori registration |
 
 ### Recipes
 
@@ -88,6 +89,17 @@ generation logic.
 | [`github-repo`](recipes/github-repo) | 0.1.0 | Prompt for a location and folder name, create it, and make it a git repo with a matching GitHub repo under the context's owner |
 | [`openapi-typescript-client-repo`](recipes/openapi-typescript-client-repo) | 0.1.0 | Create a folder, scaffold the TypeScript client, and push its initial commit to GitHub under `git.githubOwner` |
 | [`docs-microapp-labs`](recipes/docs-microapp-labs) | 0.1.0 | Reader, native content image and protected Nagare starter with separate image/deployment reviews |
+| [`fumadocs-project`](recipes/fumadocs-project) | 0.1.0 | Container-enabled Fumadocs, technical writing skills from agent-seihou and local Mori registration |
+
+For a documentation project with a registered source project, use
+[fumadocs-project](recipes/fumadocs-project/README.md). It requires Seihou 0.15+,
+Mori 7.2, Python 3, `dhall-to-json` and access to a migrated local Mori registry.
+Supply the documentation identity (`project.name`, `mori.namespace`), description,
+site title and the independent documented-project identity (`mori.source-namespace`,
+`mori.source-project`). The recipe acquires writing skills from
+`mori://shinzui/agent-seihou/templates/technical-docs` and registers locally after
+generation. Existing manifests remain authored files; removal preserves manifests,
+content and registration. Nix locks and native Linux image export remain explicit.
 
 ### Blueprints
 
@@ -146,14 +158,23 @@ docs record stale versions:
 
 ```bash
 seihou registry sync-versions
-seihou extension run okf -- docs --dir . --out okf-docs --force
+python3 scripts/generate-okf-docs.py
 ```
+
+The generation adapter uses the released OKF exporter for local edges and renders
+source-qualified external members as canonical Mori links. Seihou 0.15 otherwise
+emits dangling local links for external recipe members. The final generated bundle
+is validated strictly before it replaces checked-in generated files.
 
 `okf-docs/profile.dhall` is the house profile describing what those bundles
 promise; the bundle itself stays OKF-conformant regardless.
 
 ### Scripts
 
+- `scripts/test-fumadocs-project.py` — installs from two disposable Git registries
+  and verifies real Mori 7.2 registration, associations, reruns, rejection,
+  ownership and service recovery in its own PostgreSQL cluster. Set `MORI_BIN`
+  and `MORI_MIGRATIONS` to matching released executables when needed.
 - `scripts/test-openapi-typescript-client-repo.py` — exercises real recipe generation
   and Git commits with an offline GitHub stub, including owner/context selection,
   team access, directory creation and existing-target protection.

@@ -1,7 +1,13 @@
 { repoName = "seihou-modules"
 , repoDescription = Some "Composable Seihou modules for bootstrapping projects"
 , modules =
-  [ { name = "gcp-kube-env"
+  [ { name = "docs-mori-bootstrap"
+    , version = Some "0.1.0"
+    , path = "modules/mori/docs-mori-bootstrap"
+    , description = Some "Seed a documentation manifest, associate its documented project and register locally with Mori"
+    , tags = [ "docs", "mori", "bootstrap" ]
+    }
+  , { name = "gcp-kube-env"
     , version = Some "0.1.1"
     , path = "modules/cloud/gcp-kube-env"
     , description = Some "Checkout-local GCP project and Kubernetes context through direnv, with a private kubeconfig and a configurable env filename defaulting to .envrc.local"
@@ -81,7 +87,13 @@
     }
   ]
 , recipes =
-  [ { name = "haskell-library-repo"
+  [ { name = "fumadocs-project"
+    , version = Some "0.1.0"
+    , path = "recipes/fumadocs-project"
+    , description = Some "Container-enabled Fumadocs with technical writing skills from agent-seihou and local Mori registration"
+    , tags = [ "docs", "fumadocs", "container", "mori", "recipe" ]
+    }
+  , { name = "haskell-library-repo"
     , version = Some "0.1.0"
     , path = "recipes/haskell-library-repo"
     , description = Some "Bootstrap a single-package Haskell library in a fresh git repo: applies haskell-library (which pulls in nix-haskell-flake) and then git-init last so the initial commit captures the full scaffold"

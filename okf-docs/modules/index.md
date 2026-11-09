@@ -1,6 +1,7 @@
 # SeihouModule
 
 - [docs-microapp](docs-microapp.md) - Documentation reader with TanStack Start, React Aria, Highlights, local fonts and immutable content images
+- [docs-mori-bootstrap](docs-mori-bootstrap.md) - Seed a documentation manifest, associate its documented project and register locally with Mori
 - [fumadocs](fumadocs.md) - Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container
 - [gcp-kube-env](gcp-kube-env.md) - Checkout-local GCP project and Kubernetes context through direnv, with a private kubeconfig and a configurable env filename defaulting to .envrc.local
 - [git-init](git-init.md) - Initialize a local git repo (default branch master), seed .gitignore with .claude/, .agents/, and .seihou/manifest.json.tmp, and optionally create a private GitHub repo via `gh` under a configured org or username, optionally granting an organization team access

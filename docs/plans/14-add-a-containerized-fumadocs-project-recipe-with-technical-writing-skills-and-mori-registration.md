@@ -15,6 +15,11 @@ provenance:
       at: 2026-11-09T23:13:17Z
       mode: "other"
       note: "Ground the new recipe plan in released cross-registry acquisition and Mori manifest and registration contracts"
+    - model: "gpt-6.1-sol"
+      harness: "codex-cli"
+      at: 2026-11-09T23:23:38Z
+      mode: "implement"
+      note: "Implement and qualify the containerized documentation recipe and local Mori bootstrap"
 ---
 
 
@@ -26,19 +31,23 @@ This ExecPlan is a living document. Keep Progress, Surprises & Discoveries, Deci
 
 A user will install and run one `fumadocs-project` recipe in a documentation checkout. It will generate the existing Fumadocs site with its nix2container build enabled, acquire and apply `technical-docs` from agent-seihou, create a minimal `mori.dhall`, associate the documentation project with the project it describes, and register the documentation project in the local Mori registry. A user can then find that association through Mori and build the site and Linux container using the existing Fumadocs commands.
 
-This is recipe authoring for future documentation projects. The user requested create mode, so this session creates the plan only. Actual implementation and fixture registration belong to the milestones below. A recipe is a named composition of Seihou modules; a Mori manifest is a typed Dhall file describing a project's identity and discoverable artifacts. nix2container produces an image description with explicit export helpers.
+This plan implements recipe authoring for future documentation projects. Fixture acquisition and registration use disposable registries and a private PostgreSQL cluster. A recipe is a named composition of Seihou modules; a Mori manifest is a typed Dhall file describing a project's identity and discoverable artifacts. nix2container produces an image description with explicit export helpers.
 
 ## Progress
 
-- [ ] Milestone 1: Installing the recipe acquires Fumadocs, its Bun base, technical-docs and agent-gitignore from their correct registries; rendering enables all three container settings and installs the writing skills.
-- [ ] Milestone 2: Running the recipe creates a valid minimal documentation manifest with the documented-project association and registers it locally; reruns preserve authored manifests and reject conflicting identities.
-- [ ] Milestone 3: Isolated end-to-end checks prove acquisition, registration, association, recovery and ownership; the existing site/container checks pass and the recipe is discoverable in both catalogs and generated documentation.
+- [x] Milestone 1 (2026-11-09, real two-registry acquisition and no-commands rendering passed): Installing the recipe acquires Fumadocs, its Bun base, technical-docs and agent-gitignore from their correct registries; rendering enables all three container settings and installs the writing skills.
+- [x] Milestone 2 (2026-11-09, full real Mori 7.2 fixture passed): Running the recipe creates a valid minimal documentation manifest with the documented-project association and registers it locally; reruns preserve authored manifests and reject conflicting identities.
+- [x] Milestone 3 (2026-11-09, isolated fixture, sandbox site build, native aarch64 Linux export/HTTP and both catalogs/generated docs verified): Isolated end-to-end checks prove acquisition, registration, association, recovery and ownership; the existing site/container checks pass and the recipe is discoverable in both catalogs and generated documentation.
 
-No intention is active; the user selected Skip. Implementation has not started.
+No intention is active; the user selected Skip. All three milestones are complete. The comprehensive fixture passed acquisition, registration, both-direction relation discovery, content discovery, two independent consumers, preserved authored additions, invalid/missing/self/colliding inputs, escaped descriptions, registry-write failure, actual PostgreSQL outage/recovery, plain Fumadocs update behavior and removal preservation. Host site/container checks passed. Native Apple-container build/archive inspection, uniquely tagged export, HTTP startup and cleanup passed. Both catalogs validate, generated documentation is byte-stable and strictly valid, and ADR 10 records the durable ownership contract.
 
 ## Surprises & Discoveries
 
-(None yet.)
+2026-11-09: The released OKF exporter emits a local link for every recipe member, including source-qualified external members, then rejects the dangling `modules/technical-docs` link. `scripts/generate-okf-docs.py` stages the local graph for the released exporter and restores external members as canonical Mori links in original order before strict final validation. The public descriptor retains its real external source; no skill templates are vendored. See FRIC-14 in `docs/friction-log/`.
+
+2026-11-09: Mori 7.2 resolves typed `dependencyRefs` into `depends-on` relations but `registry dependents` returns no rows for these typed-only project edges. Use `registry relations --to` for reverse discovery. Its `show --json` also omits `dependencyRefs`, so the helper requires `dhall-to-json` to inspect the validated typed manifest. See FRIC-15 in `docs/friction-log/`.
+
+2026-11-09: Recipe member enumeration is topologically sorted rather than declaration ordered. Released Seihou executes all generation steps before the command phase, so the helper command can register only after both the site and writing skill files exist. No dependency identity changes are necessary.
 
 ## Decision Log
 
@@ -48,9 +57,17 @@ No intention is active; the user selected Skip. Implementation has not started.
 
 2026-11-09: Apply the recipe in the user's chosen documentation directory. Directory creation, GitHub repository creation, image publication and deployment are outside this recipe's requested scope. Local registration is a required normal command step, never an opt-in defaulting to false.
 
+2026-11-09: Keep the typed association minimal and use Mori's relation queries for both directions instead of adding redundant legacy dependency text to accommodate `dependents`. Add `dhall-to-json` as an explicit helper prerequisite. Use the repository generation adapter until a released exporter supports external recipe-member links. Durable context is recorded in [ADR 10](../adr/10-register-documentation-projects-with-explicit-typed-associations.md).
+
 ## Outcomes & Retrospective
 
-(To be filled during implementation.)
+Implemented on 2026-11-09. The published local artifacts are `fumadocs-project` 0.1.0 and `docs-mori-bootstrap` 0.1.0, discoverable in both catalogs and the regenerated 27-concept documentation bundle. The recipe preserves ordinary Fumadocs dependency identities and pins, acquires all six artifacts through the proper registries, enables all three container bindings, and creates six skill sources with eighteen discovery links. Real Mori 7.2 registration is verified after validation; authored manifests, documentation and registry identities survive reruns/removal. No implementation work remains. Publishing this checkout upstream remains a separate action.
+
+Acceptance used `seihou` 0.15.0.0 (`a4fcee6`) and the released Mori 7.2.0.0 (`34ce2cf`). `scripts/test-fumadocs-project.py` passed with its private migrated PostgreSQL cluster, real Git acquisition, independent consumer identities, both-direction resolved association queries, local content discovery, preserved manifest additions, invalid and conflicting inputs, literal escaped text, precise registration failure, actual service outage/recovery and ownership removal. `scripts/test-fumadocs-bootstrap.py` passed the shared lock, toolchain, static prerender/search/Markdown/diagram and flake checks. `scripts/test-fumadocs-container.py --apple-linux` passed the host sandbox site build and Caddy routes, Linux helper evaluation, Darwin exclusion, default/update/removal behavior, native aarch64 image build, OCI archive inspection/export and an actual HTTP 200 from the image on port 8080. The native runner was a fresh local Apple container using `ghcr.io/nixos/nix:2.35.2`; its nested Nix sandbox was disabled, while the separate host site build used the sandbox. No remote builder was needed.
+
+Descriptor validation, `seihou registry sync-versions`, `seihou registry validate`, root Mori manifest evaluation, strict generated-bundle validation, byte-stable regeneration, strict friction-log/profile/log validation and `git diff --check` passed. The plain exporter cannot generate the new external edge by itself; the checked-in adapter is the documented generation entry point until upstream support exists.
+
+FRIC-13 in `docs/friction-log/` is resolved: temporary Nix builds provided the exact released Mori and migration runner without replacing global tools. FRIC-14 is accepted: keep the external-edge documentation adapter until the released exporter handles source-qualified members. FRIC-15 is accepted: use typed relation queries for this association, since Mori 7.2 dependents omits typed-only project edges. All entries under this plan are triaged. [ADR 10](../adr/10-register-documentation-projects-with-explicit-typed-associations.md) distills registration, identity, ownership, query and documentation-generation boundaries.
 
 ## Context and Orientation
 
@@ -82,7 +99,7 @@ Implement `modules/mori/docs-mori-bootstrap/files/bootstrap-docs.py` and its con
 
 A new minimal manifest imports an immutable, integrity-hashed published Mori schema and uses `Schema.Project::{ ... }`. Its identity uses the site's name, namespace and description, `PackageType.Other "Documentation"`, `Language.TypeScript`, and `Lifecycle.Active`. Add exactly one project-level typed `dependencyRefs` entry for the target and a `docs` entry with key `site`, `DocKind.Guide`, `DocAudience.User` and `DocLocation.LocalDir "content/docs"`. Verify those constructor names against the selected published schema before writing the template. Omit fabricated packages, repository URLs, deployment locations and unrelated inventories. Preserve producer-owned manifests as user-owned seeds: on rerun, validate the existing file and verify its identity and required association without overwriting it or deleting extra fields.
 
-Validate the new or existing manifest using released `mori validate`, then invoke `mori register --local --path <absolute-documentation-root>`. Verify success by reading back the registered identity/path and relation. Emit completion only after both registration and readback succeed. A registration failure returns a nonzero result with the failing command and retry guidance while preserving generated files. Do not edit registry storage directly. The `--local` flag is mandatory so shared registry configuration cannot cause a remote write. A later Seihou removal must preserve the authored manifest and content and must not silently deregister the project.
+Validate the new or existing manifest using released `mori validate`, then invoke `mori register --local --path <absolute-documentation-root>`. Verify success by reading back the registered identity/path and relation. Evaluate the typed manifest with `dhall-to-json --file mori.dhall` after `mori validate`, since Mori 7.2 omits dependencyRefs from show JSON. Emit completion only after both registration and readback succeed. A registration failure returns a nonzero result with the failing command and retry guidance while preserving generated files. Do not edit registry storage directly. The `--local` flag is mandatory so shared registry configuration cannot cause a remote write. A later Seihou removal must preserve the authored manifest and content and must not silently deregister the project.
 
 Prove this milestone with real Mori, two identities intentionally named differently, and a disposable local registry. Check the actual commands/configuration for registry isolation in the current Mori source; a temporary HOME alone may not isolate a configured PostgreSQL connection. Use a disposable database via the documented `MORI_PG_CONNECTION_STRING` path when required, and keep production connection settings out of fixture execution. Test an unavailable registry and recovery by rerunning after it becomes available. Registration is a nontransactional external effect: Seihou cannot imply rollback of it.
 
@@ -90,7 +107,7 @@ Prove this milestone with real Mori, two identities intentionally named differen
 
 Add `scripts/test-fumadocs-project.py` for real acquisition plus render/bootstrap/registry verification. Reuse the existing Fumadocs harness for site and image behavior instead of adding another implementation of the container. Check two consumers with different namespaces and names, the target relation, local content discovery, writing skill sources and links, default container settings, exact registered path, reruns, preserved authored manifest additions, invalid/missing target inputs, self-reference, duplicate identity at another path, escaped input and failing registration. A no-commands render must leave the registry untouched. Verify that an existing plain Fumadocs consumer retains its original dependency identity and update behavior.
 
-Register the recipe and helper in `seihou-registry.dhall` and `mori.dhall`, using version 0.1.0 initially, with correct required variables, tags and dependencies. Document the workflow and prerequisites in the recipe/helper READMEs and root README. Keep the external dependency visibly attributed to agent-seihou. Regenerate `okf-docs/`. Run appropriate descriptor/catalog checks and the focused consumer tests. For Linux container acceptance prefer local Apple `container` tooling; use a matching remote builder only when local containers cannot satisfy the existing harness. Record site build, native image build/export and HTTP startup evidence separately. Finish by recording the durable registration/ownership contract in a local ADR, and triage any implementation friction.
+Register the recipe and helper in `seihou-registry.dhall` and `mori.dhall`, using version 0.1.0 initially, with correct required variables, tags and dependencies. Document the workflow and prerequisites in the recipe/helper READMEs and root README. Keep the external dependency visibly attributed to agent-seihou. Regenerate `okf-docs/` with `scripts/generate-okf-docs.py`, which adapts external edges for the released exporter and strictly validates the result. Run appropriate descriptor/catalog checks and the focused consumer tests. For Linux container acceptance prefer local Apple `container` tooling; use a matching remote builder only when local containers cannot satisfy the existing harness. Record site build, native image build/export and HTTP startup evidence separately. Finish by recording the durable registration/ownership contract in a local ADR, and triage any implementation friction.
 
 ## Concrete Steps
 
@@ -119,11 +136,21 @@ seihou validate-module modules/mori/docs-mori-bootstrap
 seihou validate-recipe recipes/fumadocs-project
 seihou registry sync-versions
 seihou registry validate
-seihou extension run okf -- docs --dir . --out okf-docs --force
+python3 scripts/generate-okf-docs.py
 python3 scripts/test-fumadocs-project.py
 python3 scripts/test-fumadocs-bootstrap.py
-python3 scripts/test-fumadocs-container.py
+python3 scripts/test-fumadocs-container.py --apple-linux
 git diff --check
+```
+
+When the installed Mori is older than 7.2, build the released executables without replacing the global CLI, then run the fixture with explicit selectors (these are the qualification commands used here):
+
+```bash
+nix build github:shinzui/mori/v7.2.0.0#mori --out-link /tmp/seihou-plan14-mori-7.2
+nix build github:shinzui/mori/v7.2.0.0#mori-migrations --out-link /tmp/seihou-plan14-mori-migrations-7.2
+MORI_BIN=/tmp/seihou-plan14-mori-7.2/bin/mori \
+  MORI_MIGRATIONS=/tmp/seihou-plan14-mori-migrations-7.2/bin/mori-migrations \
+  python3 scripts/test-fumadocs-project.py
 ```
 
 Descriptor and catalog commands must succeed, and the fixture script must assert actual source acquisition and actual local registry state. The native container test may need its documented Linux runner configuration; inspect its CLI/environment before execution and record the selected runner. Do not interpret host-only evaluation as native Linux acceptance.
@@ -139,7 +166,7 @@ seihou run fumadocs-project --var project.name=widget-docs \
 mori show --full
 mori registry show example/widget-docs --full
 mori registry relations --from mori://example/widget-docs --json
-mori registry dependents example/widget
+mori registry relations --to mori://example/widget --json
 ```
 
 The result must show the separate documentation identity, the absolute documentation checkout path, the local `site` doc entry and the typed dependency pointing to `mori://example/widget`. Confirm command selectors and relation JSON field names against the running release in the test. After dependencies are installed, from the same consumer:
@@ -171,6 +198,8 @@ Generation, registration and dependency acquisition are separate effects. On a f
 
 The public root is `fumadocs-project`. Members are `fumadocs`, external `technical-docs`, and local `docs-mori-bootstrap`; their transitives are `nix-bun-flake` and `agent-gitignore`. Preserve source-aware acquisition and saved bindings in Seihou's manifest. All documentation identity fields are declared module inputs, and `mori.source-namespace`/`mori.source-project` always refer to the documented project. `project.name` names the documentation site, never an inferred source project.
 
-Use Seihou 0.15.0.0's released source-aware dependency contract. Qualify Mori 7.2.0.0, the current release discovered during planning, and record the exact tested revision/schema hash during implementation; do not silently fall back to installed 7.1 when behavior differs. Verify authoritative release facts again before introducing bounds or pins. Keep the existing Fumadocs, nix-bun-flake, Bun and nix2container pins unless a demonstrated integration defect requires a separately explained change.
+Use Seihou 0.15.0.0's released source-aware dependency contract. Qualify Mori 7.2.0.0, the current release discovered during planning, and record the exact tested revision/schema hash during implementation; do not silently fall back to installed 7.1 when behavior differs. Verify authoritative release facts again before introducing bounds or pins. Implementation qualified the released Mori v7.2.0.0 commit `34ce2cfed6e49ccd28136ee0c8af712f94c60e69` through temporary Nix output links; the global CLI remains unchanged (FRIC-13 in `docs/friction-log/`). Its schema is `3522f4a51181d73c9c90fc27a7c0838bd29ae95f` with semantic hash `sha256:dcb19e2312e790bad14e622cc98a1281cd2298c5b564a2f0d0534d3c718d8803`, checked against the published release pin, published schema commit and local `dhall hash`. Keep the existing Fumadocs, nix-bun-flake, Bun and nix2container pins unless a demonstrated integration defect requires a separately explained change.
 
 Every implementation commit uses Conventional Commits and an `ExecPlan:` trailer naming this plan's repository-relative path. No Intention trailer is active. Record the first substantive later edit with `agents/skills/exec-plan/record-provenance.ts` using that agent's verified runtime model. Record and triage implementation friction with the skill's scripts. Never search or traverse `/nix/store` or the filesystem root for dependency sources.
+
+Revision note (2026-11-09): Implementation added explicit typed-manifest evaluation and a deterministic documentation generation adapter after exercising released CLI limitations; reverse association discovery now uses relations instead of dependents. The requested recipe, registration and ownership outcomes are unchanged.

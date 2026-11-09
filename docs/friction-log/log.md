@@ -1,6 +1,12 @@
 # Bundle Update Log
 
 ## 2026-11-09
+* **Update**: FRIC-15 accepted: Document and test the supported relation query surface without redundant legacy dependencies
+* **Update**: FRIC-14 accepted: Generated documentation now retains external attribution and passes strict validation
+* **Update**: FRIC-13 resolved: Released executables are now available for isolated acceptance
+* **Addition**: FRIC-15 records detour interface friction with mori://shinzui/mori: Mori dependents omits typed project dependency references
+* **Addition**: FRIC-14 records detour tooling friction with mori://shinzui/seihou: OKF exporter treats external recipe modules as local links
+* **Addition**: FRIC-13 records detour environment friction with mori://shinzui/mori: Released Mori must be built for registration qualification
 * **Update**: FRIC-12 accepted: Accepted the scoped scaffold workaround; original release bytes and licenses remain auditable and browser tests verify the decoded fonts.
 * **Addition**: FRIC-12 records detour interface friction with mori://shinzui/seihou: Seihou copy decodes binary font assets as text
 

@@ -3,6 +3,8 @@
 
 Builds the site in the host sandbox and serves it with the generated Caddyfile.
 --native-linux SYSTEM also builds, exports and inspects the image there.
+--apple-linux builds/exports in a local native Linux Apple container, inspects
+the archive, then loads and serves the image on port 8080 with a unique test tag.
 Requires Seihou, Nix and network access; uses temporary projects.
 """
 import argparse
@@ -10,6 +12,7 @@ import http.client
 import json
 import os
 from pathlib import Path
+import platform
 import shutil
 import socket
 import subprocess
@@ -239,6 +242,58 @@ def enabled(work, native_linux):
     return project
 
 
+def apple_linux(project):
+    """Build/export on native Linux in a local Apple container, then serve it."""
+    architecture = 'arm64' if platform.machine() == 'arm64' else 'amd64'
+    system = 'aarch64-linux' if architecture == 'arm64' else 'x86_64-linux'
+    builder = f'fumadocs-build-{os.getpid()}'
+    server = f'fumadocs-serve-{os.getpid()}'
+    archive = project.parent / 'image.tar'
+    extension = project / 'flake.module.nix'
+    original = extension.read_bytes()
+    reference = f'fumadocs-acceptance-{os.getpid()}:latest'
+    loaded = False
+    run(['container', 'run', '--detach', '--rm', '--name', builder,
+         '--cpus', '8', '--memory', '16G', '--volume', f'{project.parent}:/work',
+         'ghcr.io/nixos/nix:2.35.2', 'sleep', 'infinity'], project)
+    try:
+        extension.write_text(EXTENSION.replace('CHECK', ARCHIVE_CHECK))
+        run(['git', 'add', '-A'], project)
+        prefix = ['container', 'exec', '--workdir', '/work/' + project.name, builder,
+                  'nix', '--extra-experimental-features', 'nix-command flakes',
+                  '--option', 'sandbox', 'false', '--option', 'filter-syscalls', 'false']
+        run(prefix + ['build', '--accept-flake-config', '--no-write-lock-file',
+                      f'.#checks.{system}.fixtureArchiveCheck', '--no-link', '--print-build-logs'], project)
+        print(f'Apple native {system}: image built; OCI archive configuration and layers inspected.', flush=True)
+        run(prefix + ['run', '--accept-flake-config', '--no-write-lock-file',
+                      '.#dockerImage.copyTo', '--', f'oci-archive:/work/image.tar:{reference}'], project)
+        assert archive.is_file()
+        run(['container', 'image', 'load', '--input', str(archive)], project)
+        loaded = True
+        port = free_port()
+        run(['container', 'run', '--detach', '--rm', '--name', server, '--arch', architecture,
+             '--publish', f'127.0.0.1:{port}:8080', reference], project)
+        try:
+            for _ in range(80):
+                try:
+                    response, body = get(port, '/docs/')
+                    break
+                except OSError:
+                    time.sleep(0.25)
+            else:
+                raise AssertionError('Native image did not start')
+            assert response.status == 200 and b'Acme Docs' in body
+            print('Apple container runtime: HTTP 200 for /docs/ on port 8080 using the image non-root user.', flush=True)
+        finally:
+            run(['container', 'stop', server], project)
+    finally:
+        extension.write_bytes(original)
+        run(['git', 'add', '-A'], project)
+        run(['container', 'stop', builder], project)
+        if loaded:
+            run(['container', 'image', 'delete', reference], project)
+
+
 def lifecycle(project):
     """Real updates preserve project-owned files and remove only managed ones."""
     # An extension must stop using docsContainer before the feature is disabled.
@@ -299,6 +354,7 @@ def upgrade(work):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--native-linux', choices=['x86_64-linux', 'aarch64-linux'])
+    parser.add_argument('--apple-linux', action='store_true', help='Build, export and run natively with local Apple containers')
     args = parser.parse_args()
     run(['seihou', 'validate-module', 'modules/typescript/fumadocs'], ROOT)
     with tempfile.TemporaryDirectory(prefix='fumadocs-container-') as temp:
@@ -306,7 +362,10 @@ def main():
         disabled_by_default(work)
         requires_helper(work)
         upgrade(work)
-        lifecycle(enabled(work, args.native_linux))
+        project = enabled(work, args.native_linux)
+        if args.apple_linux:
+            apple_linux(project)
+        lifecycle(project)
     print('Fumadocs container acceptance passed.', flush=True)
 
 

@@ -19,6 +19,7 @@ Every artifact below is published by the `seihou-modules` registry and documente
 
 ## Modules
 
+- [docs-mori-bootstrap](/modules/docs-mori-bootstrap.md)
 - [gcp-kube-env](/modules/gcp-kube-env.md)
 - [nix-haskell-flake](/modules/nix-haskell-flake.md)
 - [haskell-keiro-project](/modules/haskell-keiro-project.md)
@@ -35,6 +36,7 @@ Every artifact below is published by the `seihou-modules` registry and documente
 
 ## Recipes
 
+- [fumadocs-project](/recipes/fumadocs-project.md)
 - [haskell-library-repo](/recipes/haskell-library-repo.md)
 - [haskell-cli-app-repo](/recipes/haskell-cli-app-repo.md)
 - [github-repo](/recipes/github-repo.md)
