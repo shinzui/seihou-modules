@@ -87,9 +87,9 @@ pre code {
   min-height: 420px;
   overflow: hidden;
   padding: 0;
-  border: 1px solid var(--fd-border, #e5e7eb);
+  border: 1px solid var(--color-fd-border, #e5e7eb);
   border-radius: 8px;
-  background: var(--fd-card, transparent);
+  background: var(--color-fd-card, transparent);
   touch-action: none;
   cursor: grab;
 }
@@ -112,7 +112,7 @@ pre code {
   height: auto;
   min-height: 0;
   border-radius: 10px;
-  background: var(--fd-background, #fff);
+  background: var(--color-fd-background, #fff);
   box-shadow: 0 28px 90px rgba(0, 0, 0, 0.35);
 }
 
@@ -132,9 +132,9 @@ pre code {
   display: flex;
   gap: 6px;
   padding: 6px;
-  border: 1px solid var(--fd-border, #e5e7eb);
+  border: 1px solid var(--color-fd-border, #e5e7eb);
   border-radius: 8px;
-  background: var(--fd-card, rgba(255, 255, 255, 0.9));
+  background: var(--color-fd-card, rgba(255, 255, 255, 0.9));
   backdrop-filter: blur(10px);
   box-shadow: 0 8px 24px rgba(43, 37, 28, 0.12);
 }
@@ -145,10 +145,10 @@ pre code {
   min-width: 34px;
   height: 32px;
   padding: 0 10px;
-  border: 1px solid var(--fd-border, #e5e7eb);
+  border: 1px solid var(--color-fd-border, #e5e7eb);
   border-radius: 7px;
-  background: var(--fd-secondary, transparent);
-  color: var(--fd-foreground, inherit);
+  background: var(--color-fd-secondary, transparent);
+  color: var(--color-fd-foreground, inherit);
   font:
     700 14px Inter,
     system-ui,
@@ -157,7 +157,7 @@ pre code {
 }
 
 .diagram-toolbar button:hover {
-  background: var(--fd-accent, rgba(0, 0, 0, 0.06));
+  background: var(--color-fd-accent, rgba(0, 0, 0, 0.06));
 }
 
 .diagram-hint {
@@ -167,8 +167,8 @@ pre code {
   z-index: 2;
   padding: 4px 8px;
   border-radius: 7px;
-  background: var(--fd-card, rgba(255, 255, 255, 0.88));
-  color: var(--fd-muted-foreground, #6b7280);
+  background: var(--color-fd-card, rgba(255, 255, 255, 0.88));
+  color: var(--color-fd-muted-foreground, #6b7280);
   font-size: 0.78rem;
 }
 
@@ -177,14 +177,14 @@ pre code {
   place-items: center;
   width: 100%;
   height: 100%;
-  color: var(--fd-muted-foreground, #6b7280);
+  color: var(--color-fd-muted-foreground, #6b7280);
   font-size: 0.9rem;
 }
 
 .diagram-error {
   white-space: pre-wrap;
-  background: var(--fd-secondary, #f4f4f5);
-  color: var(--fd-foreground, inherit);
+  background: var(--color-fd-secondary, #f4f4f5);
+  color: var(--color-fd-foreground, inherit);
   padding: 18px;
   border-radius: 8px;
 }
