@@ -2,7 +2,7 @@
 
 > Fumadocs documentation site on TanStack Start + Vite, layered on `nix-bun-flake`'s dev shell: a static-SPA docs app with self-hosted custom fonts, `zombie-mermaid` diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container.
 
-**Version:** `0.4.1`
+**Version:** `0.4.2`
 
 ## Overview
 
@@ -50,8 +50,8 @@ Nix; the application manifest no longer installs a second compiler. `@types/bun`
 is pinned to **1.4.2**. Node-shebang application commands run explicitly under Bun
 with `bun --bun run`.
 
-Fumadocs Core/UI are pinned to **16.17.9**, MDX to **15.4.10**, and OpenAPI (when
-enabled) to **12.5.6**. The compatible TanStack releases are React Start **1.169.4**,
+Fumadocs Core/UI are pinned to **16.18.4**, MDX to **15.5.3**, and OpenAPI (when
+enabled) to **12.6.0**. The compatible TanStack releases are React Start **1.169.4**,
 React Router **1.170.46**, and static server functions **1.167.44**. Static search uses
 Fumadocs' default ZBSearch engine through the `useStaticSearch()` hook, which replaced
 the deprecated `useDocsSearch()` in Fumadocs 16.17. The exported `/api/search` index

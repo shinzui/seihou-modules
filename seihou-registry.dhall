@@ -62,7 +62,7 @@
     , tags = [ "typescript", "bun", "openapi", "orval", "zod", "client", "nix" ]
     }
   , { name = "fumadocs"
-    , version = Some "0.4.1"
+    , version = Some "0.4.2"
     , path = "modules/typescript/fumadocs"
     , description = Some "Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container"
     , tags = [ "typescript", "fumadocs", "docs", "mermaid", "vite", "tanstack", "openapi" ]

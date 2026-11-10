@@ -27,12 +27,12 @@
     "@tanstack/start-static-server-functions": "1.167.44",
     "@zombie-mermaid/svg-renderer": "^5.11.1",
     "elkjs": "^0.12.1",
-    "fumadocs-core": "16.17.9",
-    "fumadocs-mdx": "15.4.10",
+    "fumadocs-core": "16.18.4",
+    "fumadocs-mdx": "15.5.3",
 {{#if Eq docs.openapi true}}
-    "fumadocs-openapi": "12.5.6",
+    "fumadocs-openapi": "12.6.0",
 {{/if}}
-    "fumadocs-ui": "16.17.9",
+    "fumadocs-ui": "16.18.4",
     "lucide-react": "^1.63.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
