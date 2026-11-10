@@ -4,7 +4,7 @@ let S =
 
 in  S.Blueprint::{
     , name = "relaunch-fumadocs-docs"
-    , version = Some "0.1.0"
+    , version = Some "0.1.1"
     , description = Some
         "Relaunch a legacy Fumadocs documentation site: rehearse and apply the fumadocs-site recipe in place, install the writing skills, register with Mori, enable semantic SVG diagrams, add a source pin and release gates, then measure the content against the documented project and stop with a restart-or-refresh recommendation, a page list and a diagram catalog; never commits"
     , prompt = ./prompt.md as Text
@@ -120,6 +120,43 @@ in  S.Blueprint::{
         , description = Some
             "<SourceRef path symbol> commit-pinned permalinks and <TestedWith />, read from docs-source.json"
         }
+      ]
+    , allowedTools = Some
+      [ "Read"
+      , "Write"
+      , "Edit"
+      , "Glob"
+      , "Grep"
+      , "Bash(git *)"
+      , "Bash(seihou *)"
+      , "Bash(mori *)"
+      , "Bash(nix *)"
+      , "Bash(bun *)"
+      , "Bash(node *)"
+      , "Bash(python3 *)"
+      , "Bash(just *)"
+      , "Bash(dhall-to-json *)"
+      , "Bash(container *)"
+      , "Bash(curl *)"
+      , "Bash(cd *)"
+      , "Bash(cp *)"
+      , "Bash(mv *)"
+      , "Bash(rm *)"
+      , "Bash(mkdir *)"
+      , "Bash(ls *)"
+      , "Bash(cat *)"
+      , "Bash(find *)"
+      , "Bash(diff *)"
+      , "Bash(shasum *)"
+      , "Bash(tar *)"
+      , "Bash(pwd)"
+      , "Bash(test *)"
+      , "Bash(xargs *)"
+      , "Bash(sort *)"
+      , "Bash(head *)"
+      , "Bash(tail *)"
+      , "Bash(wc *)"
+      , "Bash(grep *)"
       ]
     , migrations = [] : List S.BlueprintMigration.Type
     , tags = [ "typescript", "fumadocs", "docs", "migration", "diataxis", "mori" ]

@@ -184,7 +184,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "relaunch-fumadocs-docs"
-        , version = Some "0.1.0"
+        , version = Some "0.1.1"
         , description = Some "Relaunch legacy Fumadocs sites: platform upgrade, writing skills, Mori registration, diagrams, source pin, release gates and a content assessment"
         , modulePath = "blueprints/relaunch-fumadocs-docs"
         , tags = [ "typescript", "fumadocs", "docs", "migration" ]

@@ -15,14 +15,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.15.0.0
-version: 0.1.0
+version: 0.1.1
 ---
 
 # relaunch-fumadocs-docs
 
 Relaunch a legacy Fumadocs documentation site: rehearsed platform upgrade, writing skills, Mori registration, SVG diagrams, a source pin and release gates, then a measured restart-or-refresh assessment with a proposed page list
 
-**Version:** 0.1.0
+**Version:** 0.1.1
 
 ## Base modules
 
@@ -58,10 +58,11 @@ The blueprint's `files/` directory holds the files you copy into the site. They 
 
 Read the project instructions (`CLAUDE.md`, `AGENTS.md`), `git status`, `package.json` and its lock, `justfile`, `flake.nix`, `flake.module.nix`, `.envrc`, `tsconfig.json`, `.oxfmtrc.json`, `.oxlintrc.json`, `linkinator.config.json`, `source.config.ts`, everything under `src/` and `scripts/`, CI configuration, `mori.dhall` and `.seihou/manifest.json`. Run `seihou status` and record the module and recipe versions it reports.
 
-Make a backup directory outside the project and copy into it the manifest, every managed file with local modifications, `package.json`, `justfile`, every file under `scripts/`, and `mori.dhall`.
+Make a backup directory, `.relaunch-backup/` inside the checkout and excluded through `.git/info/exclude` like the rehearsal clone, and copy into it the manifest, every managed file with local modifications, `package.json`, `justfile`, every file under `scripts/`, and `mori.dhall`.
 
 ```bash
-BACKUP="$(mktemp -d)"
+echo '.relaunch-backup/' >> .git/info/exclude
+BACKUP="$PWD/.relaunch-backup" && mkdir -p "${BACKUP?}"
 cp -R .seihou package.json justfile tsconfig.json mori.dhall scripts src "${BACKUP?}/"
 find content -type f -print0 | sort -z | xargs -0 shasum -a 256 > "${BACKUP?}/content.sha256"
 ```
@@ -93,8 +94,11 @@ Correct `mori.dhall` before the first application, because the recipe's bootstra
 
 Rehearse in a scratch clone first.
 
+Create the scratch clone inside the checkout, in `.relaunch-rehearsal/`, and exclude it locally, because an agent session may only work beneath its starting directory. Remove it when the rehearsal is complete, unless the operator asks to keep it.
+
 ```bash
-SCRATCH="$(mktemp -d)"
+echo '.relaunch-rehearsal/' >> .git/info/exclude
+SCRATCH="$PWD/.relaunch-rehearsal"
 git clone "$PWD" "${SCRATCH?}/site"
 cd "${SCRATCH?}/site"
 seihou run fumadocs-site --force --with-migrations --no-commands --no-save-prompted \
@@ -287,3 +291,41 @@ Leave `docs/migration-ledger.md`, `docs-source.json`, `docs/verification.json`, 
 - `scripts/report-source-drift.mjs` - Lists pages whose cited files changed between their verified revision and a candidate pin
 - `scripts/generate-api-index.mjs` - Generates the HTTP API index page from the OpenAPI documents, with a --check mode
 - `src/components/source-ref.tsx` - <SourceRef path symbol> commit-pinned permalinks and <TestedWith />, read from docs-source.json
+
+## Tools
+
+- `Read`
+- `Write`
+- `Edit`
+- `Glob`
+- `Grep`
+- `Bash(git *)`
+- `Bash(seihou *)`
+- `Bash(mori *)`
+- `Bash(nix *)`
+- `Bash(bun *)`
+- `Bash(node *)`
+- `Bash(python3 *)`
+- `Bash(just *)`
+- `Bash(dhall-to-json *)`
+- `Bash(container *)`
+- `Bash(curl *)`
+- `Bash(cd *)`
+- `Bash(cp *)`
+- `Bash(mv *)`
+- `Bash(rm *)`
+- `Bash(mkdir *)`
+- `Bash(ls *)`
+- `Bash(cat *)`
+- `Bash(find *)`
+- `Bash(diff *)`
+- `Bash(shasum *)`
+- `Bash(tar *)`
+- `Bash(pwd)`
+- `Bash(test *)`
+- `Bash(xargs *)`
+- `Bash(sort *)`
+- `Bash(head *)`
+- `Bash(tail *)`
+- `Bash(wc *)`
+- `Bash(grep *)`

@@ -23,10 +23,11 @@ The blueprint's `files/` directory holds the files you copy into the site. They 
 
 Read the project instructions (`CLAUDE.md`, `AGENTS.md`), `git status`, `package.json` and its lock, `justfile`, `flake.nix`, `flake.module.nix`, `.envrc`, `tsconfig.json`, `.oxfmtrc.json`, `.oxlintrc.json`, `linkinator.config.json`, `source.config.ts`, everything under `src/` and `scripts/`, CI configuration, `mori.dhall` and `.seihou/manifest.json`. Run `seihou status` and record the module and recipe versions it reports.
 
-Make a backup directory outside the project and copy into it the manifest, every managed file with local modifications, `package.json`, `justfile`, every file under `scripts/`, and `mori.dhall`.
+Make a backup directory, `.relaunch-backup/` inside the checkout and excluded through `.git/info/exclude` like the rehearsal clone, and copy into it the manifest, every managed file with local modifications, `package.json`, `justfile`, every file under `scripts/`, and `mori.dhall`.
 
 ```bash
-BACKUP="$(mktemp -d)"
+echo '.relaunch-backup/' >> .git/info/exclude
+BACKUP="$PWD/.relaunch-backup" && mkdir -p "${BACKUP?}"
 cp -R .seihou package.json justfile tsconfig.json mori.dhall scripts src "${BACKUP?}/"
 find content -type f -print0 | sort -z | xargs -0 shasum -a 256 > "${BACKUP?}/content.sha256"
 ```
@@ -58,8 +59,11 @@ Correct `mori.dhall` before the first application, because the recipe's bootstra
 
 Rehearse in a scratch clone first.
 
+Create the scratch clone inside the checkout, in `.relaunch-rehearsal/`, and exclude it locally, because an agent session may only work beneath its starting directory. Remove it when the rehearsal is complete, unless the operator asks to keep it.
+
 ```bash
-SCRATCH="$(mktemp -d)"
+echo '.relaunch-rehearsal/' >> .git/info/exclude
+SCRATCH="$PWD/.relaunch-rehearsal"
 git clone "$PWD" "${SCRATCH?}/site"
 cd "${SCRATCH?}/site"
 seihou run fumadocs-site --force --with-migrations --no-commands --no-save-prompted \
