@@ -280,7 +280,7 @@ def main():
             assert all(origins[name]['url'] == EXTERNAL for name in ['technical-docs', 'agent-gitignore'])
             assert all(origins[name]['url'] == PRIMARY for name in ['fumadocs', 'nix-bun-flake', 'docs-mori-bootstrap'])
             assert (installed / 'docs-mori-bootstrap/files/bootstrap-docs.py').read_bytes() == (primary / 'modules/mori/docs-mori-bootstrap/files/bootstrap-docs.py').read_bytes()
-            assert next(module for module in json.loads(saved)['modules'] if module['name'] == 'fumadocs')['version'] == '0.5.0'
+            assert next(module for module in json.loads(saved)['modules'] if module['name'] == 'fumadocs')['version'] == '0.6.0'
             print('Acquisition: two real Git registries, child closure, three container bindings and eighteen skill links verified.', flush=True)
             render(consumer, env)
             cfg = json.loads(run(['dhall-to-json', '--file', 'mori.dhall'], consumer, env))

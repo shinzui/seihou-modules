@@ -28,6 +28,9 @@
     ".tanstack",
     "public/fonts",
     "src/routeTree.gen.ts",
-    "nix/tooling-sources.json"
+    "nix/tooling-sources.json",
+    "docs/plans",
+    "docs/masterplans",
+    "docs/friction-log"
   ]
 }

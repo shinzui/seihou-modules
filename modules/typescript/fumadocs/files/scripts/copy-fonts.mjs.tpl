@@ -20,7 +20,10 @@ import { join } from "node:path"
 
 const repoRoot = process.cwd()
 const targetDir = join(repoRoot, "public", "fonts")
-const FONTS_FLAKE = "{{docs.font-flake}}"
+// The font flake comes from DOCS_FONT_FLAKE, for example set in an ignored
+// .envrc.local, or from docs.font-flake. Leave docs.font-flake empty in a public
+// repository so no local path is committed.
+const FONTS_FLAKE = process.env.DOCS_FONT_FLAKE || "{{docs.font-flake}}"
 const FONT_PACKAGE = "{{docs.font-package}}"
 const OUTPUT_BASENAME = "{{docs.font-basename}}"
 // Match the ligature Mono OTFs and capture the style letter. The version token
@@ -53,7 +56,7 @@ function resolveFontDir() {
   return null
 }
 
-const sourceDir = resolveFontDir()
+const sourceDir = FONTS_FLAKE ? resolveFontDir() : null
 if (!sourceDir) {
   console.warn(
     "[copy-fonts] font package not available on this machine; " +

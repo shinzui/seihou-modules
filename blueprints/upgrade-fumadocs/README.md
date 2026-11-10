@@ -1,6 +1,6 @@
 # upgrade-fumadocs
 
-Upgrade an existing site to `fumadocs` 0.3.0 and `nix-bun-flake` 0.4.0 while
+Upgrade an existing site to `fumadocs` 0.6.0 and `nix-bun-flake` 0.6.1 while
 preserving its content and customizations. It supports legacy manually assembled
 sites, Bun sites, and pnpm/Node sites. The empty baseline is intentional: the
 agent inventories the project before composing or adopting module output.
@@ -15,6 +15,7 @@ For projects on an earlier module release, the recorded version edges are:
 ```bash
 seihou agent migrate upgrade-fumadocs --from 0.1.2 --to 0.2.1
 seihou agent migrate upgrade-fumadocs --from 0.2.1 --to 0.3.0
+seihou agent migrate upgrade-fumadocs --from 0.3.0 --to 0.6.0
 ```
 
 `--from`/`--to` refer to Fumadocs **module** versions. For legacy sites use

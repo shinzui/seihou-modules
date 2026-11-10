@@ -1,0 +1,354 @@
+/*
+ * Hand-authored SVG diagrams (content/diagrams/**.svg, rendered by <Diagram>).
+ *
+ * Diagram files carry no colors. They use the semantic classes below, so one
+ * file follows the light and dark themes. The palette extends the Mermaid
+ * palette in src/components/mermaid.tsx (same fg/line/accent/surface values).
+ * scripts/render-diagram.mjs loads this file for local previews.
+ * The authoring guide is content/diagrams/README.md.
+ */
+
+.svg-diagram {
+  --dg-bg: #ffffff;
+  --dg-fg: #1e242b;
+  --dg-muted: #6b7280;
+  --dg-line: #59616d;
+  --dg-surface: #f4f6f8;
+  --dg-border: #b7c4ce;
+  --dg-accent: #1f6f72;
+  --dg-accent-fill: #e2f0f0;
+  --dg-amber: #a35a00;
+  --dg-amber-fill: #fcf1de;
+  --dg-violet: #6741b8;
+  --dg-violet-fill: #efe9fb;
+  --dg-rose: #b3264d;
+  --dg-rose-fill: #fbe8ed;
+  --dg-green: #2e7a3a;
+  --dg-green-fill: #e5f3e7;
+  --dg-muted-fill: #eceef1;
+  --dg-font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --dg-font-mono: var(--fd-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+}
+
+.dark .svg-diagram {
+  --dg-bg: #0b0e14;
+  --dg-fg: #e6e9ef;
+  --dg-muted: #9aa4b2;
+  --dg-line: #8b95a5;
+  --dg-surface: #161b26;
+  --dg-border: #3a4252;
+  --dg-accent: #4fd1c5;
+  --dg-accent-fill: #12302f;
+  --dg-amber: #f0b35a;
+  --dg-amber-fill: #33260f;
+  --dg-violet: #b39cf5;
+  --dg-violet-fill: #251d3d;
+  --dg-rose: #f2849f;
+  --dg-rose-fill: #3a1a24;
+  --dg-green: #7fd492;
+  --dg-green-fill: #15301c;
+  --dg-muted-fill: #1c2230;
+}
+
+/* ---- figure chrome ---- */
+
+.svg-diagram {
+  position: relative;
+  margin: 1.25rem 0;
+  padding: 1rem;
+  border: 1px solid var(--fd-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--fd-card, transparent);
+}
+
+.svg-diagram-frame {
+  margin: 0 auto;
+}
+
+.svg-diagram-frame svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: transparent;
+}
+
+.svg-diagram-loading {
+  display: grid;
+  place-items: center;
+  min-height: 160px;
+  color: var(--fd-muted-foreground, #6b7280);
+  font-size: 0.9rem;
+}
+
+.svg-diagram figcaption {
+  margin-top: 0.75rem;
+  text-align: center;
+  color: var(--fd-muted-foreground, #6b7280);
+  font-size: 0.85rem;
+}
+
+.svg-diagram-expand {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  padding: 2px 10px;
+  border: 1px solid var(--fd-border, #e5e7eb);
+  border-radius: 6px;
+  background: var(--fd-card, #fff);
+  color: var(--fd-muted-foreground, #6b7280);
+  font-size: 0.75rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms;
+}
+
+.svg-diagram:hover .svg-diagram-expand,
+.svg-diagram-expand:focus-visible,
+.svg-diagram.expanded .svg-diagram-expand {
+  opacity: 1;
+}
+
+.svg-diagram.expanded {
+  position: fixed;
+  inset: 18px;
+  z-index: 50;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: auto;
+  background: var(--fd-background, #fff);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.35);
+}
+
+.svg-diagram.expanded .svg-diagram-frame {
+  width: 100%;
+  max-height: 100%;
+}
+
+.svg-diagram.expanded .svg-diagram-frame svg {
+  max-height: calc(100vh - 120px);
+}
+
+body:has(.svg-diagram.expanded) {
+  overflow: hidden;
+}
+
+/* ---- text ---- */
+
+.svg-diagram text {
+  fill: var(--dg-fg);
+  font-family: var(--dg-font-sans);
+  font-size: 13px;
+}
+.svg-diagram :is(text, tspan).title {
+  font-size: 14px;
+  font-weight: 600;
+}
+.svg-diagram :is(text, tspan).heading {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  fill: var(--dg-muted);
+}
+.svg-diagram :is(text, tspan).small {
+  font-size: 11.5px;
+}
+.svg-diagram :is(text, tspan).code {
+  font-family: var(--dg-font-mono);
+  font-size: 12.5px;
+}
+.svg-diagram :is(text, tspan).code.small {
+  font-size: 11.5px;
+}
+.svg-diagram :is(text, tspan).bold {
+  font-weight: 600;
+}
+.svg-diagram :is(text, tspan).italic {
+  font-style: italic;
+}
+/* A background-colored outline that keeps a label legible where it crosses a line. */
+.svg-diagram :is(text, tspan).halo {
+  stroke: var(--dg-bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+.svg-diagram :is(text, tspan).muted {
+  fill: var(--dg-muted);
+}
+.svg-diagram :is(text, tspan).accent {
+  fill: var(--dg-accent);
+}
+.svg-diagram :is(text, tspan).amber {
+  fill: var(--dg-amber);
+}
+.svg-diagram :is(text, tspan).violet {
+  fill: var(--dg-violet);
+}
+.svg-diagram :is(text, tspan).rose {
+  fill: var(--dg-rose);
+}
+.svg-diagram :is(text, tspan).green {
+  fill: var(--dg-green);
+}
+
+/* ---- shapes: .node (box), .group (dashed container), .band (filled region) ---- */
+
+.svg-diagram .node {
+  fill: var(--dg-surface);
+  stroke: var(--dg-border);
+  stroke-width: 1.25px;
+}
+.svg-diagram .group {
+  fill: none;
+  stroke: var(--dg-border);
+  stroke-width: 1.25px;
+  stroke-dasharray: 6 4;
+}
+.svg-diagram .band {
+  fill: var(--dg-surface);
+  stroke: none;
+}
+.svg-diagram .node.accent,
+.svg-diagram .band.accent {
+  fill: var(--dg-accent-fill);
+  stroke: var(--dg-accent);
+}
+.svg-diagram .node.amber,
+.svg-diagram .band.amber {
+  fill: var(--dg-amber-fill);
+  stroke: var(--dg-amber);
+}
+.svg-diagram .node.violet,
+.svg-diagram .band.violet {
+  fill: var(--dg-violet-fill);
+  stroke: var(--dg-violet);
+}
+.svg-diagram .node.rose,
+.svg-diagram .band.rose {
+  fill: var(--dg-rose-fill);
+  stroke: var(--dg-rose);
+}
+.svg-diagram .node.green,
+.svg-diagram .band.green {
+  fill: var(--dg-green-fill);
+  stroke: var(--dg-green);
+}
+.svg-diagram .node.muted,
+.svg-diagram .band.muted {
+  fill: var(--dg-muted-fill);
+  stroke: var(--dg-muted);
+}
+.svg-diagram .band {
+  stroke: none;
+}
+.svg-diagram .group.accent {
+  stroke: var(--dg-accent);
+}
+.svg-diagram .group.amber {
+  stroke: var(--dg-amber);
+}
+.svg-diagram .group.violet {
+  stroke: var(--dg-violet);
+}
+.svg-diagram .group.rose {
+  stroke: var(--dg-rose);
+}
+.svg-diagram .group.green {
+  stroke: var(--dg-green);
+}
+.svg-diagram .group.muted {
+  stroke: var(--dg-muted);
+}
+.svg-diagram .node.dashed {
+  stroke-dasharray: 5 4;
+}
+.svg-diagram .node.ghost {
+  fill: none;
+}
+
+/* ---- lines: .edge (connector), .axis (scale/divider), .dot (point) ---- */
+
+.svg-diagram .edge {
+  fill: none;
+  stroke: var(--dg-line);
+  stroke-width: 1.5px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.svg-diagram .edge.dashed {
+  stroke-dasharray: 5 4;
+}
+.svg-diagram .edge.dotted {
+  stroke-dasharray: 1.5 4;
+}
+.svg-diagram .edge.thick {
+  stroke-width: 2.5px;
+}
+.svg-diagram .axis {
+  fill: none;
+  stroke: var(--dg-muted);
+  stroke-width: 1px;
+}
+.svg-diagram .axis.dashed {
+  stroke-dasharray: 4 4;
+}
+.svg-diagram .dot,
+.svg-diagram .arrowhead {
+  fill: var(--dg-line);
+  stroke: none;
+}
+.svg-diagram :is(.edge, .axis).accent {
+  stroke: var(--dg-accent);
+}
+.svg-diagram :is(.edge, .axis).amber {
+  stroke: var(--dg-amber);
+}
+.svg-diagram :is(.edge, .axis).violet {
+  stroke: var(--dg-violet);
+}
+.svg-diagram :is(.edge, .axis).rose {
+  stroke: var(--dg-rose);
+}
+.svg-diagram :is(.edge, .axis).green {
+  stroke: var(--dg-green);
+}
+.svg-diagram :is(.edge, .axis).muted {
+  stroke: var(--dg-muted);
+}
+.svg-diagram :is(.dot, .arrowhead).accent {
+  fill: var(--dg-accent);
+}
+.svg-diagram :is(.dot, .arrowhead).amber {
+  fill: var(--dg-amber);
+}
+.svg-diagram :is(.dot, .arrowhead).violet {
+  fill: var(--dg-violet);
+}
+.svg-diagram :is(.dot, .arrowhead).rose {
+  fill: var(--dg-rose);
+}
+.svg-diagram :is(.dot, .arrowhead).green {
+  fill: var(--dg-green);
+}
+.svg-diagram :is(.dot, .arrowhead).muted {
+  fill: var(--dg-muted);
+}
+
+/* Keep expanded labels readable on narrow screens; the frame can scroll. */
+@media (max-width: 640px) {
+  .svg-diagram.expanded .svg-diagram-frame {
+    overflow: auto;
+  }
+  .svg-diagram.expanded .svg-diagram-frame svg {
+    width: var(--diagram-width);
+    max-width: none;
+    max-height: none;
+  }
+  .svg-diagram-expand {
+    opacity: 1;
+  }
+}

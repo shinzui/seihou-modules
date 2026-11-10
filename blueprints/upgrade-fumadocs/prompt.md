@@ -57,7 +57,9 @@ not disguise them as generated content. Use supported manifest repair-origins fo
 
 Merge target dependency changes into the existing manifest, retaining custom scripts and
 packages. Remove the obsolete @orama/orama dependency only if no custom feature still uses
-it. Use useStaticSearch({ locale }) from fumadocs-core/search/client and spread its result
+it. Highlight code with @pierre/highlights through createHighlights() and
+rehypeCodeFromHighlighter, as the current module's source.config.ts does, instead of
+Shiki's rehypeCodeOptions; with OpenAPI, use createOpenAPIPageBase and declare shiki directly. Use useStaticSearch({ locale }) from fumadocs-core/search/client and spread its result
 into SearchDialog; let createFromSource use its default ZBSearch engine and export
 staticGET. Preserve customized searches if present and adapt them using upstream source.
 Use Mori to locate sources; verify releases against npm and upstream tags before selecting

@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "fumadocs"
-    , version = Some "0.5.0"
+    , version = Some "0.6.0"
     , description = Some
         "Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container"
     , vars =
@@ -28,7 +28,7 @@ in  S.Module::{
         , type = "text"
         , default = Some "openapi.yaml"
         , description = Some
-            "OpenAPI document rendered when docs.openapi is true: a project-relative path or a URL. New sites with starter content get an example at openapi.yaml."
+            "OpenAPI document rendered when docs.openapi is true: a project-relative path, a URL, or a directory whose .json, .yaml and .yml documents are all rendered. New sites with starter content get an example at openapi.yaml."
         , required = True
         }
       , S.VarDecl::{
@@ -39,6 +39,14 @@ in  S.Module::{
             "Docs folder holding the generated OpenAPI pages (served under /docs/<dir>/). Pick one no authored content uses."
         , required = True
         , validation = Some "[a-z][a-z0-9-]*"
+        }
+      , S.VarDecl::{
+        , name = "docs.svg-diagrams"
+        , type = "bool"
+        , default = Some "false"
+        , description = Some
+            "Generate the semantic SVG diagram system: <Diagram>, theme-aware diagram styles, the authoring contract in content/diagrams/README.md, a preview renderer and the lint:diagrams gate"
+        , required = True
         }
       , S.VarDecl::{
         , name = "docs.container"
@@ -112,9 +120,9 @@ in  S.Module::{
       , S.VarDecl::{
         , name = "docs.font-flake"
         , type = "text"
-        , default = Some "/Users/shinzui/Keikaku/bokuno/fonts"
+        , default = Some ""
         , description = Some
-            "Local Nix flake path the font copy step builds to source the licensed OTFs. Tolerant: if unavailable, the build still proceeds and code falls back to system monospace."
+            "Nix flake path the font copy step builds to source licensed OTFs; DOCS_FONT_FLAKE overrides it. Leave empty in public repositories and set DOCS_FONT_FLAKE locally instead. Tolerant: if unavailable, the build still proceeds and code falls back to system monospace."
         , required = True
         }
       , S.VarDecl::{
@@ -227,7 +235,47 @@ in  S.Module::{
         , src = "src/lib/rehype-mermaid.ts"
         , dest = "src/lib/rehype-mermaid.ts"
         }
-      , S.Step::{ strategy = "copy", src = "src/components/mdx.tsx", dest = "src/components/mdx.tsx" }
+      , S.Step::{
+        , strategy = "template"
+        , src = "src/components/mdx.tsx.tpl"
+        , dest = "src/components/mdx.tsx"
+        }
+      , S.Step::{
+        , strategy = "copy"
+        , src = "src/components/diagram.tsx"
+        , dest = "src/components/diagram.tsx"
+        , when = Some "Eq docs.svg-diagrams true"
+        }
+      , S.Step::{
+        , strategy = "copy"
+        , src = "src/lib/diagram-svg.mjs"
+        , dest = "src/lib/diagram-svg.mjs"
+        , when = Some "Eq docs.svg-diagrams true"
+        }
+      , S.Step::{
+        , strategy = "copy"
+        , src = "src/styles/diagrams.css"
+        , dest = "src/styles/diagrams.css"
+        , when = Some "Eq docs.svg-diagrams true"
+        }
+      , S.Step::{
+        , strategy = "copy"
+        , src = "scripts/check-doc-diagrams.mjs"
+        , dest = "scripts/check-doc-diagrams.mjs"
+        , when = Some "Eq docs.svg-diagrams true"
+        }
+      , S.Step::{
+        , strategy = "copy"
+        , src = "scripts/render-diagram.mjs"
+        , dest = "scripts/render-diagram.mjs"
+        , when = Some "Eq docs.svg-diagrams true"
+        }
+      , S.Step::{
+        , strategy = "copy"
+        , src = "content/diagrams/README.md"
+        , dest = "content/diagrams/README.md"
+        , when = Some "Eq docs.svg-diagrams true"
+        }
       , S.Step::{
         , strategy = "copy"
         , src = "src/components/mermaid.tsx"
@@ -335,6 +383,11 @@ in  S.Module::{
         , S.RemovalStep::{ action = "remove-file", dest = "src/components/search.tsx" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/components/not-found.tsx" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/components/api-page.tsx" }
+        , S.RemovalStep::{ action = "remove-file", dest = "src/components/diagram.tsx" }
+        , S.RemovalStep::{ action = "remove-file", dest = "src/lib/diagram-svg.mjs" }
+        , S.RemovalStep::{ action = "remove-file", dest = "src/styles/diagrams.css" }
+        , S.RemovalStep::{ action = "remove-file", dest = "scripts/check-doc-diagrams.mjs" }
+        , S.RemovalStep::{ action = "remove-file", dest = "scripts/render-diagram.mjs" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/styles/app.css" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/routes/__root.tsx" }
         , S.RemovalStep::{ action = "remove-file", dest = "src/routes/index.tsx" }

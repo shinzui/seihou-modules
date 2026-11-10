@@ -14,8 +14,16 @@
     "lint:fix": "oxlint --fix",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
-    "lint:links": "linkinator .output/public --config linkinator.config.json",
+    "lint:links": "linkinator docs/index.html --config linkinator.config.json",
+{{#if Eq docs.svg-diagrams true}}
+    "lint:diagrams": "bun scripts/check-doc-diagrams.mjs",
+    "preview:diagram": "bun scripts/render-diagram.mjs",
+{{/if}}
+{{#if Eq docs.svg-diagrams true}}
+    "check": "bun run typecheck && bun run lint && bun run format:check && bun run lint:diagrams && bun run build",
+{{#else}}
     "check": "bun run typecheck && bun run lint && bun run format:check && bun run build",
+{{/if}}
     "postinstall": "bun --bun fumadocs-mdx",
     "copy-fonts": "bun scripts/copy-fonts.mjs",
     "predev": "bun run copy-fonts",

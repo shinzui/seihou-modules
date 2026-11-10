@@ -17,14 +17,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.15.0.0
-version: 0.5.0
+version: 0.6.0
 ---
 
 # fumadocs
 
 Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container
 
-**Version:** 0.5.0
+**Version:** 0.6.0
 
 ## Dependencies
 
@@ -34,8 +34,9 @@ Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's
 
 - `docs.starter-content` — boolean, required, default `true`. Generate starter content for a new site; set false when adopting an existing documentation tree
 - `docs.openapi` — boolean, required, default `false`. Generate API reference pages from an OpenAPI document with fumadocs-openapi
-- `docs.openapi-spec` — text, required, default `openapi.yaml`. OpenAPI document rendered when docs.openapi is true: a project-relative path or a URL. New sites with starter content get an example at openapi.yaml.
+- `docs.openapi-spec` — text, required, default `openapi.yaml`. OpenAPI document rendered when docs.openapi is true: a project-relative path, a URL, or a directory whose .json, .yaml and .yml documents are all rendered. New sites with starter content get an example at openapi.yaml.
 - `docs.openapi-base-dir` — text, required, default `api`, matching `[a-z][a-z0-9-]*`. Docs folder holding the generated OpenAPI pages (served under /docs/<dir>/). Pick one no authored content uses.
+- `docs.svg-diagrams` — boolean, required, default `false`. Generate the semantic SVG diagram system: <Diagram>, theme-aware diagram styles, the authoring contract in content/diagrams/README.md, a preview renderer and the lint:diagrams gate
 - `docs.container` — boolean, required, default `false`. Generate a Nix build of the static site and a non-root Caddy image built with nix2container; also requires nix.bun2nix=true and nix.package-module=nix/fumadocs-container.nix
 - `project.name` — text, required, matching `[a-z][a-z0-9-]*`. Project name (package.json name). Re-declared so step `dest` paths and templates validate; the value is shared with `nix-bun-flake` via the dependency graph (it exports `project.name`).
 - `project.description` — text, required. One-line project description (package.json description, home page intro). Inherited from `nix-bun-flake`, which exports `project.description`.
@@ -45,7 +46,7 @@ Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's
 - `docs.github-branch` — text, required, default `master`. Branch used in per-page "edit on GitHub" links.
 - `docs.font-family` — text, required, default `PragmataPro Mono`. CSS font-family name for the self-hosted monospace/code font (routed at --fd-font-mono and every code surface).
 - `docs.font-basename` — text, required, default `PragmataProMono`. Stable file-name prefix the font copy step writes into public/fonts/ (e.g. <basename>-Regular.otf), referenced by @font-face in app.css. Version-independent so the CSS URLs never change.
-- `docs.font-flake` — text, required, default `/Users/shinzui/Keikaku/bokuno/fonts`. Local Nix flake path the font copy step builds to source the licensed OTFs. Tolerant: if unavailable, the build still proceeds and code falls back to system monospace.
+- `docs.font-flake` — text, required, default ``. Nix flake path the font copy step builds to source licensed OTFs; DOCS_FONT_FLAKE overrides it. Leave empty in public repositories and set DOCS_FONT_FLAKE locally instead. Tolerant: if unavailable, the build still proceeds and code falls back to system monospace.
 - `docs.font-package` — text, required, default `pragmataPro`. Package attribute built from docs.font-flake (path:<flake>#<package>).
 
 ## Exports
@@ -82,7 +83,13 @@ No exports declared.
 - `Template` `src/lib/shared.ts.tpl` → `src/lib/shared.ts`
 - `Copy` `src/lib/layout.shared.tsx` → `src/lib/layout.shared.tsx`
 - `Copy` `src/lib/rehype-mermaid.ts` → `src/lib/rehype-mermaid.ts`
-- `Copy` `src/components/mdx.tsx` → `src/components/mdx.tsx`
+- `Template` `src/components/mdx.tsx.tpl` → `src/components/mdx.tsx`
+- `Copy` `src/components/diagram.tsx` → `src/components/diagram.tsx` — when `Eq docs.svg-diagrams true`
+- `Copy` `src/lib/diagram-svg.mjs` → `src/lib/diagram-svg.mjs` — when `Eq docs.svg-diagrams true`
+- `Copy` `src/styles/diagrams.css` → `src/styles/diagrams.css` — when `Eq docs.svg-diagrams true`
+- `Copy` `scripts/check-doc-diagrams.mjs` → `scripts/check-doc-diagrams.mjs` — when `Eq docs.svg-diagrams true`
+- `Copy` `scripts/render-diagram.mjs` → `scripts/render-diagram.mjs` — when `Eq docs.svg-diagrams true`
+- `Copy` `content/diagrams/README.md` → `content/diagrams/README.md` — when `Eq docs.svg-diagrams true`
 - `Copy` `src/components/mermaid.tsx` → `src/components/mermaid.tsx`
 - `Copy` `src/components/search.tsx` → `src/components/search.tsx`
 - `Copy` `src/components/not-found.tsx` → `src/components/not-found.tsx`
@@ -123,6 +130,11 @@ No exports declared.
 - delete `src/components/search.tsx`
 - delete `src/components/not-found.tsx`
 - delete `src/components/api-page.tsx`
+- delete `src/components/diagram.tsx`
+- delete `src/lib/diagram-svg.mjs`
+- delete `src/styles/diagrams.css`
+- delete `scripts/check-doc-diagrams.mjs`
+- delete `scripts/render-diagram.mjs`
 - delete `src/styles/app.css`
 - delete `src/routes/__root.tsx`
 - delete `src/routes/index.tsx`

@@ -2,7 +2,7 @@
 
 > Fumadocs documentation site on TanStack Start + Vite, layered on `nix-bun-flake`'s dev shell: a static-SPA docs app with self-hosted custom fonts, `zombie-mermaid` diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container.
 
-**Version:** `0.5.0`
+**Version:** `0.6.0`
 
 ## Overview
 
@@ -69,6 +69,24 @@ transitive dependency of Fumadocs. With OpenAPI enabled, the manifest declares `
 directly: `fumadocs-openapi` imports its Oniguruma engine on the server, and under the
 isolated Bun linker that the Nix build uses, an undeclared Shiki is not resolvable from
 the project root, so Rolldown would try to bundle `onig.wasm` and fail.
+
+`docs.openapi-spec` may name a directory: every `.json`, `.yaml` and `.yml` document in it
+is rendered, in sorted order, so a project with several OpenAPI documents needs no change to
+`src/lib/openapi.ts`.
+
+`docs.svg-diagrams=true` (default `false`) generates hand-authored SVG diagram support:
+`<Diagram src alt caption>` in `src/components/diagram.tsx`, theme-aware semantic classes in
+`src/styles/diagrams.css`, the authoring contract in `content/diagrams/README.md`, a preview
+renderer (`bun run preview:diagram -- <name>`, which needs Chrome) and the `lint:diagrams`
+gate, which `check` runs. Diagram files carry no colors, so one file follows both themes.
+
+`lint:links` starts a crawl at `docs/index.html` and skips only external URLs. Earlier
+releases skipped every URL, including the local server's, and so checked nothing.
+`tsconfig.json` excludes `agents/`, and formatting ignores `docs/plans`, `docs/masterplans`
+and `docs/friction-log`, so sites with the planning skills pass `check`.
+
+`docs.font-flake` defaults to empty. The font copy step reads `DOCS_FONT_FLAKE` first, so a
+public repository can set the flake path in an ignored `.envrc.local` instead of committing it.
 
 ## Shared flake and upgrades
 

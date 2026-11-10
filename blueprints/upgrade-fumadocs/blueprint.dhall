@@ -4,7 +4,7 @@ let S =
 
 in S.Blueprint::{
     , name = "upgrade-fumadocs"
-    , version = Some "0.2.0"
+    , version = Some "0.3.0"
     , description = Some "Upgrade an existing Fumadocs site to the current fumadocs and nix-bun-flake modules, preserving content, custom components, package-manager workflows, fonts, CI gates, and Seihou ownership; validates the production static site and never commits"
     , prompt = ./prompt.md as Text
     , baseModules = [] : List S.Dependency.Type
@@ -16,4 +16,5 @@ in S.Blueprint::{
     } // { migrations =
       [ { from = "0.1.2", to = "0.2.1", prompt = ./migration-0.1.2-to-0.2.1.md as Text }
       , { from = "0.2.1", to = "0.3.0", prompt = ./migration-0.2.1-to-0.3.0.md as Text }
+      , { from = "0.3.0", to = "0.6.0", prompt = ./migration-0.3.0-to-0.6.0.md as Text }
       ] }

@@ -62,7 +62,7 @@
     , tags = [ "typescript", "bun", "openapi", "orval", "zod", "client", "nix" ]
     }
   , { name = "fumadocs"
-    , version = Some "0.5.0"
+    , version = Some "0.6.0"
     , path = "modules/typescript/fumadocs"
     , description = Some "Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container"
     , tags = [ "typescript", "fumadocs", "docs", "mermaid", "vite", "tanstack", "openapi" ]
@@ -144,7 +144,7 @@
     , tags = [ "haskell", "nix", "runtime", "migration" ]
     }
   , { name = "upgrade-fumadocs"
-    , version = Some "0.2.0"
+    , version = Some "0.3.0"
     , path = "blueprints/upgrade-fumadocs"
     , description = Some "Upgrade existing Fumadocs sites to the shared Bun flake-parts modules while preserving custom content, package-manager workflows, fonts, CI gates, and Seihou ownership"
     , tags = [ "typescript", "fumadocs", "nix", "flake-parts", "migration" ]

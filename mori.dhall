@@ -154,7 +154,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "fumadocs"
-        , version = Some "0.5.0"
+        , version = Some "0.6.0"
         , description = Some "Current Fumadocs static documentation site on the shared Bun environment, with optional starter content for existing-site adoption, optional OpenAPI reference pages, and an optional Caddy container image"
         , modulePath = "modules/typescript/fumadocs"
         , tags = [ "typescript", "fumadocs", "docs" ]
@@ -177,7 +177,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "upgrade-fumadocs"
-        , version = Some "0.2.0"
+        , version = Some "0.3.0"
         , description = Some "Migrate customized Fumadocs sites to the current shared Bun flake-parts modules with content preservation and static-output validation"
         , modulePath = "blueprints/upgrade-fumadocs"
         , tags = [ "typescript", "fumadocs", "nix", "migration" ]

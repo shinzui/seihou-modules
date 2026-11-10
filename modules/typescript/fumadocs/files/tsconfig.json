@@ -1,5 +1,6 @@
 {
   "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["agents"],
   "compilerOptions": {
     "strict": true,
     "esModuleInterop": true,

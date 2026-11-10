@@ -7,6 +7,9 @@ import { TypeTable } from "fumadocs-ui/components/type-table"
 import defaultMdxComponents from "fumadocs-ui/mdx"
 import type { MDXComponents } from "mdx/types"
 
+{{#if Eq docs.svg-diagrams true}}
+import { Diagram } from "@/components/diagram"
+{{/if}}
 import { Mermaid } from "@/components/mermaid"
 
 // Central MDX-to-React component map. `getMDXComponents` merges fumadocs'
@@ -17,6 +20,10 @@ export function getMDXComponents(components?: MDXComponents) {
     ...defaultMdxComponents,
     // Interactive, zoomable Mermaid diagrams (see src/components/mermaid.tsx).
     Mermaid,
+{{#if Eq docs.svg-diagrams true}}
+    // Theme-aware hand-authored SVG diagrams (see content/diagrams/README.md).
+    Diagram,
+{{/if}}
     // Shared fumadocs-ui authoring components.
     Callout,
     Step,

@@ -4,6 +4,9 @@
 {{#if Eq docs.openapi true}}
 @import "fumadocs-openapi/css/preset.css";
 {{/if}}
+{{#if Eq docs.svg-diagrams true}}
+@import "./diagrams.css";
+{{/if}}
 
 html {
   scrollbar-gutter: stable;
