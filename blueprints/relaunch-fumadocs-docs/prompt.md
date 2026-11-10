@@ -23,11 +23,11 @@ The blueprint's `files/` directory holds the files you copy into the site. They 
 
 Read the project instructions (`CLAUDE.md`, `AGENTS.md`), `git status`, `package.json` and its lock, `justfile`, `flake.nix`, `flake.module.nix`, `.envrc`, `tsconfig.json`, `.oxfmtrc.json`, `.oxlintrc.json`, `linkinator.config.json`, `source.config.ts`, everything under `src/` and `scripts/`, CI configuration, `mori.dhall` and `.seihou/manifest.json`. Run `seihou status` and record the module and recipe versions it reports.
 
-Make a backup directory, `.relaunch-backup/` inside the checkout and excluded through `.git/info/exclude` like the rehearsal clone, and copy into it the manifest, every managed file with local modifications, `package.json`, `justfile`, every file under `scripts/`, and `mori.dhall`.
+Make a backup directory, `.relaunch-backup/`, inside the checkout, and copy into it the manifest, every managed file with local modifications, `package.json`, `justfile`, every file under `scripts/`, and `mori.dhall`. Make the directory ignore itself: write a file `.relaunch-backup/.gitignore` containing the single line `*`, with the file-writing tool. Do not edit `.git/info/exclude`. An unattended run is refused writes inside `.git/` and shell redirection, and a self-ignoring directory never appears in `git status`. Do the same for `.relaunch-rehearsal/` below.
 
 ```bash
-echo '.relaunch-backup/' >> .git/info/exclude
 BACKUP="$PWD/.relaunch-backup" && mkdir -p "${BACKUP?}"
+# then write .relaunch-backup/.gitignore containing: *
 cp -R .seihou package.json justfile tsconfig.json mori.dhall scripts src "${BACKUP?}/"
 find content -type f -print0 | sort -z | xargs -0 shasum -a 256 > "${BACKUP?}/content.sha256"
 ```
@@ -70,11 +70,11 @@ Then, for each module that `blueprints/upgrade-fumadocs/files/target-versions.js
 
 Rehearse in a scratch clone first.
 
-Create the scratch clone inside the checkout, in `.relaunch-rehearsal/`, and exclude it locally, because an agent session may only work beneath its starting directory. Remove it when the rehearsal is complete, unless the operator asks to keep it.
+Create the scratch clone inside the checkout, in `.relaunch-rehearsal/`, because an agent session may only work beneath its starting directory. Give it a `.gitignore` containing `*`, as for the backup directory. Remove it when the rehearsal is complete, unless the operator asks to keep it.
 
 ```bash
-echo '.relaunch-rehearsal/' >> .git/info/exclude
-SCRATCH="$PWD/.relaunch-rehearsal"
+SCRATCH="$PWD/.relaunch-rehearsal" && mkdir -p "${SCRATCH?}"
+# write .relaunch-rehearsal/.gitignore containing: *
 git clone "$PWD" "${SCRATCH?}/site"
 cd "${SCRATCH?}/site"
 seihou run fumadocs-site --force --with-migrations --no-commands --no-save-prompted \
@@ -99,7 +99,7 @@ Prove the upgraded platform on the real, unchanged content before any content wo
 
 1. Run the site's complete gate, for example `nix develop --command just check-docs`, or `just check` when it has none, and then each `lint:*` script on its own.
 2. Run `nix build .#docs-site`. The Nix build installs with an isolated linker, which can expose a dependency the hoisted local build hides.
-3. Build the image from a clean clone, because the flake reads tracked files only. Prefer a local Apple container from a pinned image tag, for example `ghcr.io/nixos/nix:2.35.2` with the nested sandbox off, and run `nix build .#dockerImage.copyTo` there. Always pass `--cpus 8 --memory 16G`, or the most the host allows: Apple's default is 1 GB, and an empty store compiles toolchain pieces such as bun2nix's Zig helper from source, which in 1 GB runs out of memory without failing and crawls for hours. Start the container detached (`--detach … sleep infinity`), run the build with `container exec`, and write its full output to a log file you can read while it runs. Never pipe a long build into `tail`, which hides all progress until it exits. If the build log has not advanced for ten minutes, check the container's free memory in `/proc/meminfo` before waiting any longer. Load the image, serve it on port 8080, and request a known page, a raw Markdown route (`/docs/<page>.md`) and the static search index. The site serves its shell with HTTP 200 for unknown paths, so compare against a path that does not exist; a 200 alone proves nothing.
+3. Build the image from a clean clone, because the flake reads tracked files only. Prefer a local Apple container from a pinned image tag, for example `ghcr.io/nixos/nix:2.35.2` with the nested sandbox off, and run `nix build .#dockerImage.copyTo` there. Always pass `--cpus 8 --memory 16G`, or the most the host allows: Apple's default is 1 GB, and an empty store compiles toolchain pieces such as bun2nix's Zig helper from source, which in 1 GB runs out of memory without failing and crawls for hours. Start the container detached (`--detach … sleep infinity`), run the build with `container exec`, and write its full output to a log file you can read while it runs. Never pipe a long build into `tail`, which hides all progress until it exits. If the build log has not advanced for ten minutes, check the container's free memory in `/proc/meminfo` before waiting any longer. Export with `.#dockerImage.copyTo -- oci-archive:<file>:<name>:latest`; `container image load --input` accepts an OCI archive, not a Docker archive. Load the image, serve it on port 8080, and request a known page, a raw Markdown route (`/docs/<page>.md`) and the static search index. The site serves its shell with HTTP 200 for unknown paths, so compare against a path that does not exist; a 200 alone proves nothing. Afterwards, stop and remove the build and serve containers (`container stop`, `container rm`) and delete the loaded image and the archive, so the run leaves nothing running on the host.
 4. Query the exported search index through `fumadocs-core/search/client` and require a known page in the results.
 5. Check the content hashes.
 
