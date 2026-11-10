@@ -13,7 +13,7 @@ boundaries. A successful scaffold render alone does not prove local registration
 
 ## Decision
 
-`fumadocs-project` composes the existing Fumadocs module with all three container
+`fumadocs-site` composes the existing Fumadocs module with all three container
 bindings, writing skills from `mori://shinzui/agent-seihou/templates/technical-docs`,
 and a final local Mori bootstrap command. Acquire external skills through Seihou's
 source-aware dependency graph; do not vendor their source. Keep ordinary Fumadocs
@@ -47,6 +47,32 @@ This extends the authored-content boundary in
 [ADR 4](4-preserve-authored-content-during-fumadocs-adoption.md).
 
 ## Consequences
+
+`fumadocs-project` 0.2.0 creates a complete repository through `repo-dir` 0.2.0.
+The directory module acquires and applies `fumadocs-site` inside the new target,
+then delegates initial commit, GitHub creation/push and team access to the existing
+`git-init`. No Git/GitHub command logic is duplicated. The initial commit includes
+the site, skills, authored Mori manifest and Seihou manifest. GitHub creation happens
+only after the scaffold and local Mori registration succeed.
+
+Seihou 0.15 applies all ordinary dependencies in the invocation directory and has no
+install-only edge. The directory command therefore acquires its declared child scaffold
+and git-init through the normal installer before nested application. The child recipe
+retains the external skills' source-qualified dependency graph. `repo.source` selects
+the registry, including forks or local fixtures; acquisition never forces replacement
+of foreign installed artifacts. This command needs network or the chosen local source.
+
+Resolve wrapper inputs before changing directories. Read the active application's
+`recipeInputs` and repo-dir instance's `resolvedVars` from Seihou's pre-command
+manifest, scoped by the current generation timestamp; fail if the active application
+is ambiguous. A generic repo.scaffoldBindings map supplies omitted child inputs from
+resolved outer inputs while explicit child values win. Fumadocs site-link owner/name/branch
+default to the actual created remote; optional docs.github-repo keeps package/Mori and
+repository names independent. The legacy flat `variables` summary omits recipe-only inputs. Pass values
+to child commands as argument data. Reject nonempty targets, files and symlinks before
+acquisition or creation. Partial failures preserve the checkout; recovery happens inside
+it, while repeated creation refuses to overwrite it. Existing checkouts apply
+`fumadocs-site` directly. Removing the outer directory wrapper never deletes the child.
 
 Consumers can discover associations through `mori registry relations --from` and
 `--to`. Mori 7.2's `registry dependents` omits typed-only project references, so it

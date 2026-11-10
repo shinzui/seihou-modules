@@ -1,7 +1,8 @@
 # docs-mori-bootstrap
 
 Seed a documentation project's Mori manifest and register it in the local registry.
-This is the final member of [fumadocs-project](../../../recipes/fumadocs-project/README.md).
+This is the final member of [fumadocs-site](../../../recipes/fumadocs-site/README.md),
+which [fumadocs-project](../../../recipes/fumadocs-project/README.md) applies inside a new repository.
 It can also be applied directly to an existing documentation checkout.
 
 Requires Python 3, `dhall-to-json`, Mori 7.2.0.0 and a migrated PostgreSQL registry

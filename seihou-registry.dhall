@@ -44,7 +44,7 @@
     , tags = [ "git", "github", "bootstrap", "gitignore" ]
     }
   , { name = "repo-dir"
-    , version = Some "0.1.0"
+    , version = Some "0.2.0"
     , path = "modules/git/repo-dir"
     , description = Some "Create <repo.parentDir>/<repo.name> and bootstrap it by running git-init inside it with a matching GitHub repo; the GitHub user or organization comes from git.githubOwner, so per-context config picks the owner"
     , tags = [ "git", "github", "bootstrap", "context" ]
@@ -62,7 +62,7 @@
     , tags = [ "typescript", "bun", "openapi", "orval", "zod", "client", "nix" ]
     }
   , { name = "fumadocs"
-    , version = Some "0.4.0"
+    , version = Some "0.4.1"
     , path = "modules/typescript/fumadocs"
     , description = Some "Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container"
     , tags = [ "typescript", "fumadocs", "docs", "mermaid", "vite", "tanstack", "openapi" ]
@@ -87,10 +87,16 @@
     }
   ]
 , recipes =
-  [ { name = "fumadocs-project"
+  [ { name = "fumadocs-site"
     , version = Some "0.1.0"
+    , path = "recipes/fumadocs-site"
+    , description = Some "Apply container-enabled Fumadocs, external writing skills and local Mori registration inside an existing checkout"
+    , tags = [ "docs", "fumadocs", "container", "mori", "recipe" ]
+    }
+  , { name = "fumadocs-project"
+    , version = Some "0.2.0"
     , path = "recipes/fumadocs-project"
-    , description = Some "Container-enabled Fumadocs with technical writing skills from agent-seihou and local Mori registration"
+    , description = Some "Create a directory and Git/GitHub repository with container-enabled Fumadocs, writing skills and local Mori registration"
     , tags = [ "docs", "fumadocs", "container", "mori", "recipe" ]
     }
   , { name = "haskell-library-repo"

@@ -68,11 +68,11 @@ commands, and an optional removal procedure.
 | [`haskell-cli-app`](modules/haskell/haskell-cli-app) | 0.4.0 | Tested two-package CLI with real core integration, GHC 9.12.4/9.14.1 shells, valid package metadata, and working Nix package/check outputs |
 | [`haskell-keiro-project`](modules/haskell/haskell-keiro-project) | 0.4.1 | Six-package Keiro Language 6 seed, project-named workspace, injected probes, OpenAPI, Hurl/Hinagata testing, optional Mori inventory |
 | [`git-init`](modules/git/git-init) | 0.2.0 | `git init -b master`, seed `.gitignore`, optional private GitHub repo via `gh repo create`, optional org-team access grant |
-| [`repo-dir`](modules/git/repo-dir) | 0.1.0 | Create `<parentDir>/<name>` and run `git-init` inside it with a matching GitHub repo; owner from the active context's `git.githubOwner` |
+| [`repo-dir`](modules/git/repo-dir) | 0.2.0 | Create a directory, apply an optional child scaffold, then reuse `git-init` for the initial commit and GitHub creation/push |
 | [`nix-bun-flake`](modules/typescript/nix-bun-flake) | 0.6.1 | Nix flake for Bun + TypeScript: oxlint, oxfmt, `just`, optional git-hooks.nix, pinned bun2nix builds and nix2container images |
 | [`openapi-typescript-client`](modules/typescript/openapi-typescript-client) | 0.2.1 | Bun workflow for reusable ESM TypeScript 7 clients, Orval generation, status-specific Zod response validation, and optional Mori inventory |
 | [`openapi-typescript-client-dir`](modules/typescript/openapi-typescript-client-dir) | 0.1.0 | Create a client folder and compose the client scaffold with `git-init` inside it under a configurable GitHub owner |
-| [`fumadocs`](modules/typescript/fumadocs) | 0.4.0 | Fumadocs site on TanStack Start + Vite, layered on `nix-bun-flake`, with mermaid diagrams, a zoom/pan widget, optional OpenAPI reference pages, and an optional Caddy container image |
+| [`fumadocs`](modules/typescript/fumadocs) | 0.4.1 | Fumadocs site on TanStack Start + Vite, layered on `nix-bun-flake`, with mermaid diagrams, a zoom/pan widget, optional OpenAPI reference pages, and an optional Caddy container image |
 | [`docs-microapp`](modules/typescript/docs-microapp) | 0.1.0 | TanStack Start reader with explicit Markdown/bundle publication, React Aria, Highlights, local Geist Serif/Paper Mono and immutable Linux images |
 | [`nagare-docs-config`](modules/cloud/nagare-docs-config) | 0.1.0 | Protected typed Nagare Application with independent service/domain and immutable image tag |
 | [`docs-mori-bootstrap`](modules/mori/docs-mori-bootstrap) | 0.1.0 | Project-owned documentation manifest, documented-project association and verified local Mori registration |
@@ -89,16 +89,20 @@ generation logic.
 | [`github-repo`](recipes/github-repo) | 0.1.0 | Prompt for a location and folder name, create it, and make it a git repo with a matching GitHub repo under the context's owner |
 | [`openapi-typescript-client-repo`](recipes/openapi-typescript-client-repo) | 0.1.0 | Create a folder, scaffold the TypeScript client, and push its initial commit to GitHub under `git.githubOwner` |
 | [`docs-microapp-labs`](recipes/docs-microapp-labs) | 0.1.0 | Reader, native content image and protected Nagare starter with separate image/deployment reviews |
-| [`fumadocs-project`](recipes/fumadocs-project) | 0.1.0 | Container-enabled Fumadocs, technical writing skills from agent-seihou and local Mori registration |
+| [`fumadocs-project`](recipes/fumadocs-project) | 0.2.0 | New directory and Git/GitHub repository containing Fumadocs, writing skills and local Mori registration |
+| [`fumadocs-site`](recipes/fumadocs-site) | 0.1.0 | Apply the container-enabled documentation composition inside an existing checkout |
 
 For a documentation project with a registered source project, use
 [fumadocs-project](recipes/fumadocs-project/README.md). It requires Seihou 0.15+,
 Mori 7.2, Python 3, `dhall-to-json` and access to a migrated local Mori registry.
-Supply the documentation identity (`project.name`, `mori.namespace`), description,
+Supply the new directory (`repo.parentDir`, `repo.name`), GitHub owner (`git.githubOwner`),
+documentation identity (`project.name`, `mori.namespace`), description,
 site title and the independent documented-project identity (`mori.source-namespace`,
 `mori.source-project`). The recipe acquires writing skills from
 `mori://shinzui/agent-seihou/templates/technical-docs` and registers locally after
-generation. Existing manifests remain authored files; removal preserves manifests,
+generation and uses the existing `git-init` module for the initial commit and GitHub
+creation/push inside the new directory. Use `fumadocs-site` inside an existing checkout.
+Existing manifests remain authored files; removal preserves manifests,
 content and registration. Nix locks and native Linux image export remain explicit.
 
 ### Blueprints
@@ -172,7 +176,8 @@ promise; the bundle itself stays OKF-conformant regardless.
 ### Scripts
 
 - `scripts/test-fumadocs-project.py` — installs from two disposable Git registries
-  and verifies real Mori 7.2 registration, associations, reruns, rejection,
+  and verifies directory/Git/GitHub orchestration with real commits/local pushes,
+  real Mori 7.2 registration, associations, reruns, rejection,
   ownership and service recovery in its own PostgreSQL cluster. Set `MORI_BIN`
   and `MORI_MIGRATIONS` to matching released executables when needed.
 - `scripts/test-openapi-typescript-client-repo.py` — exercises real recipe generation

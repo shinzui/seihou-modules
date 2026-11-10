@@ -2,7 +2,7 @@
 
 > Fumadocs documentation site on TanStack Start + Vite, layered on `nix-bun-flake`'s dev shell: a static-SPA docs app with self-hosted custom fonts, `zombie-mermaid` diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container.
 
-**Version:** `0.4.0`
+**Version:** `0.4.1`
 
 ## Overview
 
@@ -193,6 +193,7 @@ so customize it by changing `docsContainer` options rather than editing `nix/con
 | `docs.container` | `bool` | `false` | yes | — | Generate the Nix site build and Caddy image; also requires `nix.bun2nix=true` and `nix.package-module=nix/fumadocs-container.nix`. |
 | `docs.site-name` | `text` | — | yes | — | Site/nav title shown in the navbar and browser tab. |
 | `docs.github-user` | `text` | `shinzui` | yes | — | GitHub owner for the navbar + edit-on-GitHub links. |
+| `docs.github-repo` | `text` | `project.name` | no | `[A-Za-z0-9._-]+` | Optional GitHub repository override for navbar/edit links. |
 | `docs.github-branch` | `text` | `master` | yes | — | Branch used in edit-on-GitHub links. |
 | `docs.font-family` | `text` | `PragmataPro Mono` | yes | — | CSS `font-family` for the self-hosted code font. |
 | `docs.font-basename` | `text` | `PragmataProMono` | yes | — | Stable file-name prefix written into `public/fonts/` (referenced by `@font-face`). |
@@ -297,3 +298,8 @@ Then open `/docs/diagram-demo` to confirm fonts and interactive Mermaid diagrams
 - `module.dhall` — full module definition and authoritative source
 - `files/` — template sources
 - [`nix-bun-flake`](../nix-bun-flake/README.md) — the dev-shell dependency
+
+`docs.github-repo` optionally overrides the repository name in navbar and edit links;
+it defaults to `project.name`. Version 0.4.1 adds this input without changing ordinary
+site defaults. The `fumadocs-project` wrapper defaults these links to the created remote
+while preserving explicit overrides.

@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "fumadocs"
-    , version = Some "0.4.0"
+    , version = Some "0.4.1"
     , description = Some
         "Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container"
     , vars =
@@ -75,8 +75,15 @@ in  S.Module::{
         , type = "text"
         , default = Some "shinzui"
         , description = Some
-            "GitHub owner used for the navbar GitHub link and per-page \"edit on GitHub\" links (https://github.com/<user>/<project.name>)."
+            "GitHub owner used for the navbar GitHub link and per-page \"edit on GitHub\" links; the repository defaults to project.name and can be overridden with docs.github-repo."
         , required = True
+        }
+      , S.VarDecl::{
+        , name = "docs.github-repo"
+        , type = "text"
+        , required = False
+        , description = Some "GitHub repository name for site links; defaults to project.name when omitted."
+        , validation = Some "[A-Za-z0-9._-]+"
         }
       , S.VarDecl::{
         , name = "docs.github-branch"

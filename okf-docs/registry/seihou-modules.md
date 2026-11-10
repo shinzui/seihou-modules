@@ -36,6 +36,7 @@ Every artifact below is published by the `seihou-modules` registry and documente
 
 ## Recipes
 
+- [fumadocs-site](/recipes/fumadocs-site.md)
 - [fumadocs-project](/recipes/fumadocs-project.md)
 - [haskell-library-repo](/recipes/haskell-library-repo.md)
 - [haskell-cli-app-repo](/recipes/haskell-cli-app-repo.md)

@@ -13,14 +13,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.15.0.0
-version: 0.1.0
+version: 0.2.0
 ---
 
 # repo-dir
 
 Create <repo.parentDir>/<repo.name> and bootstrap it by running git-init inside it with a matching GitHub repo; the GitHub user or organization comes from git.githubOwner, so per-context config picks the owner
 
-**Version:** 0.1.0
+**Version:** 0.2.0
 
 ## Dependencies
 
@@ -35,6 +35,9 @@ This module has no dependencies.
 - `git.defaultBranch` — text, required, default `master`, matching `[A-Za-z0-9._/-]+`. Initial branch name forwarded to git-init. Not prompted; override with `--var` or config.
 - `git.githubTeam` — text, optional, matching `[A-Za-z0-9._-]+`. Slug of an organization team to grant access to the new repo (forwarded to git-init). Leave unset to skip. Best set per context: `seihou config set git.githubTeam <slug> --context <ctx>`.
 - `git.githubTeamPermission` — text, optional, default `push`, matching `pull|triage|push|maintain|admin`. Permission granted to `git.githubTeam`: `pull`, `triage`, `push`, `maintain`, or `admin`. Defaults to `push`.
+- `repo.scaffold` — text, optional, matching `[a-z][a-z0-9-]*`. Optional module or recipe applied inside the new directory before git-init.
+- `repo.source` — text, required, default `https://github.com/shinzui/seihou-modules.git`. Registry source used to acquire git-init and the optional child scaffold.
+- `repo.scaffoldBindings` — text, required, default `{}`. JSON object mapping omitted child inputs to resolved outer input names.
 
 ## Exports
 
@@ -49,76 +52,14 @@ No exports declared.
 - `git.githubTeam` — Organization team to grant access? (slug; tip: set per context with `seihou config set git.githubTeam <slug> --context <ctx>`)
 - `git.githubTeamPermission` — Team permission? (choices: `pull`, `triage`, `push`, `maintain`, `admin`) — when `IsSet git.githubTeam`
 
+## Generation steps
+
+- `Copy` `create-repo.py` → `.seihou/repo-dir/create-repo.py`
+
 ## Commands
 
-- `set -eu
-parent='{{repo.parentDir}}'
-name='{{repo.name}}'
-owner='{{git.githubOwner}}'
-case "$name" in
-  ""|.|..|*[!A-Za-z0-9._-]*) echo "repo-dir: invalid repo.name '$name' (use letters, digits, '.', '_', '-')" >&2; exit 1 ;;
-esac
-case "$owner" in
-  ""|*[!A-Za-z0-9-]*) echo "repo-dir: invalid git.githubOwner '$owner'" >&2; exit 1 ;;
-esac
-case "$parent" in
-  "~") parent="$HOME" ;;
-  "~/"*) parent="$HOME/${parent#"~/"}" ;;
-esac
-target="$parent/$name"
-if [ -e "$target" ] && [ -n "$(ls -A "$target" 2>/dev/null || echo x)" ]; then
-  echo "repo-dir: $target already exists and is not an empty directory" >&2
-  exit 1
-fi
-mkdir -p "$target"
-`
-- `set -eu
-parent='{{repo.parentDir}}'
-name='{{repo.name}}'
-owner='{{git.githubOwner}}'
-case "$name" in
-  ""|.|..|*[!A-Za-z0-9._-]*) echo "repo-dir: invalid repo.name '$name' (use letters, digits, '.', '_', '-')" >&2; exit 1 ;;
-esac
-case "$owner" in
-  ""|*[!A-Za-z0-9-]*) echo "repo-dir: invalid git.githubOwner '$owner'" >&2; exit 1 ;;
-esac
-case "$parent" in
-  "~") parent="$HOME" ;;
-  "~/"*) parent="$HOME/${parent#"~/"}" ;;
-esac
-target="$parent/$name"
-cd "$target"
-seihou run git-init --no-save-prompted \
-  --var git.defaultBranch='{{git.defaultBranch}}' \
-  --var git.initialCommit=true \
-  --var git.createGithub=true \
-  --var git.githubOwner="$owner" \
-  --var git.repoName="$name" \
-  --var git.githubVisibility='{{git.githubVisibility}}'
-echo "repo-dir: created $(pwd) -> https://github.com/$owner/$name"
-` — when `!IsSet git.githubTeam`
-- `set -eu
-parent='{{repo.parentDir}}'
-name='{{repo.name}}'
-owner='{{git.githubOwner}}'
-case "$name" in
-  ""|.|..|*[!A-Za-z0-9._-]*) echo "repo-dir: invalid repo.name '$name' (use letters, digits, '.', '_', '-')" >&2; exit 1 ;;
-esac
-case "$owner" in
-  ""|*[!A-Za-z0-9-]*) echo "repo-dir: invalid git.githubOwner '$owner'" >&2; exit 1 ;;
-esac
-case "$parent" in
-  "~") parent="$HOME" ;;
-  "~/"*) parent="$HOME/${parent#"~/"}" ;;
-esac
-target="$parent/$name"
-cd "$target"
-seihou run git-init --no-save-prompted \
-  --var git.defaultBranch='{{git.defaultBranch}}' \
-  --var git.initialCommit=true \
-  --var git.createGithub=true \
-  --var git.githubOwner="$owner" \
-  --var git.repoName="$name" \
-  --var git.githubVisibility='{{git.githubVisibility}}' --var git.githubTeam='{{git.githubTeam}}' --var git.githubTeamPermission='{{git.githubTeamPermission}}'
-echo "repo-dir: created $(pwd) -> https://github.com/$owner/$name"
-` — when `IsSet git.githubTeam`
+- `python3 .seihou/repo-dir/create-repo.py`
+
+## Removal
+
+- delete `.seihou/repo-dir/create-repo.py`

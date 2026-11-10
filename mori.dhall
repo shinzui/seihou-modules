@@ -27,7 +27,8 @@ in  Schema.Project::{
         }
       ]
     , templates =
-      [ Schema.SeihouTemplate::{ name = "fumadocs-project", version = Some "0.1.0", description = Some "Container-enabled Fumadocs with technical writing skills from agent-seihou and local Mori registration", modulePath = "recipes/fumadocs-project", tags = [ "docs", "fumadocs", "container", "mori", "recipe" ], requiredVars = [ "project.name", "project.description", "docs.site-name", "docs.github-user", "mori.namespace", "mori.source-namespace", "mori.source-project" ], dependencies = [ "fumadocs", "mori://shinzui/agent-seihou/templates/technical-docs", "docs-mori-bootstrap" ] }
+      [ Schema.SeihouTemplate::{ name = "fumadocs-project", version = Some "0.2.0", description = Some "Create a directory and Git/GitHub repository with container-enabled Fumadocs, writing skills and local Mori registration", modulePath = "recipes/fumadocs-project", tags = [ "docs", "fumadocs", "container", "mori", "recipe" ], requiredVars = [ "repo.parentDir", "repo.name", "git.githubOwner", "project.name", "project.description", "docs.site-name", "mori.namespace", "mori.source-namespace", "mori.source-project" ], dependencies = [ "repo-dir", "fumadocs-site", "git-init" ] }
+      , Schema.SeihouTemplate::{ name = "fumadocs-site", version = Some "0.1.0", description = Some "Container-enabled Fumadocs with technical writing skills from agent-seihou and local Mori registration", modulePath = "recipes/fumadocs-site", tags = [ "docs", "fumadocs", "container", "mori", "recipe" ], requiredVars = [ "project.name", "project.description", "docs.site-name", "docs.github-user", "mori.namespace", "mori.source-namespace", "mori.source-project" ], dependencies = [ "fumadocs", "mori://shinzui/agent-seihou/templates/technical-docs", "docs-mori-bootstrap" ] }
       , Schema.SeihouTemplate::{ name = "docs-mori-bootstrap", version = Some "0.1.0", description = Some "Seed a documentation manifest, associate its documented project and register locally with Mori", modulePath = "modules/mori/docs-mori-bootstrap", tags = [ "docs", "mori", "bootstrap" ], requiredVars = [ "project.name", "project.description", "mori.namespace", "mori.source-namespace", "mori.source-project" ] }
       , Schema.SeihouTemplate::{ name = "docs-microapp-labs", version = Some "0.1.0", description = Some "Documentation reader and protected Nagare configuration with a native image and two-review deployment workflow", modulePath = "recipes/docs-microapp-labs", tags = [ "docs", "nagare", "labs", "recipe" ], requiredVars = [ "project.name", "project.description", "docs.site-name", "nagare.service-name", "nagare.domain", "nagare.namespace" ], dependencies = [ "docs-microapp", "nagare-docs-config" ] }
       , Schema.SeihouTemplate::{ name = "nagare-docs-config", version = Some "0.1.0", description = Some "Project-owned protected Nagare Application config with independent service, hostname and image values", modulePath = "modules/cloud/nagare-docs-config", tags = [ "nagare", "docs", "deployment" ], requiredVars = [ "project.name", "nagare.service-name", "nagare.domain", "nagare.namespace" ] }
@@ -68,13 +69,14 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "repo-dir"
-        , version = Some "0.1.0"
+        , version = Some "0.2.0"
         , description = Some
-            "Create <repo.parentDir>/<repo.name> and run git-init inside it to make a git repo with a matching GitHub repo; the owner comes from git.githubOwner, so per-context config selects the user or organization"
+            "Create a directory, acquire/apply an optional child scaffold, then delegate initial commit and Git/GitHub creation to git-init"
         , modulePath = "modules/git/repo-dir"
         , tags = [ "git", "github", "bootstrap" ]
         , requiredVars =
-          [ "repo.parentDir"
+          [ "repo.source"
+          , "repo.parentDir"
           , "repo.name"
           , "git.githubOwner"
           , "git.githubVisibility"
@@ -152,7 +154,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "fumadocs"
-        , version = Some "0.4.0"
+        , version = Some "0.4.1"
         , description = Some "Current Fumadocs static documentation site on the shared Bun environment, with optional starter content for existing-site adoption, optional OpenAPI reference pages, and an optional Caddy container image"
         , modulePath = "modules/typescript/fumadocs"
         , tags = [ "typescript", "fumadocs", "docs" ]

@@ -1,87 +1,79 @@
 # fumadocs-project
 
-Create a container-enabled Fumadocs documentation site, install six technical
-writing skills, and register the documentation project locally with Mori.
-Run this recipe in the directory that will own the documentation site.
+Create a documentation directory, populate it with a container-enabled Fumadocs
+site and six writing skills, register it locally with Mori, then create its Git
+repository, initial commit and matching GitHub repository and push that commit.
 
-Requires Seihou 0.15.0.0+, Mori 7.2.0.0, Python 3, `dhall-to-json`, Git and access
-to a migrated local Mori PostgreSQL registry through `MORI_PG_CONNECTION_STRING`.
-The project being documented must already be registered there. Site builds also
-require Nix with flakes, Bun dependencies and network access for initial downloads.
+Version **0.2.0** uses the existing `repo-dir` and `git-init` modules. The former
+direct in-checkout composition is now [fumadocs-site](../fumadocs-site/README.md).
+Use that recipe when you already have a checkout; `fumadocs-project` protects
+existing directories by refusing nonempty targets.
+
+Requires Seihou 0.15+, Python 3, Git with author identity configured, authenticated
+`gh`, `dhall-to-json`, Mori 7.2 and a migrated local registry selected through
+`MORI_PG_CONNECTION_STRING`. The project being documented must already be registered.
+Initial acquisition needs access to both Seihou registries. Nix builds retain the
+existing Fumadocs prerequisites.
+
+Run from the directory where you want to launch creation:
 
 ```bash
 seihou install https://github.com/shinzui/seihou-modules.git --module fumadocs-project
 seihou run fumadocs-project \
+  --var repo.parentDir=~/Projects --var repo.name=widget-docs \
   --var project.name=widget-docs --var project.description='Widget documentation' \
   --var docs.site-name='Widget docs' --var docs.github-user=example \
-  --var mori.namespace=example \
+  --var git.githubOwner=example --var mori.namespace=example \
   --var mori.source-namespace=example --var mori.source-project=widget
+cd ~/Projects/widget-docs
+git remote -v
 mori registry show example/widget-docs --full
-mori registry relations --from mori://example/widget-docs --json
-mori registry relations --to mori://example/widget --json
 ```
 
-`project.name` and `mori.namespace` identify this documentation project.
-`mori.source-namespace` and `mori.source-project` identify the project it documents;
-these identities may use different names and namespaces. All five identity and
-description inputs are required. `docs.site-name` is the visible title and
-`docs.github-user` controls the site's GitHub links (default `shinzui`). The other
-[Fumadocs variables](../../modules/typescript/fumadocs/README.md) remain available.
+`repo.parentDir` defaults to `.` and expands a leading `~`. `repo.name` names the
+folder and GitHub repository. `project.name` and `mori.namespace` identify the
+documentation project and may differ from the folder, remote and documented
+project. All source/project identity inputs remain explicit. Existing files,
+non-directories and symlinks at the target are rejected before acquisition or creation.
 
-The recipe composes `fumadocs`, external `technical-docs`, then `docs-mori-bootstrap`.
-It binds `docs.container=true`, `nix.bun2nix=true` and
-`nix.package-module=nix/fumadocs-container.nix` without changing ordinary Fumadocs
-defaults or dependency identities. Seihou acquires the external module and its
-`agent-gitignore` dependency from `https://github.com/shinzui/agent-seihou.git`.
-The writing skills belong to `mori://shinzui/agent-seihou/templates/technical-docs`;
-their shared source is `agents/skills/tech-docs*`, linked from `.claude/skills`,
-`.codex/skills` and `.agents/skills`. `skill.prefix` can change their prefix.
+`git.githubOwner` follows normal CLI/context/global configuration and is forwarded
+to the child run. Visibility defaults to `private`; `git.defaultBranch` defaults to
+`master`. Optional `git.githubTeam` and `git.githubTeamPermission` are forwarded to
+`git-init` for organization access. Site GitHub links default to the created owner, repository name and branch, including
+when repo.name differs from project.name. Override `docs.github-user`,
+`docs.github-repo` or `docs.github-branch` explicitly to link elsewhere. All other Fumadocs inputs and `skill.prefix` remain
+available.
 
-Registration runs after scaffold and skills generation. The helper creates a
-minimal, project-owned `mori.dhall` only when absent, with a `site` reference to
-`content/docs` and a project-level typed `dependencyRefs` entry naming the documented
-project. Mori exposes this documented-project association as `depends-on`; it is
-not fork ancestry. The helper validates the manifest, calls
-`mori register --local --path <absolute-site-root>` and verifies the identity,
-path and resolved relation before reporting completion. `--no-commands` renders
-the scaffold and skills but creates no manifest or registration.
+The public recipe composes `repo-dir` with `repo.scaffold=fumadocs-site`.
+`repo.source` defaults to `https://github.com/shinzui/seihou-modules.git` and can
+select a fork or local registry. Released Seihou applies every ordinary dependency
+in the invocation directory, so `repo-dir` acquires `git-init` and the child recipe
+with the released installer, then applies them inside the new directory. The child
+recipe retains its source-qualified dependency on
+`mori://shinzui/agent-seihou/templates/technical-docs`; no writing skill templates
+are duplicated. The child's complete acquisition closure is available before files
+are generated there.
 
-Rerunning preserves existing manifests byte for byte, including authored additions,
-and requires their identity and association to agree with the inputs. Missing targets,
-self-association and identities registered at another path fail before manifest creation.
-Reconcile conflicting manifests explicitly. On registry failure, fix connectivity and
-rerun the recipe or `python3 .seihou/docs-mori-bootstrap/bootstrap-docs.py` in the
-site directory. Generated files remain; registration is an external effect and is
-not rolled back by Seihou. Removal preserves `mori.dhall`, authored content and
-registration; manage registry lifecycle explicitly with Mori.
+The initial commit includes the site, canonical writing skills, authored `mori.dhall`
+and Seihou manifest. GitHub creation/push runs only after the scaffold and Mori
+registration succeed. The invocation directory receives only Seihou control files;
+the site, `.git`, remote and registered Mori path belong to the new child directory.
+`--dry-run` creates nothing; `--no-commands` stages only the outer control files and
+creates no target, registration, Git repository or remote.
 
-Build the generated site from a Git checkout (initialize one if needed):
+Failures preserve completed work and report the target and failing command. A failed
+Mori registration prevents Git/GitHub creation. A failed GitHub command leaves the
+generated, registered local repository for explicit recovery. Reconcile the failing
+command inside that checkout; rerunning creation refuses nonempty directories rather
+than overwriting them. For site/manifest recovery use `fumadocs-site` or the generated
+Mori helper inside the target. Seihou does not roll back a registry identity, remote
+repository or push. Removing the outer wrapper never deletes the created checkout.
 
-```bash
-git init
-nix develop --command bun install
-nix run .#bun2nix -- --lock-file bun.lock --output-file bun-deps.nix
-git add flake.nix flake.lock nix/ package.json bun.lock bun-deps.nix content/
-nix build .#docs-site
-```
+See [fumadocs-site](../fumadocs-site/README.md) for building `docs-site`, native Linux
+image export and ownership rules. `bun.lock`, `bun-deps.nix` and `flake.module.nix`
+remain consumer owned. This workflow creates the GitHub repository but does not publish
+container images or deploy the site.
 
-On a matching native Linux runner, build and export the image explicitly:
-
-```bash
-nix build .#dockerImage
-nix run .#dockerImage.copyTo -- oci-archive:/absolute/artifacts/docs.tar:widget-docs:latest
-```
-
-The image serves prerendered docs with Caddy on port 8080 as user `65532:65532`.
-macOS exposes the site build and omits image outputs. Lock files, `bun-deps.nix`
-and `flake.module.nix` belong to the consumer; lock generation is explicit.
-See the Fumadocs README for fonts, sandbox/network constraints and container
-startup commands. This recipe does not create a GitHub repository or publish/deploy images.
-
-Qualify acquisition and registration with `python3 scripts/test-fumadocs-project.py`
-from this registry checkout; see that script's prerequisites and executable selectors.
-Run `python3 scripts/test-fumadocs-container.py --apple-linux` for native Linux
-image build, archive inspection/export and HTTP startup using local Apple containers.
-The host site build runs sandboxed; the disposable Linux build container disables
-the nested Nix sandbox. Other native Linux builders can use `--native-linux SYSTEM`
-for the existing archive check.
+`scripts/test-fumadocs-project.py` qualifies the wrapper with real Git commits and
+pushes to disposable local bare remotes, an offline GitHub fixture, and real isolated
+Mori registration. No live GitHub test repositories are created.

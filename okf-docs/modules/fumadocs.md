@@ -17,14 +17,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.15.0.0
-version: 0.4.0
+version: 0.4.1
 ---
 
 # fumadocs
 
 Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container
 
-**Version:** 0.4.0
+**Version:** 0.4.1
 
 ## Dependencies
 
@@ -40,7 +40,8 @@ Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's
 - `project.name` — text, required, matching `[a-z][a-z0-9-]*`. Project name (package.json name). Re-declared so step `dest` paths and templates validate; the value is shared with `nix-bun-flake` via the dependency graph (it exports `project.name`).
 - `project.description` — text, required. One-line project description (package.json description, home page intro). Inherited from `nix-bun-flake`, which exports `project.description`.
 - `docs.site-name` — text, required. Human-readable site/nav title shown in the navbar and browser tab (e.g. "keiro runtime docs").
-- `docs.github-user` — text, required, default `shinzui`. GitHub owner used for the navbar GitHub link and per-page "edit on GitHub" links (https://github.com/<user>/<project.name>).
+- `docs.github-user` — text, required, default `shinzui`. GitHub owner used for the navbar GitHub link and per-page "edit on GitHub" links; the repository defaults to project.name and can be overridden with docs.github-repo.
+- `docs.github-repo` — text, optional, matching `[A-Za-z0-9._-]+`. GitHub repository name for site links; defaults to project.name when omitted.
 - `docs.github-branch` — text, required, default `master`. Branch used in per-page "edit on GitHub" links.
 - `docs.font-family` — text, required, default `PragmataPro Mono`. CSS font-family name for the self-hosted monospace/code font (routed at --fd-font-mono and every code surface).
 - `docs.font-basename` — text, required, default `PragmataProMono`. Stable file-name prefix the font copy step writes into public/fonts/ (e.g. <basename>-Regular.otf), referenced by @font-face in app.css. Version-independent so the CSS URLs never change.

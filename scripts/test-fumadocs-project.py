@@ -17,6 +17,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 EXTERNAL = 'https://github.com/shinzui/agent-seihou.git'
+PRIMARY = 'https://github.com/shinzui/seihou-modules.git'
 PLAN = 'docs/plans/14-add-a-containerized-fumadocs-project-recipe-with-technical-writing-skills-and-mori-registration.md'
 
 
@@ -60,13 +61,14 @@ def snapshot_registries(work, agent):
     primary.mkdir()
     external.mkdir()
     for path in ['modules/typescript/fumadocs', 'modules/typescript/nix-bun-flake',
-                 'modules/mori/docs-mori-bootstrap', 'recipes/fumadocs-project']:
+                 'modules/mori/docs-mori-bootstrap', 'modules/git/repo-dir', 'modules/git/git-init',
+                 'recipes/fumadocs-project', 'recipes/fumadocs-site']:
         shutil.copytree(ROOT / path, primary / path)
     for name in ['technical-docs', 'agent-gitignore']:
         shutil.copytree(agent / 'modules' / name, external / 'modules' / name)
     # Use actual catalogs, filtered to the snapshot contents, through Dhall.
     for source, dest, modules, recipes in [
-        (ROOT, primary, ['fumadocs', 'nix-bun-flake', 'docs-mori-bootstrap'], ['fumadocs-project']),
+        (ROOT, primary, ['fumadocs', 'nix-bun-flake', 'docs-mori-bootstrap', 'repo-dir', 'git-init'], ['fumadocs-project', 'fumadocs-site']),
         (agent, external, ['technical-docs', 'agent-gitignore'], []),
     ]:
         catalog = json.loads(run(['dhall-to-json', '--file', source / 'seihou-registry.dhall'], ROOT))
@@ -91,7 +93,7 @@ def render(project, env, name='handbook-web', namespace='writers', source_namesp
     variables = {'project.name': name, 'project.description': 'Documentation', 'docs.site-name': 'Handbook',
                  'docs.github-user': 'fixture', 'mori.namespace': namespace,
                  'mori.source-namespace': source_namespace, 'mori.source-project': source_project, **(extra or {})}
-    args = ['seihou', 'run', 'fumadocs-project', '--no-save-prompted']
+    args = ['seihou', 'run', 'fumadocs-site', '--no-save-prompted']
     if not commands:
         args.append('--no-commands')
     for key, value in variables.items():
@@ -101,6 +103,123 @@ def render(project, env, name='handbook-web', namespace='writers', source_namesp
 
 def helper(project, env, succeeds=True):
     return run(['python3', '.seihou/docs-mori-bootstrap/bootstrap-docs.py'], project, env, succeeds)
+
+
+def repository_workflow(work, env, binaries):
+    """Use real git and local bare remotes; only replace the GitHub service."""
+    log = work / 'github.jsonl'
+    remotes = work / 'github-remotes'
+    remotes.mkdir()
+    (binaries / 'gh').write_text('''#!/usr/bin/env python3
+import json, os, subprocess, sys
+from pathlib import Path
+args = sys.argv[1:]
+root = Path.cwd()
+files = ['.seihou/manifest.json']
+if not os.environ.get('FIXTURE_EMPTY_REPO'):
+    files += ['package.json', 'flake.nix', 'mori.dhall']
+    files += ['agents/skills/' + name + '/SKILL.md' for name in ['tech-docs', 'tech-docs-tutorial', 'tech-docs-how-to', 'tech-docs-reference', 'tech-docs-explanation', 'tech-docs-walkthrough']]
+for file in files:
+    subprocess.run(['git', 'cat-file', '-e', 'HEAD:' + file], check=True)
+with open(os.environ['FIXTURE_GH_LOG'], 'a') as handle:
+    handle.write(json.dumps({'cwd': str(root), 'args': args}) + '\\n')
+if os.environ.get('FIXTURE_GH_FAIL'):
+    print('fixture GitHub creation unavailable', file=sys.stderr)
+    sys.exit(71)
+if args[:2] == ['repo', 'create']:
+    remote = Path(os.environ['FIXTURE_GH_REMOTES']) / (args[2].replace('/', '--') + '.git')
+    subprocess.run(['git', 'init', '--bare', '-q', str(remote)], check=True)
+    subprocess.run(['git', 'remote', 'add', 'origin', str(remote)], check=True)
+    branch = subprocess.check_output(['git', 'branch', '--show-current'], text=True).strip()
+    subprocess.run(['git', 'push', '-u', 'origin', branch], check=True)
+''')
+    (binaries / 'gh').chmod(0o755)
+    env.update({'FIXTURE_GH_LOG': str(log), 'FIXTURE_GH_REMOTES': str(remotes)})
+
+    def create(invocation, name, repo_name=None, extra=None, flags=(), succeeds=True, environment=None):
+        invocation.mkdir(exist_ok=True)
+        variables = {'project.name': name, 'project.description': 'Documentation', 'docs.site-name': 'Docs',
+                     'docs.github-user': 'fixture-owner', 'mori.namespace': 'repositories',
+                     'mori.source-namespace': 'products', 'mori.source-project': 'widget-engine',
+                     'repo.name': repo_name or name, **(extra or {})}
+        args = ['seihou', 'run', 'fumadocs-project', '--no-save-prompted', *flags]
+        for key, value in variables.items():
+            if value is not None:
+                args += ['--var', f'{key}={value}']
+        return run(args, invocation, environment or env, succeeds)
+
+    preview = work / 'preview'
+    create(preview, 'preview-site', extra={'git.githubOwner': 'fixture-owner'}, flags=['--dry-run'])
+    assert not (preview / 'preview-site').exists() and not log.exists()
+    create(preview, 'preview-site', extra={'git.githubOwner': 'fixture-owner'}, flags=['--no-commands'])
+    assert not (preview / 'preview-site').exists() and not log.exists() and not (preview / 'package.json').exists()
+    run(['seihou', 'config', 'set', 'git.githubOwner', 'fixture-org', '--context', 'docs-test'], work, env)
+    run(['seihou', 'config', 'set', 'git.githubTeam', 'writers', '--context', 'docs-test'], work, env)
+    invocation = work / 'launch'
+    parent = work / "writer's projects $(touch SHOULD_NOT_EXIST)"
+    create(invocation, 'manual-web', repo_name='manual-repo', extra={
+        'repo.parentDir': str(parent), 'git.githubVisibility': 'public', 'git.defaultBranch': 'main',
+        'git.githubTeamPermission': 'maintain', 'docs.github-user': None, 'docs.github-branch': None},
+        flags=['--context', 'docs-test'])
+    project = parent / 'manual-repo'
+    assert not (invocation / '.git').exists() and not (invocation / 'package.json').exists()
+    assert run(['git', 'branch', '--show-current'], project, env).strip() == 'main'
+    assert run(['git', 'status', '--porcelain'], project, env).strip() == ''
+    remote = remotes / 'fixture-org--manual-repo.git'
+    assert run(['git', 'rev-parse', 'HEAD'], project, env) == run(['git', '--git-dir', remote, 'rev-parse', 'main'], work, env)
+    registered = json.loads(run(['mori', 'registry', 'show', 'repositories/manual-web', '--json'], work, env))
+    assert registered['path'] == str(project)
+    calls = [json.loads(line) for line in log.read_text().splitlines()]
+    assert calls[0]['args'] == ['repo', 'create', 'fixture-org/manual-repo', '--public', '--source=.', '--remote=origin', '--push']
+    assert calls[1]['args'] == ['api', '-X', 'PUT', '/orgs/fixture-org/teams/writers/repos/fixture-org/manual-repo',
+                                '-f', 'permission=maintain', '--silent']
+    assert calls[0]['cwd'] == str(project)
+    links = (project / 'src/lib/shared.ts').read_text()
+    assert 'repo: "manual-repo"' in links and 'branch: "main"' in links and 'user: "fixture-org"' in links
+    saved = (project / 'mori.dhall').read_bytes()
+    output = create(invocation, 'manual-web', repo_name='manual-repo', extra={
+        'repo.parentDir': str(parent), 'git.githubOwner': 'fixture-owner'}, succeeds=False)
+    assert 'not an empty directory' in output and (project / 'mori.dhall').read_bytes() == saved
+    assert len(log.read_text().splitlines()) == 2 and not (invocation / 'SHOULD_NOT_EXIST').exists()
+    personal = work / 'personal'
+    create(personal, 'personal-web', extra={'git.githubOwner': 'fixture-owner', 'docs.github-user': 'custom-link-owner',
+           'docs.github-repo': 'custom-link-repo', 'docs.github-branch': 'custom-link-branch'})
+    assert run(['git', 'branch', '--show-current'], personal / 'personal-web', env).strip() == 'master'
+    links = (personal / 'personal-web/src/lib/shared.ts').read_text()
+    assert 'user: "custom-link-owner"' in links and 'repo: "custom-link-repo"' in links and 'branch: "custom-link-branch"' in links
+    assert json.loads(log.read_text().splitlines()[2])['args'][3] == '--private'
+    empty = work / 'empty-repository-launch'
+    empty.mkdir()
+    run(['seihou', 'run', 'repo-dir', '--no-save-prompted', '--var', 'repo.name=empty-repository',
+         '--var', 'git.githubOwner=fixture-owner'], empty, {**env, 'FIXTURE_EMPTY_REPO': '1'})
+    assert (empty / 'empty-repository/.git').is_dir() and not (empty / 'empty-repository/package.json').exists()
+    assert run(['git', 'status', '--porcelain'], empty / 'empty-repository', env).strip() == ''
+    alias = parent / 'alias-repo'
+    alias.symlink_to(project, target_is_directory=True)
+    output = create(invocation, 'alias-web', repo_name='alias-repo', extra={
+        'repo.parentDir': str(parent), 'git.githubOwner': 'fixture-owner'}, succeeds=False)
+    assert 'not an empty directory' in output
+    run(['seihou', 'remove', 'repo-dir', '--force'], personal, env, input_text='y\n')
+    assert (personal / 'personal-web/.git').is_dir() and (personal / 'personal-web/mori.dhall').is_file()
+    run(['mori', 'registry', 'show', 'repositories/personal-web', '--json'], personal, env)
+    count = len(log.read_text().splitlines())
+    missing = work / 'missing-source'
+    output = create(missing, 'missing-source-web', extra={'git.githubOwner': 'fixture-owner',
+                    'mori.source-project': 'missing'}, succeeds=False)
+    assert 'not registered locally' in output and not (missing / 'missing-source-web/.git').exists()
+    assert len(log.read_text().splitlines()) == count
+    failed = work / 'github-failure'
+    output = create(failed, 'github-failed-web', extra={'git.githubOwner': 'fixture-owner'},
+                    succeeds=False, environment={**env, 'FIXTURE_GH_FAIL': '1'})
+    assert 'fixture GitHub creation unavailable' in output and (failed / 'github-failed-web/.git').is_dir()
+    assert (failed / 'github-failed-web/mori.dhall').exists()
+    output = create(failed, 'github-failed-web', extra={'git.githubOwner': 'fixture-owner'}, succeeds=False)
+    assert 'not an empty directory' in output
+    for label, changes in [('bad-owner', {'git.githubOwner': 'bad/owner'}),
+                           ('bad-path', {'git.githubOwner': 'fixture-owner', 'repo.name': '..'})]:
+        output = create(work / label, label, extra=changes, succeeds=False)
+        assert 'validation' in output.lower() or 'real folder name' in output
+    print('Repository creation: real initial commits and local pushes, child-directory ownership, context/team/visibility, previews and failures passed.', flush=True)
 
 
 def main():
@@ -121,7 +240,10 @@ def main():
                     'HOME': str(work / 'home'), 'XDG_CONFIG_HOME': str(work / 'config'),
                     'XDG_CACHE_HOME': str(work / 'cache'), 'XDG_STATE_HOME': str(work / 'state'),
                     # Retain the descriptor's real source edge; redirect only Git transport.
-                    'GIT_CONFIG_COUNT': '1', 'GIT_CONFIG_KEY_0': f'url.{external}.insteadOf', 'GIT_CONFIG_VALUE_0': EXTERNAL})
+                    'GIT_CONFIG_COUNT': '2', 'GIT_CONFIG_KEY_0': f'url.{external}.insteadOf', 'GIT_CONFIG_VALUE_0': EXTERNAL,
+                    'GIT_CONFIG_KEY_1': f'url.{primary}.insteadOf', 'GIT_CONFIG_VALUE_1': PRIMARY,
+                    'GIT_AUTHOR_NAME': 'Fixture', 'GIT_AUTHOR_EMAIL': 'fixture@example.invalid',
+                    'GIT_COMMITTER_NAME': 'Fixture', 'GIT_COMMITTER_EMAIL': 'fixture@example.invalid'})
         Path(env['HOME']).mkdir()
         assert 'v7.2.0.0' in run(['mori', '--version'], work, env)
         with private_registry(work, env) as (env, pgdata):
@@ -135,8 +257,10 @@ def main():
             run(['mori', 'register', '--local', '--path', target], target, env)
             run(['seihou', 'install', primary, '--module', 'fumadocs-project'], work, env)
             installed = work / 'config/seihou/installed'
-            assert {p.name for p in installed.iterdir()} == {'fumadocs-project', 'fumadocs', 'nix-bun-flake',
-                                                           'technical-docs', 'agent-gitignore', 'docs-mori-bootstrap'}
+            assert {p.name for p in installed.iterdir()} == {'fumadocs-project', 'repo-dir'}
+            repository_workflow(work, env, binaries)
+            assert {p.name for p in installed.iterdir()} == {'fumadocs-project', 'fumadocs-site', 'repo-dir', 'git-init',
+                'fumadocs', 'nix-bun-flake', 'technical-docs', 'agent-gitignore', 'docs-mori-bootstrap'}
             consumer = work / 'unrelated-checkout'
             before = run(['mori', 'registry', 'list', '--json'], work, env)
             render(consumer, env, commands=False)
@@ -154,10 +278,10 @@ def main():
             saved = (consumer / '.seihou/manifest.json').read_text()
             origins = {module['name']: module['origin'] for module in json.loads(saved)['modules']}
             assert all(origins[name]['url'] == EXTERNAL for name in ['technical-docs', 'agent-gitignore'])
-            assert all(origins[name]['kind'] == 'local' for name in ['fumadocs', 'nix-bun-flake', 'docs-mori-bootstrap'])
+            assert all(origins[name]['url'] == PRIMARY for name in ['fumadocs', 'nix-bun-flake', 'docs-mori-bootstrap'])
             assert (installed / 'docs-mori-bootstrap/files/bootstrap-docs.py').read_bytes() == (primary / 'modules/mori/docs-mori-bootstrap/files/bootstrap-docs.py').read_bytes()
-            assert next(module for module in json.loads(saved)['modules'] if module['name'] == 'fumadocs')['version'] == '0.4.0'
-            print('Acquisition: two real Git registries, six artifacts, three container bindings and eighteen skill links verified.', flush=True)
+            assert next(module for module in json.loads(saved)['modules'] if module['name'] == 'fumadocs')['version'] == '0.4.1'
+            print('Acquisition: two real Git registries, child closure, three container bindings and eighteen skill links verified.', flush=True)
             render(consumer, env)
             cfg = json.loads(run(['dhall-to-json', '--file', 'mori.dhall'], consumer, env))
             assert cfg['packages'] == [] and cfg['repos'] == [] and len(cfg['dependencyRefs']) == 1
@@ -173,7 +297,7 @@ def main():
             second = work / 'another-checkout'
             render(second, env, name='reference-web', namespace='editors')
             rows = json.loads(run(['mori', 'registry', 'list', '--json'], work, env))
-            assert len(rows) == 3 and sum(row['name'] == 'handbook-web' for row in rows) == 1
+            assert sum(row['name'] == 'handbook-web' for row in rows) == 1 and sum(row['name'] == 'reference-web' for row in rows) == 1
             for label, kwargs, message in [
                 ('missing', {'source_project': 'missing'}, 'not registered locally'),
                 ('self', {'name': 'widget-engine', 'namespace': 'products'}, 'cannot document itself'),

@@ -6,6 +6,10 @@ export const docsRoute = "/docs"
 // "edit on GitHub" links.
 export const gitConfig = {
   user: "{{docs.github-user}}",
+{{#if IsSet docs.github-repo}}
+  repo: "{{docs.github-repo}}",
+{{#else}}
   repo: "{{project.name}}",
+{{/if}}
   branch: "{{docs.github-branch}}",
 }

@@ -71,8 +71,9 @@ seihou run github-repo --context work --var repo.name=acme-api \
   --var git.githubTeam=acme-engineers          # optional: --var git.githubTeamPermission=maintain
 ```
 
-Requires `gh` (installed and authenticated) and `git-init` to be installed
-alongside this recipe (`seihou install … --module github-repo --module repo-dir --module git-init`).
+Requires authenticated `gh`, Python 3 and a Git author identity. `repo-dir` 0.2.0
+acquires `git-init` from `repo.source` before applying it inside the new directory.
+The source defaults to this public registry; set it explicitly for forks or local registries.
 The run also records `repo-dir` in a `.seihou/manifest.json` in the directory you
 invoked it from; remove it if that directory is not a seihou project.
 

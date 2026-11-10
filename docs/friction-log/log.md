@@ -1,6 +1,8 @@
 # Bundle Update Log
 
 ## 2026-11-09
+* **Update**: FRIC-16 accepted: The create workflow reuses existing modules while preserving directory ownership and external skill acquisition
+* **Addition**: FRIC-16 records detour interface friction with mori://shinzui/seihou: Nested scaffold modules have no install-only dependency declaration
 * **Update**: FRIC-15 accepted: Document and test the supported relation query surface without redundant legacy dependencies
 * **Update**: FRIC-14 accepted: Generated documentation now retains external attribution and passes strict validation
 * **Update**: FRIC-13 resolved: Released executables are now available for isolated acceptance
