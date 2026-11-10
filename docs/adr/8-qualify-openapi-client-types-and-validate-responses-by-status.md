@@ -39,6 +39,9 @@ disjoint open-object allOf, recursive/local references, directional properties,
 and status-specific responses. Diagnose unimplemented constraints, remote refs,
 range/default statuses, other media and ambiguous routes before output replacement.
 Do not silently drop constraints or substitute global strictness for object openness.
+Component keys follow OpenAPI's naming rules. Preserve their spelling and references
+through directional projection; let Orval choose TypeScript identifiers and resolve
+identifier collisions rather than imposing TypeScript casing on the source schema.
 
 ## Consequences
 

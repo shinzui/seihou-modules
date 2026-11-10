@@ -70,33 +70,8 @@ export function prepare(document: ObjectValue) {
   const source = structuredClone(document)
   delete source.servers
   const original = source.components?.schemas ?? {}
-  // Bundling an external file can introduce a lower-case component plus a named alias.
-  // Preserve the document's public PascalCase alias and retarget every reference.
-  const renamed = new Map<string, string>()
-  for (const [name, value] of Object.entries<ObjectValue>(original)) {
-    const target = value.$ref?.match(/^#\/components\/schemas\/([a-z][A-Za-z0-9]*)$/)?.[1]
-    if (/^[A-Z][A-Za-z0-9]*$/.test(name) && target && original[target]) {
-      original[name] = original[target]
-      renamed.set(target, name)
-    }
-  }
-  for (const name of renamed.keys()) delete original[name]
-  for (const name of Object.keys(original)) {
-    if (/^[a-z][A-Za-z0-9]*$/.test(name)) {
-      const target = name[0]!.toUpperCase() + name.slice(1)
-      if (original[target]) fail("#/components/schemas", `component name collision: ${name}`)
-      original[target] = original[name]
-      delete original[name]
-      renamed.set(name, target)
-    }
-  }
-  function retarget(value: any) {
-    if (!value || typeof value !== "object") return
-    const target = value.$ref?.match(/^#\/components\/schemas\/([A-Za-z][A-Za-z0-9]*)$/)?.[1]
-    if (renamed.has(target)) value.$ref = `#/components/schemas/${renamed.get(target)}`
-    for (const child of Object.values(value)) retarget(child)
-  }
-  retarget(source)
+  // OpenAPI component keys are not TypeScript identifiers. Preserve source keys
+  // and let Orval choose identifiers and disambiguate generated name collisions.
   const components: ObjectValue = {}
   function schema(value: any, direction: "Input" | "Output", at: string): any {
     if (!value || typeof value !== "object" || Array.isArray(value))
@@ -144,8 +119,9 @@ export function prepare(document: ObjectValue) {
     }
     const result: ObjectValue = { ...value }
     if (result.$ref) {
-      const match = /^#\/components\/schemas\/([A-Za-z][A-Za-z0-9]*)$/.exec(result.$ref)
-      if (!match || !original[match[1]!]) fail(at, "expected a bundled component schema reference")
+      const match = /^#\/components\/schemas\/([A-Za-z0-9._-]+)$/.exec(result.$ref)
+      if (!match || !Object.hasOwn(original, match[1]!))
+        fail(at, "expected a bundled component schema reference")
       if (
         Object.keys(result).some(
           (k) => !["$ref", "description", "title", "readOnly", "writeOnly"].includes(k),
@@ -197,8 +173,8 @@ export function prepare(document: ObjectValue) {
     return result
   }
   for (const [name, value] of Object.entries(original)) {
-    if (!/^[A-Z][A-Za-z0-9]*$/.test(name))
-      fail(`#/components/schemas/${name}`, "use PascalCase component names")
+    if (!/^[A-Za-z0-9._-]+$/.test(name))
+      fail(`#/components/schemas/${name}`, "invalid OpenAPI component name")
     for (const direction of ["Input", "Output"] as const)
       components[`${name}${direction}`] = schema(value, direction, `#/components/schemas/${name}`)
   }

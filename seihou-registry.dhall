@@ -56,7 +56,7 @@
     , tags = [ "typescript", "bun", "nix", "flake", "oxc", "devshell" ]
     }
   , { name = "openapi-typescript-client"
-    , version = Some "0.2.1"
+    , version = Some "0.2.2"
     , path = "modules/typescript/openapi-typescript-client"
     , description = Some "Reusable ESM TypeScript 7 client with Orval generation, status-specific Zod validation, and project-owned Bun workflows on nix-bun-flake"
     , tags = [ "typescript", "bun", "openapi", "orval", "zod", "client", "nix" ]

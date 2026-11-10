@@ -108,6 +108,63 @@ try {{
     assert all(p == 'package/package.json' or p.startswith('package/dist/') or p in ['package/README.md', 'package/LICENSE'] for p in contents), contents
 
 
+def component_names(project, work, original):
+    document = json.loads(original)
+    names = ['Connection_EnabledAction', 'Connection-EnabledAction',
+             'Connection.EnabledAction', 'ConnectionEnabledAction',
+             'connectionEnabledAction', '123Action', '_Action', '---',
+             'constructor', '__proto__', 'widget']
+    checks = ["import { expect, test } from 'bun:test'", "import { make } from '../src/index.js'"]
+    types = ["import { make } from '../src/index.js'",
+             "const api = make({ baseUrl: 'http://localhost' })"]
+    for index, name in enumerate(names):
+        field = f'field{index}'
+        value = f'value{index}'
+        reference = {'$ref': f'#/components/schemas/{name}'}
+        shape = {'type': 'object', 'additionalProperties': False,
+                 'required': [field], 'properties': {field: {'type': 'string', 'enum': [value]}}}
+        payload = {field: value}
+        invalid = {field: 42}
+        if index == 0:
+            shape['properties']['children'] = {'type': 'array', 'items': reference}
+            payload['children'] = [{field: value}]
+            invalid = {field: value, 'children': [{field: 42}]}
+        document['components']['schemas'][name] = shape
+        operation = f'getNamed{index}'
+        document['paths'][f'/named-components/n{index}'] = {'get': {
+            'operationId': operation, 'responses': {'200': {
+                'description': name, 'content': {'application/json': {'schema': reference}}}}}}
+        checks.append(f'''test({json.dumps(name)}, async () => {{
+  const payload = {json.dumps(payload)}
+  const api = make({{ baseUrl: 'http://localhost', fetch: async () => Response.json(payload) }})
+  expect((await api.{operation}()).data).toEqual({json.dumps(payload)})
+  const invalid = make({{ baseUrl: 'http://localhost', fetch: async () => Response.json({json.dumps(invalid)}) }})
+  await expect(invalid.{operation}()).rejects.toMatchObject({{ code: 'invalid-payload' }})
+}})''')
+        types.append(f'''async function named{index}() {{
+  const result = await api.{operation}()
+  const value: {json.dumps(value)} = result.data.{field}
+  // @ts-expect-error each colliding component retains its own response shape
+  const wrong: number = result.data.{field}
+  return value
+}}
+void named{index}''')
+    source = json.dumps(document)
+    (project / 'openapi.json').write_text(source)
+    script = project / 'scripts/generate.ts'
+    script.write_text(script.read_text().replace('const schema = "spec/api.json"', 'const schema = "openapi.json"'))
+    (project / 'tests/component-names.test.ts').write_text('\n'.join(checks) + '\n')
+    (project / 'tests/component-names.ts').write_text('\n'.join(types) + '\n')
+    task(project, 'generate')
+    assert (project / 'openapi.json').read_text() == source, 'Generation rewrote source component keys'
+    task(project, 'typecheck')
+    task(project, 'test')
+    task(project, 'build')
+    task(project, 'generated-check')
+    consumer(project, work / 'named-components')
+    print('OpenAPI component-name qualification passed.', flush=True)
+
+
 def qualify(work):
     # The shipped starter and the qualified fixture must share the same implementation.
     for name in ['orval.config.ts', 'scripts/compiler.ts', 'scripts/schema.ts', 'src/client.ts', 'src/index.ts', 'src/transport.ts', 'redocly.yaml', 'tsconfig.json', 'tsconfig.build.json']:
@@ -196,6 +253,7 @@ console.log('Reproduced built-in valid-404 ZodError.')
         (lambda d: d['paths']['/widgets']['post'].update(operationId='getWidget'), 'duplicate operation'),
         (lambda d: d['paths']['/widgets/{id}']['get']['parameters'].append(copy.deepcopy(d['paths']['/widgets/{id}']['get']['parameters'][0])), 'duplicate parameter'),
         (lambda d: d['components']['schemas']['Widget'].update(unevaluatedProperties=False), 'unsupported keyword'),
+        (lambda d: d['components']['schemas'].update({'invalid name': {'type': 'string'}}), 'invalid component name'),
         (lambda d: d['components']['schemas']['Widget']['properties']['id'].update({'$ref':'https://example.invalid/schema.json'}), 'remote ref'),
         (lambda d: d['paths']['/widgets/{id}']['get']['parameters'][1].update(explode=False), 'unsupported query serialization'),
         (lambda d: d['paths']['/widgets/{id}']['get']['responses'].update(default={'description':'Default'}), 'default status'),
@@ -233,6 +291,7 @@ console.log('Reproduced built-in valid-404 ZodError.')
     task(project, 'typecheck')
     task(project, 'test')
     task(project, 'generated-check')
+    component_names(project, work, original)
     print('OpenAPI client toolchain qualification passed.', flush=True)
 
 

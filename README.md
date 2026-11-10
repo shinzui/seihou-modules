@@ -70,7 +70,7 @@ commands, and an optional removal procedure.
 | [`git-init`](modules/git/git-init) | 0.2.0 | `git init -b master`, seed `.gitignore`, optional private GitHub repo via `gh repo create`, optional org-team access grant |
 | [`repo-dir`](modules/git/repo-dir) | 0.2.0 | Create a directory, apply an optional child scaffold, then reuse `git-init` for the initial commit and GitHub creation/push |
 | [`nix-bun-flake`](modules/typescript/nix-bun-flake) | 0.6.1 | Nix flake for Bun + TypeScript: oxlint, oxfmt, `just`, optional git-hooks.nix, pinned bun2nix builds and nix2container images |
-| [`openapi-typescript-client`](modules/typescript/openapi-typescript-client) | 0.2.1 | Bun workflow for reusable ESM TypeScript 7 clients, Orval generation, status-specific Zod response validation, and optional Mori inventory |
+| [`openapi-typescript-client`](modules/typescript/openapi-typescript-client) | 0.2.2 | Bun workflow for reusable ESM TypeScript 7 clients, Orval generation, status-specific Zod response validation, and optional Mori inventory |
 | [`openapi-typescript-client-dir`](modules/typescript/openapi-typescript-client-dir) | 0.1.0 | Create a client folder and compose the client scaffold with `git-init` inside it under a configurable GitHub owner |
 | [`fumadocs`](modules/typescript/fumadocs) | 0.4.1 | Fumadocs site on TanStack Start + Vite, layered on `nix-bun-flake`, with mermaid diagrams, a zoom/pan widget, optional OpenAPI reference pages, and an optional Caddy container image |
 | [`docs-microapp`](modules/typescript/docs-microapp) | 0.1.0 | TanStack Start reader with explicit Markdown/bundle publication, React Aria, Highlights, local Geist Serif/Paper Mono and immutable Linux images |

@@ -1,6 +1,12 @@
 # openapi-typescript-client
 
-**Version:** `0.2.1` — depends on `nix-bun-flake` 0.5.0.
+**Version:** `0.2.2` — depends on `nix-bun-flake` 0.5.0.
+
+Version 0.2.2 removes the adapter's PascalCase-only component-name restriction.
+Orval owns TypeScript naming and collision handling; the OpenAPI document keeps
+its original keys and references. Existing projects own `scripts/schema.ts` as a
+seed, so `seihou update` preserves their copy. Review and apply the updated
+`files/scripts/schema.ts` to that project-owned file to receive this fix.
 
 Requires [Seihou](mori://shinzui/seihou) >=0.15.0.0 for conditional removal and recorded-root retirement.
 Update to the published 0.15.0.0 release before applying this module.
@@ -111,7 +117,9 @@ Only explicit response status codes and `application/json` (or no content) are s
 references, ranges/default responses, other media, boolean schemas, overlapping/closed `allOf`, `$ref`
 validation siblings, defaults/transforms, unrecognized validation keywords and formats fail generation
 with a schema pointer before old output is replaced. Staged validator/model contracts must pass the shared compiler before replacement. Local YAML/JSON references remain inside the project
-and use paths without traversal. Component names become PascalCase; operation IDs must be camelCase.
+and use paths without traversal. Component keys accept OpenAPI's letters, digits, dots,
+hyphens, and underscores, including leading digits. Source keys and references are preserved;
+Orval handles TypeScript identifier naming and collisions. Operation IDs must be camelCase.
 Path parameters are encoded strings; query parameters use scalar form style, repeated scalar arrays, or closed flat deepObject values. Other parameter styles and ambiguous method/path routes are diagnosed. Pass request headers through client/operation options. This is a bounded schema subset, not arbitrary JSON Schema equivalence. Inspect diagnostics instead of
 removing source constraints to get usable but weaker validators.
 
