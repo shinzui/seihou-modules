@@ -1,3 +1,5 @@
+import { createHighlights } from "fumadocs-core/highlight/highlights"
+import { rehypeCodeFromHighlighter } from "fumadocs-core/mdx-plugins/rehype-code.core"
 import { defineConfig, defineDocs } from "fumadocs-mdx/config"
 
 import { rehypeMermaid } from "./src/lib/rehype-mermaid"
@@ -14,22 +16,20 @@ export const docs = defineDocs({
   },
 })
 
-// `themes` pins a light/dark Shiki pair (fumadocs renders both and CSS shows the
-// right one per theme). `langs` preloads the grammars the docs use. We do NOT
-// pass `transformers`, so fumadocs' default code transformers (notation
-// highlight/diff/focus) are preserved.
+// Code blocks are highlighted by @pierre/highlights, whose languages are built in.
+// `rehypeCodeOptions: false` removes fumadocs' Shiki rehypeCode; the replacement
+// receives fumadocs' default code transformers (notation highlight/diff/focus,
+// titles, icons) and runs them on the Highlights tokens. Its default themes are
+// GitHub Light and GitHub Dark, rendered together and switched by CSS.
+//
+// Order matters: rehypeMermaid must come FIRST so that ```mermaid fences become a
+// <Mermaid> element before the highlighter rewrites the pre/code node.
+const highlighter: Parameters<typeof rehypeCodeFromHighlighter>[0] = ({ transformers }) =>
+  createHighlights({ shikiTransformers: transformers })
+
 export default defineConfig({
   mdxOptions: {
-    rehypeCodeOptions: {
-      themes: { light: "github-light", dark: "github-dark" },
-      langs: ["bash", "json", "ts", "tsx", "typescript"],
-    },
-    // Turn ```mermaid fences into <Mermaid> before any code highlighting runs.
-    // The function form prepends rehypeMermaid to the default plugin array (`v`,
-    // which includes fumadocs' built-in Shiki `rehypeCode`), so our plugin runs
-    // FIRST and removes the language-mermaid pre/code node before Shiki can claim
-    // it. The plain array form `[rehypeMermaid]` runs AFTER the defaults, by which
-    // point Shiki has already rewritten the node and the match no longer fires.
-    rehypePlugins: (v) => [rehypeMermaid, ...v],
+    rehypeCodeOptions: false,
+    rehypePlugins: (v) => [rehypeMermaid, [rehypeCodeFromHighlighter, highlighter], ...v],
   },
 })

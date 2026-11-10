@@ -17,14 +17,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.15.0.0
-version: 0.4.2
+version: 0.5.0
 ---
 
 # fumadocs
 
 Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's dev shell: a static-SPA docs app with self-hosted custom fonts, zombie-mermaid diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container
 
-**Version:** 0.4.2
+**Version:** 0.5.0
 
 ## Dependencies
 

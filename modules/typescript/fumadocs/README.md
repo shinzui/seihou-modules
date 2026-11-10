@@ -2,7 +2,7 @@
 
 > Fumadocs documentation site on TanStack Start + Vite, layered on `nix-bun-flake`'s dev shell: a static-SPA docs app with self-hosted custom fonts, `zombie-mermaid` diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container.
 
-**Version:** `0.4.2`
+**Version:** `0.5.0`
 
 ## Overview
 
@@ -17,7 +17,7 @@ a stock Fumadocs scaffold it ships three opinionated customizations and one opt-
   settings. The hook is tolerant: if the font package is unavailable it warns and exits 0,
   so dev/build still succeed with the system-monospace fallback.
 - **Mermaid diagrams.** A rehype plugin (`src/lib/rehype-mermaid.ts`) rewrites
-  ` ```mermaid ` fenced blocks into a `<Mermaid>` element *before* Shiki claims them, and the
+  ` ```mermaid ` fenced blocks into a `<Mermaid>` element *before* the code highlighter claims them, and the
   component renders SVG via [`@zombie-mermaid/svg-renderer`](https://www.npmjs.com/package/@zombie-mermaid/svg-renderer),
   the maintained fork of `beautiful-mermaid`, with light/dark theme palettes wired to the
   active fumadocs theme. Browser bundles must register ELK for graph layouts, so the
@@ -57,6 +57,18 @@ Fumadocs' default ZBSearch engine through the `useStaticSearch()` hook, which re
 the deprecated `useDocsSearch()` in Fumadocs 16.17. The exported `/api/search` index
 still supports search on a static host. Diagrams use `@zombie-mermaid/svg-renderer`
 **5.11** with `elkjs` **0.12**.
+
+Code blocks are highlighted by [`@pierre/highlights`](https://www.npmjs.com/package/@pierre/highlights)
+**0.5.0** through Fumadocs' `createHighlights()`, not Shiki. `source.config.ts` sets
+`rehypeCodeOptions: false` and adds `rehypeCodeFromHighlighter`, which still runs Fumadocs'
+default code transformers on the Highlights tokens. OpenAPI pages use
+`createOpenAPIPageBase` from `fumadocs-openapi/ui/base` with the same highlighter.
+Fumadocs 16.18.4 declares `@pierre/highlights` `^0.2.0` as an optional peer; 0.5.0 is
+qualified here and accepted by upstream's `0.x.x` range on `main`. Shiki remains a
+transitive dependency of Fumadocs. With OpenAPI enabled, the manifest declares `shiki`
+directly: `fumadocs-openapi` imports its Oniguruma engine on the server, and under the
+isolated Bun linker that the Nix build uses, an undeclared Shiki is not resolvable from
+the project root, so Rolldown would try to bundle `onig.wasm` and fail.
 
 ## Shared flake and upgrades
 

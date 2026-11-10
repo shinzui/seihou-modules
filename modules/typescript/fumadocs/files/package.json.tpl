@@ -22,6 +22,7 @@
     "prebuild": "bun run copy-fonts"
   },
   "dependencies": {
+    "@pierre/highlights": "0.5.0",
     "@tanstack/react-router": "1.170.46",
     "@tanstack/react-start": "1.169.4",
     "@tanstack/start-static-server-functions": "1.167.44",
@@ -36,6 +37,9 @@
     "lucide-react": "^1.63.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
+{{#if Eq docs.openapi true}}
+    "shiki": "4.6.0",
+{{/if}}
     "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
