@@ -183,6 +183,13 @@ in  Schema.Project::{
         , tags = [ "typescript", "fumadocs", "nix", "migration" ]
         }
       , Schema.SeihouTemplate::{
+        , name = "relaunch-fumadocs-docs"
+        , version = Some "0.1.0"
+        , description = Some "Relaunch legacy Fumadocs sites: platform upgrade, writing skills, Mori registration, diagrams, source pin, release gates and a content assessment"
+        , modulePath = "blueprints/relaunch-fumadocs-docs"
+        , tags = [ "typescript", "fumadocs", "docs", "migration" ]
+        }
+      , Schema.SeihouTemplate::{
         , name = "haskell-keiro-service"
         , version = Some "0.4.0"
         , description = Some

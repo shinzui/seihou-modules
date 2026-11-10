@@ -1,0 +1,8 @@
+{
+  "project": "mori://<namespace>/<project>",
+  "name": "<Display name>",
+  "github": "https://github.com/<owner>/<repository>",
+  "revision": "<full 40-character commit of the documented project>",
+  "version": "<version the revision carries, e.g. 1.2.0>",
+  "environments": ["aarch64-darwin"]
+}

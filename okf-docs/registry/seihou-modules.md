@@ -49,6 +49,7 @@ Every artifact below is published by the `seihou-modules` registry and documente
 - [upgrade-haskell-nix2container](/blueprints/upgrade-haskell-nix2container.md)
 - [upgrade-haskell-runtime](/blueprints/upgrade-haskell-runtime.md)
 - [upgrade-fumadocs](/blueprints/upgrade-fumadocs.md)
+- [relaunch-fumadocs-docs](/blueprints/relaunch-fumadocs-docs.md)
 - [upgrade-haskell-flake-parts](/blueprints/upgrade-haskell-flake-parts.md)
 - [haskell-keiro-service](/blueprints/haskell-keiro-service.md)
 - [fix-nix-haskell-flake-customizations](/blueprints/fix-nix-haskell-flake-customizations.md)

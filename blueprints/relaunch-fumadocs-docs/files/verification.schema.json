@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Documentation verification register",
+  "description": "docs/verification.json: one record per page under content/docs, keyed by the page path without .mdx (for example \"index\" or \"how-to/rotate-a-token\"). scripts/check-verification.mjs enforces it: every page has a record, every record has a page, and every verifiedRevision equals the revision in docs-source.json.",
+  "type": "object",
+  "properties": {
+    "$schema": { "type": "string" }
+  },
+  "additionalProperties": {
+    "type": "object",
+    "required": ["form", "reader", "verifiedRevision", "environments", "ran", "notChecked"],
+    "additionalProperties": false,
+    "properties": {
+      "form": {
+        "description": "The page's Diátaxis form, or landing for an entry page.",
+        "enum": ["tutorial", "how-to", "reference", "explanation", "walkthrough", "landing"]
+      },
+      "reader": {
+        "description": "The one reader the page is written for, and what that reader is trying to do.",
+        "type": "string",
+        "minLength": 1
+      },
+      "verifiedRevision": {
+        "description": "The full commit of the documented project the page was checked against. Update it only after rechecking the page.",
+        "type": "string",
+        "pattern": "^[0-9a-f]{40}$"
+      },
+      "environments": {
+        "description": "Nix systems the page's commands ran on, for example aarch64-darwin.",
+        "type": "array",
+        "items": { "type": "string", "minLength": 1 },
+        "minItems": 1
+      },
+      "ran": {
+        "description": "What was actually run or read to verify the page. Name commands and source documents.",
+        "type": "array",
+        "items": { "type": "string", "minLength": 1 }
+      },
+      "notChecked": {
+        "description": "Claims the page makes that were not verified by a run, and why. Corrections made in review that were not re-run belong here.",
+        "type": "array",
+        "items": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "examples": [
+    {
+      "tutorials/first-run": {
+        "form": "tutorial",
+        "reader": "A developer running the project for the first time",
+        "verifiedRevision": "0123456789abcdef0123456789abcdef01234567",
+        "environments": ["aarch64-darwin", "aarch64-linux"],
+        "ran": ["Every bash fence on the page, in order, under env -i with a new HOME"],
+        "notChecked": ["The optional cloud backend step needs credentials and was not run"]
+      }
+    }
+  ]
+}

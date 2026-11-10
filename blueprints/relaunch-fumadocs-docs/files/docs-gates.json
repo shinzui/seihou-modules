@@ -1,0 +1,7 @@
+{
+  "openapiDir": "openapi",
+  "apiBaseDir": "api",
+  "generatedPages": ["api/index"],
+  "privateText": [],
+  "apiIndex": {}
+}

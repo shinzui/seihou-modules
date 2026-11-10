@@ -149,6 +149,12 @@
     , description = Some "Upgrade existing Fumadocs sites to the shared Bun flake-parts modules while preserving custom content, package-manager workflows, fonts, CI gates, and Seihou ownership"
     , tags = [ "typescript", "fumadocs", "nix", "flake-parts", "migration" ]
     }
+  , { name = "relaunch-fumadocs-docs"
+    , version = Some "0.1.0"
+    , path = "blueprints/relaunch-fumadocs-docs"
+    , description = Some "Relaunch a legacy Fumadocs documentation site: rehearsed platform upgrade, writing skills, Mori registration, SVG diagrams, a source pin and release gates, then a measured restart-or-refresh assessment with a proposed page list"
+    , tags = [ "typescript", "fumadocs", "docs", "migration", "diataxis", "mori" ]
+    }
   , { name = "upgrade-haskell-flake-parts"
     , version = Some "0.1.0"
     , path = "blueprints/upgrade-haskell-flake-parts"
