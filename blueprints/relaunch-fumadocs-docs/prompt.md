@@ -55,6 +55,17 @@ Adopt the `fumadocs-site` recipe, which composes the `fumadocs` module with the 
 
 Correct `mori.dhall` before the first application, because the recipe's bootstrap registers the site from it (see Phase 3).
 
+Refresh Seihou's installed copies before applying, because `seihou run` applies the installed recipe and modules, and an installed copy is not updated when a newer release is published. A stale copy silently applies an old module version.
+
+```bash
+for name in fumadocs-site fumadocs nix-bun-flake docs-mori-bootstrap; do
+  seihou install https://github.com/shinzui/seihou-modules.git --module "$name"
+done
+seihou install https://github.com/shinzui/agent-seihou.git --module technical-docs
+```
+
+Then, for each module that `blueprints/upgrade-fumadocs/files/target-versions.json` in mori://shinzui/seihou-modules lists (`fumadocs` and `nix-bun-flake`), compare its version in `~/.config/seihou/installed/<name>/module.dhall` with that file. After applying, compare the same versions in `.seihou/manifest.json`. Stop on any mismatch.
+
 `seihou update` refuses `fumadocs-site` applications today, because it cannot reconcile `.seihou/docs-mori-bootstrap/`. Reconfigure by reapplying the recipe with every variable, never only the changed ones.
 
 Rehearse in a scratch clone first.
@@ -74,7 +85,7 @@ seihou run fumadocs-site --force --with-migrations --no-commands --no-save-promp
 
 Pass the remaining recorded variables the same way. `seihou run` refuses a legacy adoption without `--with-migrations`. Use `--no-commands` in the clone, because the Mori bootstrap rejects an identity that is registered at another path. Run `git diff --stat` and build a merge list: for each changed file, take the module's version, then restore the site's own gates and customizations from the backup. Record the merge list in the ledger's merge list table.
 
-Module 0.6.0 already excludes `agents/` from `tsconfig.json`, makes formatting ignore `docs/plans`, `docs/masterplans` and `docs/friction-log`, crawls real pages from `docs/index.html` in `lint:links`, and highlights code with Pierre Highlights. Check that these hold. Do not add local copies of them.
+Module 0.6.1 already prerenders every content page, including pages no `meta.json` lists. It also excludes `agents/` from `tsconfig.json`, makes formatting ignore `docs/plans`, `docs/masterplans` and `docs/friction-log`, crawls real pages from `docs/index.html` in `lint:links`, and highlights code with Pierre Highlights. Check that these hold. Do not add local copies of them.
 
 Install and lock dependencies. A fresh pin can be blocked by a local Bun release-age setting, so allow a one-time override on the command line and never weaken the global setting.
 
@@ -84,7 +95,7 @@ nix develop --command bun install --minimum-release-age=0
 nix run .#bun2nix -- --lock-file bun.lock --output-file bun-deps.nix
 ```
 
-Prove the upgraded platform on the real, unchanged content before any content work. Platform and content failures must never be mixed.
+Prove the upgraded platform on the real, unchanged content before any content work. Platform and content failures must never be mixed. Every step below is required, in a rehearsal and on a second run alike. None may be skipped as too slow or deferred to later. A passing hoisted build does not stand in for the Nix build, and the Nix build does not stand in for the served image. With the sizing in step 3, the Nix build takes a few minutes, and the image build and serve take about ten. A run that skips a step has not proven the platform; report it as failed.
 
 1. Run the site's complete gate, for example `nix develop --command just check-docs`, or `just check` when it has none, and then each `lint:*` script on its own.
 2. Run `nix build .#docs-site`. The Nix build installs with an isolated linker, which can expose a dependency the hoisted local build hides.
@@ -182,7 +193,10 @@ Run the assessment from the site root, with the script read from the blueprint's
 ```bash
 node <files>/assess-content.mjs --name "<display name>" \
   --out docs/content-assessment.md --json docs/content-assessment.json
+nix develop --command oxfmt docs/content-assessment.md docs/content-assessment.json
 ```
+
+Format the two reports right away, so that `format:check` stays clean. The same rule applies to every file this run writes or appends to, including `docs/migration-ledger.md`, `docs-source.json` and `docs/verification.json`: run `oxfmt` on it before the next gate.
 
 It finds the documented project through `docs-source.json` or `mori.dhall`, and measures, each as a number:
 

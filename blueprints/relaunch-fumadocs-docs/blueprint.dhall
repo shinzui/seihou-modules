@@ -4,7 +4,7 @@ let S =
 
 in  S.Blueprint::{
     , name = "relaunch-fumadocs-docs"
-    , version = Some "0.1.2"
+    , version = Some "0.1.3"
     , description = Some
         "Relaunch a legacy Fumadocs documentation site: rehearse and apply the fumadocs-site recipe in place, install the writing skills, register with Mori, enable semantic SVG diagrams, add a source pin and release gates, then measure the content against the documented project and stop with a restart-or-refresh recommendation, a page list and a diagram catalog; never commits"
     , prompt = ./prompt.md as Text

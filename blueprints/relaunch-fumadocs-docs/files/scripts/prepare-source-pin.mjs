@@ -1,8 +1,8 @@
 // The documented project's source at the pinned revision.
 //
 //   bun scripts/prepare-source-pin.mjs
-//       Create a detached worktree of the pinned revision under .cache/docs-source/ and
-//       print its path.
+//       Check out the pinned revision under .cache/docs-source/ as a shared clone of the
+//       project's checkout, and print its path.
 //   bun scripts/prepare-source-pin.mjs --init [--project mori://<ns>/<name>]
 //       [--revision <rev>] [--version <version>] [--name <display name>]
 //       [--environment <system>]...
@@ -127,9 +127,16 @@ if (import.meta.main) {
     const worktree = join(root, ".cache/docs-source", revision)
     if (!existsSync(worktree)) {
       mkdirSync(join(root, ".cache/docs-source"), { recursive: true })
-      execFileSync("git", ["-C", sourceRoot(), "worktree", "add", "--detach", worktree, revision], {
-        stdio: ["ignore", "ignore", "inherit"],
-      })
+      // A shared clone, not `git worktree add`: it borrows the project's objects but
+      // records nothing in the project's repository, so deleting the site or a
+      // rehearsal leaves no dangling worktree behind.
+      const quiet = { stdio: ["ignore", "ignore", "inherit"] }
+      execFileSync(
+        "git",
+        ["clone", "--quiet", "--shared", "--no-checkout", sourceRoot(), worktree],
+        quiet,
+      )
+      execFileSync("git", ["-C", worktree, "checkout", "--quiet", "--detach", revision], quiet)
     }
     console.log(worktree)
   }
