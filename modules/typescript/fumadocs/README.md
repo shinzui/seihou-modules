@@ -2,12 +2,14 @@
 
 > Fumadocs documentation site on TanStack Start + Vite, layered on `nix-bun-flake`'s dev shell: a static-SPA docs app with self-hosted custom fonts, `zombie-mermaid` diagrams, an interactive zoom/pan/expand widget for every diagram, optional OpenAPI reference pages, and an optional Caddy container image built with nix2container.
 
-**Version:** `0.6.0`
+**Version:** `0.6.1`
 
 ## Overview
 
 Bootstraps a [Fumadocs](https://fumadocs.dev) documentation site running on TanStack
-Start + Vite, configured to prerender a fully static SPA into `.output/public`. On top of
+Start + Vite, configured to prerender a fully static SPA into `.output/public`. Every file under
+`content/docs` is prerendered, including pages that no `meta.json` lists, and the link crawl
+adds whatever those pages link to. On top of
 a stock Fumadocs scaffold it ships three opinionated customizations and one opt-in feature:
 
 - **Self-hosted custom font.** A `predev`/`prebuild` hook (`scripts/copy-fonts.mjs`) builds

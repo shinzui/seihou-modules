@@ -82,6 +82,8 @@ with tempfile.TemporaryDirectory(prefix='fumadocs-diagrams-') as temp:
     meta = json.loads(meta_path.read_text())
     meta['pages'].insert(1, 'request-flow')
     meta_path.write_text(json.dumps(meta, indent=2) + '\n')
+    (project / 'content/docs/unlisted.mdx').write_text(
+        '---\ntitle: Unlisted page\ndescription: A page no meta.json lists.\n---\n\nNo page links here.\n')
 
     output = run(['nix', 'develop', '--command', 'bash', '-c',
                   'bun install --minimum-release-age 0 && oxfmt --write content/docs/meta.json openapi/status.json && just check && bun --bun run lint:links'], project)
@@ -91,6 +93,7 @@ with tempfile.TemporaryDirectory(prefix='fumadocs-diagrams-') as temp:
 
     public = project / '.output/public'
     assert 'Request flow' in (public / 'docs/request-flow/index.html').read_text()
+    assert 'Unlisted page' in (public / 'docs/unlisted/index.html').read_text(), 'An unlisted page was not prerendered'
     for operation, title in [('createNote', 'Create a note'), ('getStatus', 'Read the status')]:
         assert title in (public / f'docs/api/{operation}/index.html').read_text(), operation
     print('Diagram page, both OpenAPI documents and a real link crawl passed.', flush=True)
