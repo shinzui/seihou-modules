@@ -72,7 +72,7 @@ commands, and an optional removal procedure.
 | [`nix-bun-flake`](modules/typescript/nix-bun-flake) | 0.6.1 | Nix flake for Bun + TypeScript: oxlint, oxfmt, `just`, optional git-hooks.nix, pinned bun2nix builds and nix2container images |
 | [`openapi-typescript-client`](modules/typescript/openapi-typescript-client) | 0.2.2 | Bun workflow for reusable ESM TypeScript 7 clients, Orval generation, status-specific Zod response validation, and optional Mori inventory |
 | [`openapi-typescript-client-dir`](modules/typescript/openapi-typescript-client-dir) | 0.1.0 | Create a client folder and compose the client scaffold with `git-init` inside it under a configurable GitHub owner |
-| [`fumadocs`](modules/typescript/fumadocs) | 0.6.0 | Fumadocs site on TanStack Start + Vite, layered on `nix-bun-flake`, with mermaid diagrams, a zoom/pan widget, optional OpenAPI reference pages, and an optional Caddy container image |
+| [`fumadocs`](modules/typescript/fumadocs) | 0.6.2 | Fumadocs site on TanStack Start + Vite, layered on `nix-bun-flake`, with mermaid diagrams, a zoom/pan widget, optional OpenAPI reference pages, and an optional Caddy container image |
 | [`docs-microapp`](modules/typescript/docs-microapp) | 0.1.0 | TanStack Start reader with explicit Markdown/bundle publication, React Aria, Highlights, local Geist Serif/Paper Mono and immutable Linux images |
 | [`nagare-docs-config`](modules/cloud/nagare-docs-config) | 0.1.0 | Protected typed Nagare Application with independent service/domain and immutable image tag |
 | [`docs-mori-bootstrap`](modules/mori/docs-mori-bootstrap) | 0.1.0 | Project-owned documentation manifest, documented-project association and verified local Mori registration |
@@ -114,7 +114,7 @@ commit.
 | Blueprint | Version | Purpose |
 |---|---|---|
 | [`haskell-keiro-service`](blueprints/haskell-keiro-service) | 0.4.0 | Extend the Keiro seed’s probes/OpenAPI/testing into an event-sourced Haskell service on the released Keiro runtime — vertical-slice packages, pg-migrate components, Settei config, OpenTelemetry wiring, Keiro-DSL-first workflow |
-| [`relaunch-fumadocs-docs`](blueprints/relaunch-fumadocs-docs) | 0.1.1 | Relaunch a legacy Fumadocs site: rehearsed upgrade, writing skills, Mori registration, SVG diagrams, source pin and release gates, then a measured restart-or-refresh assessment |
+| [`relaunch-fumadocs-docs`](blueprints/relaunch-fumadocs-docs) | 0.1.4 | Relaunch a legacy Fumadocs site: rehearsed upgrade, writing skills, Mori registration, SVG diagrams, source pin and release gates, then a measured restart-or-refresh assessment |
 | [`upgrade-fumadocs`](blueprints/upgrade-fumadocs) | 0.3.0 | Upgrade a customized documentation site to current Fumadocs and the shared Bun flake-parts modules while preserving its workflows and content |
 | [`upgrade-haskell-nix2container`](blueprints/upgrade-haskell-nix2container) | 0.1.0 | Preserve custom service images while migrating dockerTools wiring and archive consumers to pinned nix2container |
 | [`upgrade-haskell-runtime`](blueprints/upgrade-haskell-runtime) | 0.1.0 | Preserve legacy projects or cross ordered 0.30.0/0.31.0 upgrades to explicit shared runtime scopes with independent native acceptance |

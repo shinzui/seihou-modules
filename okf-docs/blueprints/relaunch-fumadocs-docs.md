@@ -15,14 +15,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.15.0.0
-version: 0.1.1
+version: 0.1.4
 ---
 
 # relaunch-fumadocs-docs
 
 Relaunch a legacy Fumadocs documentation site: rehearsed platform upgrade, writing skills, Mori registration, SVG diagrams, a source pin and release gates, then a measured restart-or-refresh assessment with a proposed page list
 
-**Version:** 0.1.1
+**Version:** 0.1.4
 
 ## Base modules
 
@@ -58,11 +58,11 @@ The blueprint's `files/` directory holds the files you copy into the site. They 
 
 Read the project instructions (`CLAUDE.md`, `AGENTS.md`), `git status`, `package.json` and its lock, `justfile`, `flake.nix`, `flake.module.nix`, `.envrc`, `tsconfig.json`, `.oxfmtrc.json`, `.oxlintrc.json`, `linkinator.config.json`, `source.config.ts`, everything under `src/` and `scripts/`, CI configuration, `mori.dhall` and `.seihou/manifest.json`. Run `seihou status` and record the module and recipe versions it reports.
 
-Make a backup directory, `.relaunch-backup/` inside the checkout and excluded through `.git/info/exclude` like the rehearsal clone, and copy into it the manifest, every managed file with local modifications, `package.json`, `justfile`, every file under `scripts/`, and `mori.dhall`.
+Make a backup directory, `.relaunch-backup/`, inside the checkout, and copy into it the manifest, every managed file with local modifications, `package.json`, `justfile`, every file under `scripts/`, and `mori.dhall`. Make the directory ignore itself: write a file `.relaunch-backup/.gitignore` containing the single line `*`, with the file-writing tool. Do not edit `.git/info/exclude`. An unattended run is refused writes inside `.git/` and shell redirection, and a self-ignoring directory never appears in `git status`. Do the same for `.relaunch-rehearsal/` below.
 
 ```bash
-echo '.relaunch-backup/' >> .git/info/exclude
 BACKUP="$PWD/.relaunch-backup" && mkdir -p "${BACKUP?}"
+# then write .relaunch-backup/.gitignore containing: *
 cp -R .seihou package.json justfile tsconfig.json mori.dhall scripts src "${BACKUP?}/"
 find content -type f -print0 | sort -z | xargs -0 shasum -a 256 > "${BACKUP?}/content.sha256"
 ```
@@ -90,15 +90,26 @@ Adopt the `fumadocs-site` recipe, which composes the `fumadocs` module with the 
 
 Correct `mori.dhall` before the first application, because the recipe's bootstrap registers the site from it (see Phase 3).
 
+Refresh Seihou's installed copies before applying, because `seihou run` applies the installed recipe and modules, and an installed copy is not updated when a newer release is published. A stale copy silently applies an old module version.
+
+```bash
+for name in fumadocs-site fumadocs nix-bun-flake docs-mori-bootstrap; do
+  seihou install https://github.com/shinzui/seihou-modules.git --module "$name"
+done
+seihou install https://github.com/shinzui/agent-seihou.git --module technical-docs
+```
+
+Then, for each module that `blueprints/upgrade-fumadocs/files/target-versions.json` in mori://shinzui/seihou-modules lists (`fumadocs` and `nix-bun-flake`), compare its version in `~/.config/seihou/installed/<name>/module.dhall` with that file. After applying, compare the same versions in `.seihou/manifest.json`. Stop on any mismatch.
+
 `seihou update` refuses `fumadocs-site` applications today, because it cannot reconcile `.seihou/docs-mori-bootstrap/`. Reconfigure by reapplying the recipe with every variable, never only the changed ones.
 
 Rehearse in a scratch clone first.
 
-Create the scratch clone inside the checkout, in `.relaunch-rehearsal/`, and exclude it locally, because an agent session may only work beneath its starting directory. Remove it when the rehearsal is complete, unless the operator asks to keep it.
+Create the scratch clone inside the checkout, in `.relaunch-rehearsal/`, because an agent session may only work beneath its starting directory. Give it a `.gitignore` containing `*`, as for the backup directory. Remove it when the rehearsal is complete, unless the operator asks to keep it.
 
 ```bash
-echo '.relaunch-rehearsal/' >> .git/info/exclude
-SCRATCH="$PWD/.relaunch-rehearsal"
+SCRATCH="$PWD/.relaunch-rehearsal" && mkdir -p "${SCRATCH?}"
+# write .relaunch-rehearsal/.gitignore containing: *
 git clone "$PWD" "${SCRATCH?}/site"
 cd "${SCRATCH?}/site"
 seihou run fumadocs-site --force --with-migrations --no-commands --no-save-prompted \
@@ -109,7 +120,7 @@ seihou run fumadocs-site --force --with-migrations --no-commands --no-save-promp
 
 Pass the remaining recorded variables the same way. `seihou run` refuses a legacy adoption without `--with-migrations`. Use `--no-commands` in the clone, because the Mori bootstrap rejects an identity that is registered at another path. Run `git diff --stat` and build a merge list: for each changed file, take the module's version, then restore the site's own gates and customizations from the backup. Record the merge list in the ledger's merge list table.
 
-Module 0.6.0 already excludes `agents/` from `tsconfig.json`, makes formatting ignore `docs/plans`, `docs/masterplans` and `docs/friction-log`, crawls real pages from `docs/index.html` in `lint:links`, and highlights code with Pierre Highlights. Check that these hold. Do not add local copies of them.
+Module 0.6.1 already prerenders every content page, including pages no `meta.json` lists. It also excludes `agents/` from `tsconfig.json`, makes formatting ignore `docs/plans`, `docs/masterplans` and `docs/friction-log`, crawls real pages from `docs/index.html` in `lint:links`, and highlights code with Pierre Highlights. Check that these hold. Do not add local copies of them.
 
 Install and lock dependencies. A fresh pin can be blocked by a local Bun release-age setting, so allow a one-time override on the command line and never weaken the global setting.
 
@@ -119,11 +130,11 @@ nix develop --command bun install --minimum-release-age=0
 nix run .#bun2nix -- --lock-file bun.lock --output-file bun-deps.nix
 ```
 
-Prove the upgraded platform on the real, unchanged content before any content work. Platform and content failures must never be mixed.
+Prove the upgraded platform on the real, unchanged content before any content work. Platform and content failures must never be mixed. Every step below is required, in a rehearsal and on a second run alike. None may be skipped as too slow or deferred to later. A passing hoisted build does not stand in for the Nix build, and the Nix build does not stand in for the served image. With the sizing in step 3, the Nix build takes a few minutes, and the image build and serve take about ten. A run that skips a step has not proven the platform; report it as failed.
 
 1. Run the site's complete gate, for example `nix develop --command just check-docs`, or `just check` when it has none, and then each `lint:*` script on its own.
 2. Run `nix build .#docs-site`. The Nix build installs with an isolated linker, which can expose a dependency the hoisted local build hides.
-3. Build the image from a clean clone, because the flake reads tracked files only. Prefer a local Apple container, for example `ghcr.io/nixos/nix` with the nested sandbox off, and run `nix build .#dockerImage.copyTo` there. Load the image, serve it on port 8080, and request a known page, a raw Markdown route (`/docs/<page>.md`) and the static search index. The site serves its shell with HTTP 200 for unknown paths, so compare against a path that does not exist; a 200 alone proves nothing.
+3. Build the image from a clean clone, because the flake reads tracked files only. Prefer a local Apple container from a pinned image tag, for example `ghcr.io/nixos/nix:2.35.2` with the nested sandbox off, and run `nix build .#dockerImage.copyTo` there. Always pass `--cpus 8 --memory 16G`, or the most the host allows: Apple's default is 1 GB, and an empty store compiles toolchain pieces such as bun2nix's Zig helper from source, which in 1 GB runs out of memory without failing and crawls for hours. Start the container detached (`--detach … sleep infinity`), run the build with `container exec`, and write its full output to a log file you can read while it runs. Never pipe a long build into `tail`, which hides all progress until it exits. If the build log has not advanced for ten minutes, check the container's free memory in `/proc/meminfo` before waiting any longer. Export with `.#dockerImage.copyTo -- oci-archive:<file>:<name>:latest`; `container image load --input` accepts an OCI archive, not a Docker archive. Load the image, serve it on port 8080, and request a known page, a raw Markdown route (`/docs/<page>.md`) and the static search index. The site serves its shell with HTTP 200 for unknown paths, so compare against a path that does not exist; a 200 alone proves nothing. Afterwards, stop and remove the build and serve containers (`container stop`, `container rm`) and delete the loaded image and the archive, so the run leaves nothing running on the host.
 4. Query the exported search index through `fumadocs-core/search/client` and require a known page in the results.
 5. Check the content hashes.
 
@@ -217,7 +228,10 @@ Run the assessment from the site root, with the script read from the blueprint's
 ```bash
 node <files>/assess-content.mjs --name "<display name>" \
   --out docs/content-assessment.md --json docs/content-assessment.json
+nix develop --command oxfmt docs/content-assessment.md docs/content-assessment.json
 ```
+
+Format the two reports right away, so that `format:check` stays clean. The same rule applies to every file this run writes or appends to, including `docs/migration-ledger.md`, `docs-source.json` and `docs/verification.json`: run `oxfmt` on it before the next gate.
 
 It finds the documented project through `docs-source.json` or `mori.dhall`, and measures, each as a number:
 
@@ -251,7 +265,7 @@ Continue only when the operator confirms the page list and asks you to go on. Th
 - Generate a configuration reference from the program's own schema output where it has one.
 - Plan about 6.5 pixels per character for `small` diagram text, and preview each diagram in both themes.
 - After authoring, hold every page to an independent review by reviewers who did not write it. Give each reviewer only its pages and the matching skill, and forbid reading the plans or the register first. Each reviewer verifies at least three claims per page against the pin and previews every diagram in both themes. Review does not replace running: a reviewer who cannot re-run a correction says so in the page's `notChecked`.
-- Run the install path and the first tutorial in a clean room on a second platform, for example a fresh `ghcr.io/nixos/nix` Apple container as a non-root user with an empty store and a new `HOME`. Extract the commands from the pages; substitute only a local clone for a private repository URL through `git config url.<local>.insteadOf`. Run the container with an init process, since a PID 1 that does not reap children makes database-backed tools see zombies as alive. Fresh containers are rate limited by GitHub without a token.
+- Run the install path and the first tutorial in a clean room on a second platform, for example a fresh `ghcr.io/nixos/nix:2.35.2` Apple container with `--cpus 8 --memory 16G`, run as a non-root user with an empty store and a new `HOME`, logging to a file as in phase 3. Extract the commands from the pages; substitute only a local clone for a private repository URL through `git config url.<local>.insteadOf`. Run the container with an init process, since a PID 1 that does not reap children makes database-backed tools see zombies as alive. Fresh containers are rate limited by GitHub without a token.
 - Before release, write a release readiness report: the pin, what was verified on which platform, what was not, and the blockers outside the repository. Move the pin only with `report:source-drift`, reverifying every page it lists.
 
 ## Idempotence
