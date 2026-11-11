@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "haskell-cli-app"
-    , version = Some "0.4.0"
+    , version = Some "0.5.0"
     , description = Some
         "Bootstrap a tested two-package Haskell CLI app (reusable core library + CLI executable) under GHC2024, with GHC 9.12.4 as the HLS-backed default and GHC 9.14.1 as a secondary build shell. Generates valid package-local distribution metadata and workspace-aware Nix package/check outputs on the latest nix-haskell-flake."
     , vars =
@@ -74,6 +74,14 @@ in  S.Module::{
         , default = Some "true"
         , description = Some
             "Whether to generate the tasty suite that tests core behavior and pure CLI parsing"
+        , required = True
+        }
+      , S.VarDecl::{
+        , name = "project.managed-package-module"
+        , type = "bool"
+        , default = Some "true"
+        , description = Some
+            "Whether this module generates the managed nix/haskell-cli-app.nix flake-parts package module. Set false when you supply package/build wiring yourself in the unmanaged flake.module.nix; nix-haskell-flake only imports nix/haskell-cli-app.nix when nix.package-module is set, so disabling generation here is safe for that setup."
         , required = True
         }
       ]
@@ -175,6 +183,7 @@ in  S.Module::{
         , strategy = "template"
         , src = "nix/haskell-cli-app.nix.tpl"
         , dest = "nix/haskell-cli-app.nix"
+        , when = Some "Eq project.managed-package-module true"
         }
       , S.Step::{ strategy = "template", src = "LICENSE.tpl", dest = "LICENSE" }
       , S.Step::{
