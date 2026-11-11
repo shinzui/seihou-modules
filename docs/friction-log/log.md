@@ -1,5 +1,11 @@
 # Bundle Update Log
 
+## 2026-11-11
+
+* **Update**: FRIC-17 resolved: Resolved by moving the module's parameter file into its own .seihou directory with a migration.
+
+* **Addition**: FRIC-17 records blocked interface friction with mori://shinzui/seihou-modules: gcp-kube-env writes .seihou/gcp-kube-env.conf outside its own .seihou directory
+
 ## 2026-11-09
 * **Update**: FRIC-16 accepted: The create workflow reuses existing modules while preserving directory ownership and external skill acquisition
 * **Addition**: FRIC-16 records detour interface friction with mori://shinzui/seihou: Nested scaffold modules have no install-only dependency declaration

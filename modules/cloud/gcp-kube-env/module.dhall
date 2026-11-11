@@ -2,9 +2,20 @@ let S =
       https://raw.githubusercontent.com/shinzui/seihou-schema/2b4035b7e720a9b30642a8a27551592175732ee5/package.dhall
         sha256:21716b4aee783d8eb8b12c754050880fa710e881ecda85925f855ef34cc34a55
 
+-- Migration op union, matching the seihou engine's migration decoder. The pinned
+-- seihou-schema (2b4035b) predates the `migrations` field, so it is spliced onto
+-- the completed `S.Module::{…}` record with `//` below.
+let MigrationOp =
+      < MoveFile : { src : Text, dest : Text }
+      | MoveDir : { src : Text, dest : Text }
+      | DeleteFile : { path : Text }
+      | DeleteDir : { path : Text }
+      | RunCommand : { run : Text, workDir : Optional Text }
+      >
+
 in  S.Module::{
     , name = "gcp-kube-env"
-    , version = Some "0.1.1"
+    , version = Some "0.2.0"
     , description = Some
         "Configure a checkout-local GCP project and Kubernetes context through direnv, with a private kubeconfig and a configurable env filename (default .envrc.local), preserving existing settings and global CLI configuration."
     , vars =
@@ -42,9 +53,24 @@ in  S.Module::{
       , S.Step::{
         , strategy = "template"
         , src = "gcp-kube-env.conf.tpl"
-        , dest = ".seihou/gcp-kube-env.conf"
+        , dest = ".seihou/gcp-kube-env/settings.conf"
         }
       ]
     , commands =
       [ S.Command::{ run = "python3 scripts/setup-gcp-kube-env.py" } ]
     }
+  //  { migrations =
+        [ { from = "0.1.1"
+          , to = "0.2.0"
+          , ops =
+            -- A module may write under .seihou/ only inside .seihou/<its name>/
+            -- (Seihou ADR 0025), so the parameter file moves into the module's
+            -- own directory. Moving it keeps its manifest record and baseline.
+            [ MigrationOp.MoveFile
+                { src = ".seihou/gcp-kube-env.conf"
+                , dest = ".seihou/gcp-kube-env/settings.conf"
+                }
+            ]
+          }
+        ]
+      }

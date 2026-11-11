@@ -8,7 +8,7 @@
     , tags = [ "docs", "mori", "bootstrap" ]
     }
   , { name = "gcp-kube-env"
-    , version = Some "0.1.1"
+    , version = Some "0.2.0"
     , path = "modules/cloud/gcp-kube-env"
     , description = Some "Checkout-local GCP project and Kubernetes context through direnv, with a private kubeconfig and a configurable env filename defaulting to .envrc.local"
     , tags = [ "gcp", "kubernetes", "direnv", "environment" ]

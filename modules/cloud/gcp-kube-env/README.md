@@ -48,7 +48,10 @@ a Nix shell, is preserved. `nix develop` alone does not load direnv files.
 ## Files and behavior
 
 Seihou owns `scripts/setup-gcp-kube-env.py` and the three-line parameter file
-`.seihou/gcp-kube-env.conf`. Parameters are read as data, never inserted into a
+`.seihou/gcp-kube-env/settings.conf`, kept in the module's own directory under
+`.seihou/`. Version 0.1.1 wrote it to `.seihou/gcp-kube-env.conf`; the 0.2.0
+migration moves it there on `seihou update gcp-kube-env`, keeping its recorded
+baseline. Parameters are read as data, never inserted into a
 shell command. Neither file contains kube credentials.
 
 The setup command:

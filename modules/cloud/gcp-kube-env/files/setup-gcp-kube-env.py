@@ -81,7 +81,7 @@ def require_ignored(root, paths):
 
 def main():
     root = Path(__file__).resolve().parents[1]
-    values = (root / '.seihou/gcp-kube-env.conf').read_text().splitlines()
+    values = (root / '.seihou/gcp-kube-env/settings.conf').read_text().splitlines()
     if len(values) != 3:
         raise ValueError('Expected three single-line settings: gcp.project, k8s.context, env.file')
     project, context, filename = values

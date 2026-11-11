@@ -12,14 +12,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.15.0.0
-version: 0.1.1
+version: 0.2.0
 ---
 
 # gcp-kube-env
 
 Checkout-local GCP project and Kubernetes context through direnv, with a private kubeconfig and a configurable env filename defaulting to .envrc.local
 
-**Version:** 0.1.1
+**Version:** 0.2.0
 
 ## Dependencies
 
@@ -44,8 +44,14 @@ No exports declared.
 ## Generation steps
 
 - `Copy` `setup-gcp-kube-env.py` → `scripts/setup-gcp-kube-env.py`
-- `Template` `gcp-kube-env.conf.tpl` → `.seihou/gcp-kube-env.conf`
+- `Template` `gcp-kube-env.conf.tpl` → `.seihou/gcp-kube-env/settings.conf`
 
 ## Commands
 
 - `python3 scripts/setup-gcp-kube-env.py`
+
+## Migrations
+
+### 0.1.1 → 0.2.0
+
+- move `.seihou/gcp-kube-env.conf` → `.seihou/gcp-kube-env/settings.conf`
