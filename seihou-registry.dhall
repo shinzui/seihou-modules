@@ -14,7 +14,7 @@
     , tags = [ "gcp", "kubernetes", "direnv", "environment" ]
     }
   , { name = "nix-haskell-flake"
-    , version = Some "0.37.1"
+    , version = Some "0.38.0"
     , path = "modules/haskell/nix-haskell-flake"
     , description = Some "Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, pinned nix2container service image support, local services, treefmt, and pre-commit hooks"
     , tags = [ "haskell", "nix", "flake", "devshell" ]
@@ -26,7 +26,7 @@
     , tags = [ "haskell", "keiro", "service", "bootstrap" ]
     }
   , { name = "haskell-cli-app"
-    , version = Some "0.4.0"
+    , version = Some "0.5.0"
     , path = "modules/haskell/haskell-cli-app"
     , description = Some "Tested two-package Haskell CLI with project-owned source/Cabal/changelog starters (Seihou 0.11.0.0+), current GHC shells and managed Nix package/check outputs"
     , tags = [ "haskell", "cli", "bootstrap", "ghc2024" ]

@@ -12,14 +12,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.15.0.0
-version: 0.4.0
+version: 0.5.0
 ---
 
 # haskell-cli-app
 
 Tested two-package Haskell CLI with project-owned source/Cabal/changelog starters (Seihou 0.11.0.0+), current GHC shells and managed Nix package/check outputs
 
-**Version:** 0.4.0
+**Version:** 0.5.0
 
 ## Dependencies
 
@@ -36,6 +36,7 @@ Tested two-package Haskell CLI with project-owned source/Cabal/changelog starter
 - `project.maintainer` — text, required, default `nadeem@gmail.com`. Maintainer email written into .cabal files
 - `project.copyright-year` — text, required, default `2026`, matching `[0-9]{4}`. Copyright year written into LICENSE
 - `project.tests` — boolean, required, default `true`. Whether to generate the tasty suite that tests core behavior and pure CLI parsing
+- `project.managed-package-module` — boolean, required, default `true`. Whether this module generates the managed nix/haskell-cli-app.nix flake-parts package module. Set false when you supply package/build wiring yourself in the unmanaged flake.module.nix; nix-haskell-flake only imports nix/haskell-cli-app.nix when nix.package-module is set, so disabling generation here is safe for that setup.
 
 ## Exports
 
@@ -64,7 +65,7 @@ Tested two-package Haskell CLI with project-owned source/Cabal/changelog starter
 - `Template` `cli/Main.hs.tpl` → `{{project.name}}-cli/app/Main.hs`
 - `Template` `cli/Cli.hs.tpl` → `{{project.name}}-cli/src/{{project.namespace}}/Cli.hs`
 - `Template` `cli/Spec.hs.tpl` → `{{project.name}}-cli/test/Spec.hs` — when `Eq project.tests true`
-- `Template` `nix/haskell-cli-app.nix.tpl` → `nix/haskell-cli-app.nix`
+- `Template` `nix/haskell-cli-app.nix.tpl` → `nix/haskell-cli-app.nix` — when `Eq project.managed-package-module true`
 - `Template` `LICENSE.tpl` → `LICENSE`
 - `Template` `LICENSE.tpl` → `{{project.name}}-core/LICENSE`
 - `Template` `LICENSE.tpl` → `{{project.name}}-cli/LICENSE`

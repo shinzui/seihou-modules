@@ -2,21 +2,15 @@ let S =
       https://raw.githubusercontent.com/shinzui/seihou-schema/2b4035b7e720a9b30642a8a27551592175732ee5/package.dhall
         sha256:21716b4aee783d8eb8b12c754050880fa710e881ecda85925f855ef34cc34a55
 
--- Migration op union, matching the seihou engine's migration decoder. The pinned
--- seihou-schema (2b4035b) predates the `migrations` field, so we splice it onto
--- the completed `S.Module::{…}` record with `//` below. The engine decodes a
--- `migrations` field when present and defaults it to `[]` otherwise.
+-- Import the extended migration union separately from the older Module schema.
+-- Requires Seihou CLI v0.16.0.0 or later, which decodes MigrationOp.RemoveLine.
 let MigrationOp =
-      < MoveFile : { src : Text, dest : Text }
-      | MoveDir : { src : Text, dest : Text }
-      | DeleteFile : { path : Text }
-      | DeleteDir : { path : Text }
-      | RunCommand : { run : Text, workDir : Optional Text }
-      >
+      https://raw.githubusercontent.com/shinzui/seihou-schema/82b073b1a737f234f877ae7365fb1045c226477b/MigrationOp.dhall
+        sha256:62e1881490f0f5ec556f13e33fa605da54cddc9d19d4adb09e55245eb8f01b22
 
 in      S.Module::{
         , name = "nix-haskell-flake"
-        , version = Some "0.37.1"
+        , version = Some "0.38.0"
         , description = Some
             "Optional explicit retained-runtime configuration shares one checked scope between production packages and the primary shell. Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is rev-pinned or follows that base, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules, dependent Seihou modules can add managed package wiring through nix.package-module, and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, and pre-commit-hooks with a commit-message newline-escape guard; the always-locked shared haskell-nix patch registry is available to custom wiring. The always-locked nix2container input follows the application nixpkgs. The generated flake.module.nix.example includes a ready-to-uncomment, Linux-guarded nix2container.buildImage block with Docker load, registry copy and explicit archive export helpers for building an OCI image of the project's executable. Optional nix.redpanda adds macOS-only redpanda-local-* scripts for a private, non-colliding Redpanda cluster on Apple Container (reusing the always-locked redpanda-container input), for tests that need a broker of their own instead of the shared machine-wide one."
         , vars =
@@ -390,14 +384,8 @@ in      S.Module::{
               -- git so fresh clones get it; only `.envrc.local` stays ignored.
               -- Earlier versions appended `.envrc` to `.gitignore` via
               -- append-line-if-absent, which never removes it on its own, so
-              -- retire that one orphaned line here. Keep `.envrc.local`. The
-              -- sed is a no-op when the line is absent, and we do not touch the
-              -- file if it does not exist.
-              [ MigrationOp.RunCommand
-                  { run =
-                      "if [ -e .gitignore ]; then sed -i.seihoubak '/^\\.envrc$/d' .gitignore && rm -f .gitignore.seihoubak; fi"
-                  , workDir = None Text
-                  }
+              -- retire the exact line through the shared preview/apply operation.
+              [ MigrationOp.RemoveLine { path = ".gitignore", line = ".envrc" }
               ]
             }
           ]

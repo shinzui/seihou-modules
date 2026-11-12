@@ -15,14 +15,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.15.0.0
-version: 0.37.1
+version: 0.38.0
 ---
 
 # nix-haskell-flake
 
 Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, pinned nix2container service image support, local services, treefmt, and pre-commit hooks
 
-**Version:** 0.37.1
+**Version:** 0.38.0
 
 ## Dependencies
 
@@ -104,4 +104,4 @@ This module has no dependencies.
 
 ### 0.34.0 → 0.35.0
 
-- run `if [ -e .gitignore ]; then sed -i.seihoubak '/^\.envrc$/d' .gitignore && rm -f .gitignore.seihoubak; fi`
+- remove exact line `.envrc` from `.gitignore`

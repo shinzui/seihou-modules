@@ -556,3 +556,13 @@ seihou run nix-haskell-flake --dry-run
 
 - `module.dhall` — full module definition and authoritative source
 - `files/` — template sources (`flake.nix.tpl`, `nix/*.tpl`, `flake.module.nix.example.tpl`, …)
+
+## Predictable ignore-line cleanup
+
+Version 0.38.0 declares the 0.34.0-to-0.35.0 `.envrc` cleanup with `RemoveLine`.
+It requires Seihou CLI v0.16.0.0 or later. Upgrade the
+CLI first, then run `seihou update nix-haskell-flake --include-shared-owners`.
+The normal preview shows the exact removal; no `.gitignore` pre-edit or separate
+migration command is needed. `.envrc.local`, unrelated rules and user edits are
+preserved. Missing files or absent matches are no-ops. Old immutable module
+versions still carry the opaque shell migration.
