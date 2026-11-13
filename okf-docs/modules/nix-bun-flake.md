@@ -14,7 +14,7 @@ tags:
 - devshell
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.6.1
 ---
 
@@ -44,30 +44,30 @@ This module has no dependencies.
 
 ## Prompts
 
-- `project.name` — What is your project name?
-- `project.description` — Describe your project in one line:
-- `nix.bun2nix` — Include bun2nix for explicit Nix dependency generation and builds?
-- `nix.pre-commit` — Include pre-commit hooks (oxlint + oxfmt) via git-hooks.nix?
+- `project.name` — `What is your project name?`
+- `project.description` — `Describe your project in one line:`
+- `nix.bun2nix` — `Include bun2nix for explicit Nix dependency generation and builds?`
+- `nix.pre-commit` — `Include pre-commit hooks (oxlint + oxfmt) via git-hooks.nix?`
 
 ## Generation steps
 
-- `Template` `flake.nix.tpl` → `flake.nix`
-- `Template` `nix/bun.nix.tpl` → `nix/bun.nix`
-- `Copy` `nix/tooling.nix` → `nix/tooling.nix`
-- `Copy` `nix/tooling-sources.json` → `nix/tooling-sources.json`
-- `Copy` `nix/pre-commit.nix` → `nix/pre-commit.nix` — when `Eq nix.pre-commit true`
-- `Copy` `nix/bun2nix-package.nix` → `nix/bun2nix-package.nix` — when `Eq nix.bun2nix true`
-- `Copy` `nix/bun2nix-module.nix` → `nix/bun2nix-module.nix` — when `Eq nix.bun2nix true`
-- `Template` `flake.module.nix.example.tpl` → `flake.module.nix.example`
-- `Copy` `flake.lock` → `flake.lock`
-- `Template` `package.json.tpl` → `package.json` — when `Eq bun.starter-files true`
-- `Copy` `tsconfig.json` → `tsconfig.json` — when `Eq bun.starter-files true`
-- `Copy` `oxlintrc.json` → `.oxlintrc.json` — when `Eq bun.starter-files true`
-- `Copy` `oxfmtrc.json` → `.oxfmtrc.json` — when `Eq bun.starter-files true`
-- `Copy` `justfile` → `justfile` — when `Eq bun.starter-files true`
-- `Template` `envrc.tpl` → `.envrc`
-- `Template` `gitignore-bun.tpl` → `.gitignore` (appends one line to a file another module owns, if absent)
-- `Template` `gitignore-precommit.tpl` → `.gitignore` (appends one line to a file another module owns, if absent) — when `Eq nix.pre-commit true`
+- `Template` `flake.nix.tpl` → `flake.nix` — Managed: owned and reconciled by Seihou updates
+- `Template` `nix/bun.nix.tpl` → `nix/bun.nix` — Managed: owned and reconciled by Seihou updates
+- `Copy` `nix/tooling.nix` → `nix/tooling.nix` — Managed: owned and reconciled by Seihou updates
+- `Copy` `nix/tooling-sources.json` → `nix/tooling-sources.json` — Managed: owned and reconciled by Seihou updates
+- `Copy` `nix/pre-commit.nix` → `nix/pre-commit.nix` — when `Eq nix.pre-commit true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `nix/bun2nix-package.nix` → `nix/bun2nix-package.nix` — when `Eq nix.bun2nix true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `nix/bun2nix-module.nix` → `nix/bun2nix-module.nix` — when `Eq nix.bun2nix true` — Managed: owned and reconciled by Seihou updates
+- `Template` `flake.module.nix.example.tpl` → `flake.module.nix.example` — Managed: owned and reconciled by Seihou updates
+- `Copy` `flake.lock` → `flake.lock` — Managed: owned and reconciled by Seihou updates
+- `Template` `package.json.tpl` → `package.json` — when `Eq bun.starter-files true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `tsconfig.json` → `tsconfig.json` — when `Eq bun.starter-files true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `oxlintrc.json` → `.oxlintrc.json` — when `Eq bun.starter-files true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `oxfmtrc.json` → `.oxfmtrc.json` — when `Eq bun.starter-files true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `justfile` → `justfile` — when `Eq bun.starter-files true` — Managed: owned and reconciled by Seihou updates
+- `Template` `envrc.tpl` → `.envrc` — Managed: owned and reconciled by Seihou updates
+- `Template` `gitignore-bun.tpl` → `.gitignore` (appends one line to a file another module owns, if absent) — Managed: owned and reconciled by Seihou updates
+- `Template` `gitignore-precommit.tpl` → `.gitignore` (appends one line to a file another module owns, if absent) — when `Eq nix.pre-commit true` — Managed: owned and reconciled by Seihou updates
 
 ## Removal
 

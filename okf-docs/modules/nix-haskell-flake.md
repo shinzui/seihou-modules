@@ -14,7 +14,7 @@ tags:
 - devshell
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.40.0
 ---
 
@@ -23,6 +23,10 @@ version: 0.40.0
 Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, pinned nix2container service image support, an optional module-pinned okf CLI, local services, treefmt, and pre-commit hooks
 
 **Version:** 0.40.0
+
+## Declaration metadata
+
+- description: ``Optional explicit retained-runtime configuration shares one checked scope between production packages and the primary shell. Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is rev-pinned or follows that base, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules, dependent Seihou modules can add managed package wiring through nix.package-module, and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, and pre-commit-hooks with a commit-message newline-escape guard; the always-locked shared haskell-nix patch registry is available to custom wiring. The always-locked nix2container input follows the application nixpkgs. The generated flake.module.nix.example includes a ready-to-uncomment, Linux-guarded nix2container.buildImage block with Docker load, registry copy and explicit archive export helpers for building an OCI image of the project's executable. Optional nix.redpanda adds macOS-only redpanda-local-* scripts for a private, non-colliding Redpanda cluster on Apple Container (reusing the always-locked redpanda-container input), for tests that need a broker of their own instead of the shared machine-wide one. Optional nix.okf adds the module-pinned okf CLI to the dev shell from the always-locked okf input, so projects validating OKF documentation bundles move okf versions together by moving the module.``
 
 ## Dependencies
 
@@ -64,38 +68,38 @@ This module has no dependencies.
 
 ## Prompts
 
-- `project.name` — What is your project name?
-- `project.description` — Describe your project in one line:
-- `ghc.version` — Which GHC version? (must be supported by the haskell-nix-dev base flake) (choices: `ghc9124`)
-- `nix.process-compose` — Include process-compose for service orchestration?
-- `nix.postgresql` — Include PostgreSQL with local database setup?
-- `nix.redis` — Include Redis with a local socket-only server?
-- `nix.clickhouse` — Include ClickHouse with a local server?
-- `nix.kafka` — Include Kafka client support (librdkafka for hw-kafka-client)?
-- `nix.redpanda` — Add project-local Redpanda scripts on Apple Container (macOS only)?
-- `nix.redpanda-console` — Also run Redpanda Console for the project-local cluster? — when `Eq nix.redpanda true`
-- `nix.okf` — Include the okf CLI for OKF documentation bundles?
-- `nix.treefmt` — Include treefmt-nix for code formatting (fourmolu, nixpkgs-fmt, cabal-gild)?
-- `nix.pre-commit` — Include pre-commit hooks via git-hooks.nix?
+- `project.name` — `What is your project name?`
+- `project.description` — `Describe your project in one line:`
+- `ghc.version` — `Which GHC version? (must be supported by the haskell-nix-dev base flake)` (choices: `ghc9124`)
+- `nix.process-compose` — `Include process-compose for service orchestration?`
+- `nix.postgresql` — `Include PostgreSQL with local database setup?`
+- `nix.redis` — `Include Redis with a local socket-only server?`
+- `nix.clickhouse` — `Include ClickHouse with a local server?`
+- `nix.kafka` — `Include Kafka client support (librdkafka for hw-kafka-client)?`
+- `nix.redpanda` — `Add project-local Redpanda scripts on Apple Container (macOS only)?`
+- `nix.redpanda-console` — `Also run Redpanda Console for the project-local cluster?` — when `Eq nix.redpanda true`
+- `nix.okf` — `Include the okf CLI for OKF documentation bundles?`
+- `nix.treefmt` — `Include treefmt-nix for code formatting (fourmolu, nixpkgs-fmt, cabal-gild)?`
+- `nix.pre-commit` — `Include pre-commit hooks via git-hooks.nix?`
 
 ## Generation steps
 
-- `Template` `flake.nix.tpl` → `flake.nix`
-- `Template` `nix/haskell.nix.tpl` → `nix/haskell.nix`
-- `Template` `nix/treefmt.nix.tpl` → `nix/treefmt.nix` — when `Eq nix.treefmt true`
-- `Template` `nix/pre-commit.nix.tpl` → `nix/pre-commit.nix` — when `Eq nix.pre-commit true`
-- `Template` `nix/redpanda.nix.tpl` → `nix/redpanda.nix` — when `Eq nix.redpanda true`
-- `Template` `flake.module.nix.example.tpl` → `flake.module.nix.example`
-- `Copy` `flake.lock` → `flake.lock`
-- `Copy` `fourmolu.yaml` → `fourmolu.yaml`
-- `Template` `process-compose.yaml.tpl` → `process-compose.yaml` — when `Eq nix.process-compose true`
-- `Template` `process-compose.override.yaml.example.tpl` → `process-compose.override.yaml.example` — when `Eq nix.process-compose true`
-- `Template` `envrc.tpl` → `.envrc`
-- `Template` `gitignore-envrc.tpl` → `.gitignore` (appends one line to a file another module owns, if absent)
-- `Template` `gitignore-haskell.tpl` → `.gitignore` (appends one line to a file another module owns, if absent)
-- `Template` `gitignore-precommit.tpl` → `.gitignore` (appends one line to a file another module owns, if absent) — when `Eq nix.pre-commit true`
-- `Template` `gitignore-redis.tpl` → `.gitignore` (appends one line to a file another module owns, if absent) — when `Eq nix.redis true`
-- `Template` `gitignore-clickhouse.tpl` → `.gitignore` (appends one line to a file another module owns, if absent) — when `Eq nix.clickhouse true`
+- `Template` `flake.nix.tpl` → `flake.nix` — Managed: owned and reconciled by Seihou updates
+- `Template` `nix/haskell.nix.tpl` → `nix/haskell.nix` — Managed: owned and reconciled by Seihou updates
+- `Template` `nix/treefmt.nix.tpl` → `nix/treefmt.nix` — when `Eq nix.treefmt true` — Managed: owned and reconciled by Seihou updates
+- `Template` `nix/pre-commit.nix.tpl` → `nix/pre-commit.nix` — when `Eq nix.pre-commit true` — Managed: owned and reconciled by Seihou updates
+- `Template` `nix/redpanda.nix.tpl` → `nix/redpanda.nix` — when `Eq nix.redpanda true` — Managed: owned and reconciled by Seihou updates
+- `Template` `flake.module.nix.example.tpl` → `flake.module.nix.example` — Managed: owned and reconciled by Seihou updates
+- `Copy` `flake.lock` → `flake.lock` — Managed: owned and reconciled by Seihou updates
+- `Copy` `fourmolu.yaml` → `fourmolu.yaml` — Managed: owned and reconciled by Seihou updates
+- `Template` `process-compose.yaml.tpl` → `process-compose.yaml` — when `Eq nix.process-compose true` — Managed: owned and reconciled by Seihou updates
+- `Template` `process-compose.override.yaml.example.tpl` → `process-compose.override.yaml.example` — when `Eq nix.process-compose true` — Managed: owned and reconciled by Seihou updates
+- `Template` `envrc.tpl` → `.envrc` — Managed: owned and reconciled by Seihou updates
+- `Template` `gitignore-envrc.tpl` → `.gitignore` (appends one line to a file another module owns, if absent) — Managed: owned and reconciled by Seihou updates
+- `Template` `gitignore-haskell.tpl` → `.gitignore` (appends one line to a file another module owns, if absent) — Managed: owned and reconciled by Seihou updates
+- `Template` `gitignore-precommit.tpl` → `.gitignore` (appends one line to a file another module owns, if absent) — when `Eq nix.pre-commit true` — Managed: owned and reconciled by Seihou updates
+- `Template` `gitignore-redis.tpl` → `.gitignore` (appends one line to a file another module owns, if absent) — when `Eq nix.redis true` — Managed: owned and reconciled by Seihou updates
+- `Template` `gitignore-clickhouse.tpl` → `.gitignore` (appends one line to a file another module owns, if absent) — when `Eq nix.clickhouse true` — Managed: owned and reconciled by Seihou updates
 
 ## Migrations
 
@@ -106,4 +110,4 @@ This module has no dependencies.
 
 ### 0.34.0 → 0.35.0
 
-- remove exact line `.envrc` from `.gitignore`
+- remove exact line `.envrc` from `.gitignore`; removes every matching logical line, excluding its LF/CRLF terminator from comparison; preserves nonmatching bytes. Missing files or matches are no-ops.

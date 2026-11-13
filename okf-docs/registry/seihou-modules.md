@@ -8,14 +8,14 @@ tags:
 - seihou
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 ---
 
 # seihou-modules
 
 Composable Seihou modules for bootstrapping projects
 
-Every artifact below is published by the `seihou-modules` registry and documented in its own concept.
+Every artifact below is published by the `seihou-modules` registry and documented in its own concept. Modules, recipes, blueprints, prompts and judgements are read from declarations; generation never executes their commands or reviews.
 
 ## Modules
 

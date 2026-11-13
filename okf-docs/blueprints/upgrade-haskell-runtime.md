@@ -11,7 +11,7 @@ tags:
 - migration
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.1.0
 ---
 
@@ -21,13 +21,16 @@ Preserved Haskell runtime adoption and ordered upgrades with independent native 
 
 **Version:** 0.1.0
 
+## Declaration metadata
+
+- description: `Adopt the checked Haskell runtime module, preserving explicit selections, authored sources and genuine Seihou ownership; require independent native acceptance`
+- tags: `haskell`, `nix`, `runtime`, `migration`, `seihou`
+
 ## Base modules
 
 This blueprint declares no base modules.
 
 ## Agent prompt
-
-Adopt the tested Haskell module while preserving the project. Read target-versions.json and this blueprint's standalone checker first. Its supported runtime configuration is a qualification boundary, not a new selection authority. Never commit, publish, activate a system, migrate an existing database, or start persistent services.
 
 ```text
 Adopt the tested Haskell module while preserving the project. Read target-versions.json and this blueprint's standalone checker first. Its supported runtime configuration is a qualification boundary, not a new selection authority. Never commit, publish, activate a system, migrate an existing database, or start persistent services.
@@ -60,6 +63,12 @@ any submodule work separately before using this inventory workflow.
 - `target-versions.json` - Qualified immutable release inputs and exact recorded source versions
 - `flake.module.nix` - Unmanaged opt-in interface example; preserve the consumer's actual explicit selections
 - `check-haskell-runtime-adoption.py` - Standalone independent before/after and native acceptance checker
+
+## Tools
+
+No additional tools declared.
+
+Blueprint runs also pre-approve Seihou setup tools.
 
 ## Migrations
 

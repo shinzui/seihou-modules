@@ -12,7 +12,7 @@ tags:
 - recipe
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.1.0
 ---
 
@@ -21,6 +21,10 @@ version: 0.1.0
 Apply container-enabled Fumadocs, external writing skills and local Mori registration inside an existing checkout
 
 **Version:** 0.1.0
+
+## Declaration metadata
+
+- description: `Container-enabled Fumadocs, technical writing skills from agent-seihou and local Mori registration`
 
 ## Composes
 

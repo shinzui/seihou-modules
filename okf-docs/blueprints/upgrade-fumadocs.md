@@ -13,7 +13,7 @@ tags:
 - migration
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.3.0
 ---
 
@@ -23,13 +23,16 @@ Upgrade existing Fumadocs sites to the shared Bun flake-parts modules while pres
 
 **Version:** 0.3.0
 
+## Declaration metadata
+
+- description: `Upgrade an existing Fumadocs site to the current fumadocs and nix-bun-flake modules, preserving content, custom components, package-manager workflows, fonts, CI gates, and Seihou ownership; validates the production static site and never commits`
+- tags: `typescript`, `fumadocs`, `nix`, `flake-parts`, `migration`, `docs`
+
 ## Base modules
 
 This blueprint declares no base modules.
 
 ## Agent prompt
-
-# Upgrade this Fumadocs site and adopt the shared flake-parts modules
 
 ```text
 # Upgrade this Fumadocs site and adopt the shared flake-parts modules
@@ -137,6 +140,12 @@ produce no toolchain drift. Do not record a migration receipt until the checks p
 
 - `target-versions.json` - Tested target cohort; refresh alongside the modules, never guess versions from an old reference
 - `flake.module.nix` - Unmanaged extension example retaining a pnpm/Node workflow beside the shared Bun toolchain
+
+## Tools
+
+No additional tools declared.
+
+Blueprint runs also pre-approve Seihou setup tools.
 
 ## Migrations
 

@@ -16,7 +16,7 @@ tags:
 - devshell
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.1.0
 ---
 
@@ -26,15 +26,17 @@ Agent-driven, in-place migration of a shinzui Haskell project's Nix flake to the
 
 **Version:** 0.1.0
 
+## Declaration metadata
+
+- description: `Agent-driven, in-place migration of a shinzui Haskell project's Nix flake to the thin flake-parts structure on the haskell-nix-dev base flake: moves the toolchain to mkDevShell (GHC 9.12.4), splits wiring into nix/{haskell,treefmt,pre-commit}.nix, relocates the package build and custom checks into an unmanaged flake.module.nix, preserving every custom input/overlay/dev-tool/hook/check. Reviews and builds but never commits.`
+
 ## Base modules
 
 This blueprint declares no base modules.
 
 ## Agent prompt
 
-# Migrate this Haskell flake to flake-parts on the haskell-nix-dev base flake
-
-```text
+````text
 # Migrate this Haskell flake to flake-parts on the haskell-nix-dev base flake
 
 You are converting **this** Haskell project's Nix flake — in place — from its
@@ -212,7 +214,7 @@ builds, summarize for the human reviewer:
 - anything you could not resolve (e.g. a source compile failure), quoted exactly.
 
 Do **not** commit or push. The human reviews the diff and commits.
-```
+````
 
 ## Reference files
 
@@ -241,3 +243,6 @@ Do **not** commit or push. The human reviews the diff and commits.
 - `Bash(git diff*)`
 - `Bash(git log*)`
 - `Bash(git rev-parse*)`
+
+
+Blueprint runs also pre-approve Seihou setup tools.

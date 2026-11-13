@@ -11,7 +11,7 @@ tags:
 - bootstrap
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.4.1
 ---
 
@@ -21,9 +21,13 @@ Six-package Keiro bootstrap with project-owned domain/API/test starters (Seihou 
 
 **Version:** 0.4.1
 
+## Declaration metadata
+
+- description: `Six-package Keiro seed with project-named domain paths, injected servant-health probes, OpenAPI generation, Hurl/Hinagata test setup, and optional initial Mori inventory on nix-haskell-flake. The blueprint implements the domain.`
+
 ## Dependencies
 
-- [nix-haskell-flake](/modules/nix-haskell-flake.md) (with `nix.builtin-package` = `false`, `nix.package-module` = `nix/keiro-dev-tools.nix`, `nix.postgresql` = `true`, `nix.process-compose` = `true`)
+- [nix-haskell-flake](/modules/nix-haskell-flake.md) (declaring registry) (with `nix.builtin-package` = `false`, `nix.package-module` = `nix/keiro-dev-tools.nix`, `nix.postgresql` = `true`, `nix.process-compose` = `true`)
 
 ## Variables
 
@@ -47,53 +51,53 @@ Six-package Keiro bootstrap with project-owned domain/API/test starters (Seihou 
 
 ## Prompts
 
-- `project.name` — What is your project name? (lowercase, hyphenated; cabal packages will be <name>-core, -api, -migrations, -workers, -server, and -client)
-- `project.description` — One-line project synopsis (used as cabal `synopsis:` and the flake description):
-- `project.namespace` — Top-level Haskell module namespace? (single PascalCase segment, e.g. Rei)
-- `project.author` — Author name?
-- `project.maintainer` — Maintainer email?
-- `project.copyright-year` — Copyright year?
-- `mori.generate` — Generate an initial mori.dhall with packages, dependencies, and the OpenAPI schema reference? (true/false; empty skips) — when `Eq mori.prompt true`
-- `mori.namespace` — Mori organization/user namespace? (separate from the PascalCase Haskell namespace) — when `Eq mori.generate true`
-- `haskell.index-state` — Hackage index-state for this bootstrap? (UTC timestamp)
+- `project.name` — `What is your project name? (lowercase, hyphenated; cabal packages will be <name>-core, -api, -migrations, -workers, -server, and -client)`
+- `project.description` — ``One-line project synopsis (used as cabal `synopsis:` and the flake description):``
+- `project.namespace` — `Top-level Haskell module namespace? (single PascalCase segment, e.g. Rei)`
+- `project.author` — `Author name?`
+- `project.maintainer` — `Maintainer email?`
+- `project.copyright-year` — `Copyright year?`
+- `mori.generate` — `Generate an initial mori.dhall with packages, dependencies, and the OpenAPI schema reference? (true/false; empty skips)` — when `Eq mori.prompt true`
+- `mori.namespace` — `Mori organization/user namespace? (separate from the PascalCase Haskell namespace)` — when `Eq mori.generate true`
+- `haskell.index-state` — `Hackage index-state for this bootstrap? (UTC timestamp)`
 
 ## Generation steps
 
-- `Template` `cabal.project.tpl` → `cabal.project`
-- `Template` `Prelude.hs.tpl` → `{{project.name}}-core/src/{{project.namespace}}/Prelude.hs`
-- `Template` `workspace.tpl` → `domain/{{project.name}}.keiro-workspace`
-- `Template` `shared.keiro.tpl` → `domain/{{project.name}}/shared.keiro`
-- `Template` `justfile.tpl` → `justfile`
-- `Template` `LICENSE.tpl` → `LICENSE`
-- `Template` `README.md.tpl` → `README.md`
-- `Template` `bootstrap.md.tpl` → `docs/bootstrap-keiro.md`
-- `Template` `core.cabal.tpl` → `{{project.name}}-core/{{project.name}}-core.cabal`
-- `Template` `core.hs.tpl` → `{{project.name}}-core/src/{{project.namespace}}/Bootstrap.hs`
-- `Template` `api.cabal.tpl` → `{{project.name}}-api/{{project.name}}-api.cabal`
-- `Template` `api.hs.tpl` → `{{project.name}}-api/src/{{project.namespace}}/Api.hs`
-- `Template` `openapi.hs.tpl` → `{{project.name}}-api/src/{{project.namespace}}/Api/OpenApi.hs`
-- `Template` `openapi-main.hs.tpl` → `{{project.name}}-api/app/OpenApiMain.hs`
-- `Template` `openapi-test.hs.tpl` → `{{project.name}}-api/test/OpenApiTest.hs`
-- `Template` `health-test.hs.tpl` → `{{project.name}}-server/test/HealthTest.hs`
-- `Template` `migrations.cabal.tpl` → `{{project.name}}-migrations/{{project.name}}-migrations.cabal`
-- `Template` `migrations.hs.tpl` → `{{project.name}}-migrations/src/{{project.namespace}}/Migrations.hs`
-- `Template` `workers.cabal.tpl` → `{{project.name}}-workers/{{project.name}}-workers.cabal`
-- `Template` `workers.hs.tpl` → `{{project.name}}-workers/src/{{project.namespace}}/Workers/Registry.hs`
-- `Template` `server.cabal.tpl` → `{{project.name}}-server/{{project.name}}-server.cabal`
-- `Template` `server.hs.tpl` → `{{project.name}}-server/src/{{project.namespace}}/Server/App.hs`
-- `Template` `client.cabal.tpl` → `{{project.name}}-client/{{project.name}}-client.cabal`
-- `Template` `client.hs.tpl` → `{{project.name}}-client/src/{{project.namespace}}/Client.hs`
-- `Template` `nix/keiro-dev-tools.nix.tpl` → `nix/keiro-dev-tools.nix`
-- `Template` `hurl-workbench.dhall.tpl` → `hurl-workbench.dhall`
-- `Template` `hinagata.yaml.tpl` → `hinagata.yaml`
-- `Copy` `tests/api/health.hurl` → `tests/api/health.hurl`
-- `Copy` `fixtures/bootstrap/fixture.sql` → `tests/fixtures/bootstrap/fixture.sql`
-- `Copy` `scripts/keiro-test-env` → `scripts/keiro-test-env`
-- `Template` `mori.dhall.tpl` → `mori.dhall` — when `Eq mori.generate true`
-- `Template` `gitignore.tpl` → `.gitignore` (appends one line to a file another module owns, if absent)
-- `Template` `LICENSE.tpl` → `{{project.name}}-core/LICENSE`
-- `Template` `LICENSE.tpl` → `{{project.name}}-api/LICENSE`
-- `Template` `LICENSE.tpl` → `{{project.name}}-migrations/LICENSE`
-- `Template` `LICENSE.tpl` → `{{project.name}}-workers/LICENSE`
-- `Template` `LICENSE.tpl` → `{{project.name}}-server/LICENSE`
-- `Template` `LICENSE.tpl` → `{{project.name}}-client/LICENSE`
+- `Template` `cabal.project.tpl` → `cabal.project` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `Prelude.hs.tpl` → `{{project.name}}-core/src/{{project.namespace}}/Prelude.hs` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `workspace.tpl` → `domain/{{project.name}}.keiro-workspace` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `shared.keiro.tpl` → `domain/{{project.name}}/shared.keiro` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `justfile.tpl` → `justfile` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `LICENSE.tpl` → `LICENSE` — Managed: owned and reconciled by Seihou updates
+- `Template` `README.md.tpl` → `README.md` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `bootstrap.md.tpl` → `docs/bootstrap-keiro.md` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `core.cabal.tpl` → `{{project.name}}-core/{{project.name}}-core.cabal` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `core.hs.tpl` → `{{project.name}}-core/src/{{project.namespace}}/Bootstrap.hs` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `api.cabal.tpl` → `{{project.name}}-api/{{project.name}}-api.cabal` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `api.hs.tpl` → `{{project.name}}-api/src/{{project.namespace}}/Api.hs` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `openapi.hs.tpl` → `{{project.name}}-api/src/{{project.namespace}}/Api/OpenApi.hs` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `openapi-main.hs.tpl` → `{{project.name}}-api/app/OpenApiMain.hs` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `openapi-test.hs.tpl` → `{{project.name}}-api/test/OpenApiTest.hs` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `health-test.hs.tpl` → `{{project.name}}-server/test/HealthTest.hs` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `migrations.cabal.tpl` → `{{project.name}}-migrations/{{project.name}}-migrations.cabal` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `migrations.hs.tpl` → `{{project.name}}-migrations/src/{{project.namespace}}/Migrations.hs` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `workers.cabal.tpl` → `{{project.name}}-workers/{{project.name}}-workers.cabal` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `workers.hs.tpl` → `{{project.name}}-workers/src/{{project.namespace}}/Workers/Registry.hs` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `server.cabal.tpl` → `{{project.name}}-server/{{project.name}}-server.cabal` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `server.hs.tpl` → `{{project.name}}-server/src/{{project.namespace}}/Server/App.hs` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `client.cabal.tpl` → `{{project.name}}-client/{{project.name}}-client.cabal` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `client.hs.tpl` → `{{project.name}}-client/src/{{project.namespace}}/Client.hs` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `nix/keiro-dev-tools.nix.tpl` → `nix/keiro-dev-tools.nix` — Managed: owned and reconciled by Seihou updates
+- `Template` `hurl-workbench.dhall.tpl` → `hurl-workbench.dhall` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `hinagata.yaml.tpl` → `hinagata.yaml` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Copy` `tests/api/health.hurl` → `tests/api/health.hurl` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Copy` `fixtures/bootstrap/fixture.sql` → `tests/fixtures/bootstrap/fixture.sql` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Copy` `scripts/keiro-test-env` → `scripts/keiro-test-env` — Managed: owned and reconciled by Seihou updates
+- `Template` `mori.dhall.tpl` → `mori.dhall` — when `Eq mori.generate true` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `gitignore.tpl` → `.gitignore` (appends one line to a file another module owns, if absent) — Managed: owned and reconciled by Seihou updates
+- `Template` `LICENSE.tpl` → `{{project.name}}-core/LICENSE` — Managed: owned and reconciled by Seihou updates
+- `Template` `LICENSE.tpl` → `{{project.name}}-api/LICENSE` — Managed: owned and reconciled by Seihou updates
+- `Template` `LICENSE.tpl` → `{{project.name}}-migrations/LICENSE` — Managed: owned and reconciled by Seihou updates
+- `Template` `LICENSE.tpl` → `{{project.name}}-workers/LICENSE` — Managed: owned and reconciled by Seihou updates
+- `Template` `LICENSE.tpl` → `{{project.name}}-server/LICENSE` — Managed: owned and reconciled by Seihou updates
+- `Template` `LICENSE.tpl` → `{{project.name}}-client/LICENSE` — Managed: owned and reconciled by Seihou updates

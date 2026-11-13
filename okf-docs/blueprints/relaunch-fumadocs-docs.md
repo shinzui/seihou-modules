@@ -14,7 +14,7 @@ tags:
 - mori
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.1.4
 ---
 
@@ -24,15 +24,17 @@ Relaunch a legacy Fumadocs documentation site: rehearsed platform upgrade, writi
 
 **Version:** 0.1.4
 
+## Declaration metadata
+
+- description: `Relaunch a legacy Fumadocs documentation site: rehearse and apply the fumadocs-site recipe in place, install the writing skills, register with Mori, enable semantic SVG diagrams, add a source pin and release gates, then measure the content against the documented project and stop with a restart-or-refresh recommendation, a page list and a diagram catalog; never commits`
+
 ## Base modules
 
 This blueprint declares no base modules.
 
 ## Agent prompt
 
-# Relaunch this Fumadocs documentation site
-
-```text
+````text
 # Relaunch this Fumadocs documentation site
 
 This site documents another project, called the documented project below. Bring the site onto the current `fumadocs` module, install the writing skills, register it with Mori, enable the semantic SVG diagram system and the release gates, and then measure its content against the documented project. Recommend whether to restart the content or refresh it, propose a page list and a diagram catalog, and stop for the operator to confirm. Do not write or rewrite pages in this run.
@@ -275,18 +277,18 @@ A second run must cause no toolchain drift. Reapply the recipe with the same var
 ## Handoff
 
 Leave `docs/migration-ledger.md`, `docs-source.json`, `docs/verification.json`, `docs/content-assessment.md` and `docs/content-assessment.json`. Report the module and library versions now in use, the merge list, every command's result, the content hash check, the gates in each tier with their counts, the assessment, and anything still blocked. Do not commit or push unless the operator authorizes it.
-```
+````
 
 ## Variables
 
-- `docs.source-project` — text, optional, default ``, matching `(mori://[a-z0-9][a-z0-9-]*/[a-z0-9][a-z0-9._-]*)?`. Mori URI of the documented project, mori://<namespace>/<name>. Empty reads the first typed dependencyRefs entry of the site's mori.dhall.
-- `docs.source-name` — text, optional, default ``. Display name of the documented project, written into docs-source.json and shown by <TestedWith />. Empty uses the project's own spelling from its README.
+- `docs.source-project` — text, optional, default `""` (JSON string), matching `(mori://[a-z0-9][a-z0-9-]*/[a-z0-9][a-z0-9._-]*)?`. Mori URI of the documented project, mori://<namespace>/<name>. Empty reads the first typed dependencyRefs entry of the site's mori.dhall.
+- `docs.source-name` — text, optional, default `""` (JSON string). Display name of the documented project, written into docs-source.json and shown by <TestedWith />. Empty uses the project's own spelling from its README.
 - `relaunch.rehearsal-only` — boolean, optional, default `false`. Run every phase in a scratch clone and leave the real checkout, including its Mori registration, untouched
 
 ## Prompts
 
-- `docs.source-project` — Mori URI of the project this site documents? (mori://<namespace>/<name>; empty reads mori.dhall dependencyRefs)
-- `docs.source-name` — Display name of the documented project? (empty uses its README)
+- `docs.source-project` — `Mori URI of the project this site documents? (mori://<namespace>/<name>; empty reads mori.dhall dependencyRefs)`
+- `docs.source-name` — `Display name of the documented project? (empty uses its README)`
 
 ## Reference files
 
@@ -343,3 +345,6 @@ Leave `docs/migration-ledger.md`, `docs-source.json`, `docs/verification.json`, 
 - `Bash(tail *)`
 - `Bash(wc *)`
 - `Bash(grep *)`
+
+
+Blueprint runs also pre-approve Seihou setup tools.

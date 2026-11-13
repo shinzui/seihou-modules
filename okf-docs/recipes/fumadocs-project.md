@@ -12,7 +12,7 @@ tags:
 - recipe
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.2.0
 ---
 
@@ -22,9 +22,13 @@ Create a directory and Git/GitHub repository with container-enabled Fumadocs, wr
 
 **Version:** 0.2.0
 
+## Declaration metadata
+
+- description: `Create a documentation directory and Git/GitHub repository with container-enabled Fumadocs, technical writing skills and local Mori registration`
+
 ## Composes
 
-- [repo-dir](/modules/repo-dir.md) (with `repo.scaffold` = `fumadocs-site`, `repo.scaffoldBindings` = `{"docs.github-user":"git.githubOwner","docs.github-branch":"git.defaultBranch","docs.github-repo":"repo.name"}`)
+- [repo-dir](/modules/repo-dir.md) (declaring registry) (with `repo.scaffold` = `fumadocs-site`, `repo.scaffoldBindings` = `{"docs.github-user":"git.githubOwner","docs.github-branch":"git.defaultBranch","docs.github-repo":"repo.name"}`)
 
 ## Variables
 

@@ -12,7 +12,7 @@ tags:
 - context
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.2.0
 ---
 
@@ -21,6 +21,10 @@ version: 0.2.0
 Create <repo.parentDir>/<repo.name> and bootstrap it by running git-init inside it with a matching GitHub repo; the GitHub user or organization comes from git.githubOwner, so per-context config picks the owner
 
 **Version:** 0.2.0
+
+## Declaration metadata
+
+- description: `Create a new directory, optionally apply a scaffold there, then delegate initial commit and GitHub creation to git-init`
 
 ## Dependencies
 
@@ -45,20 +49,20 @@ No exports declared.
 
 ## Prompts
 
-- `repo.parentDir` — Directory to create the repo in?
-- `repo.name` — Folder / GitHub repo name?
-- `git.githubOwner` — GitHub user or organization? (tip: set per context with `seihou config set git.githubOwner <value> --context <ctx>`)
-- `git.githubVisibility` — GitHub repo visibility? (choices: `private`, `public`, `internal`)
-- `git.githubTeam` — Organization team to grant access? (slug; tip: set per context with `seihou config set git.githubTeam <slug> --context <ctx>`)
-- `git.githubTeamPermission` — Team permission? (choices: `pull`, `triage`, `push`, `maintain`, `admin`) — when `IsSet git.githubTeam`
+- `repo.parentDir` — `Directory to create the repo in?`
+- `repo.name` — `Folder / GitHub repo name?`
+- `git.githubOwner` — ``GitHub user or organization? (tip: set per context with `seihou config set git.githubOwner <value> --context <ctx>`)``
+- `git.githubVisibility` — `GitHub repo visibility?` (choices: `private`, `public`, `internal`)
+- `git.githubTeam` — ``Organization team to grant access? (slug; tip: set per context with `seihou config set git.githubTeam <slug> --context <ctx>`)``
+- `git.githubTeamPermission` — `Team permission?` (choices: `pull`, `triage`, `push`, `maintain`, `admin`) — when `IsSet git.githubTeam`
 
 ## Generation steps
 
-- `Copy` `create-repo.py` → `.seihou/repo-dir/create-repo.py`
+- `Copy` `create-repo.py` → `.seihou/repo-dir/create-repo.py` — Managed: owned and reconciled by Seihou updates
 
 ## Commands
 
-- `python3 .seihou/repo-dir/create-repo.py`
+- `python3 .seihou/repo-dir/create-repo.py` (application command)
 
 ## Removal
 

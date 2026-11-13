@@ -10,7 +10,7 @@ tags:
 - bootstrap
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.1.0
 ---
 
@@ -19,6 +19,10 @@ version: 0.1.0
 Seed a documentation manifest, associate its documented project and register locally with Mori
 
 **Version:** 0.1.0
+
+## Declaration metadata
+
+- description: `Seed a project-owned documentation manifest, associate its documented project and register locally with Mori`
 
 ## Dependencies
 
@@ -38,24 +42,24 @@ No exports declared.
 
 ## Prompts
 
-- `project.name` — Documentation project name (independent of the documented project).
-- `project.description` — Description of the documentation project.
-- `mori.namespace` — Namespace of this documentation project.
-- `mori.source-namespace` — Namespace of the already registered project being documented.
-- `mori.source-project` — Name of the already registered project being documented.
+- `project.name` — `Documentation project name (independent of the documented project).`
+- `project.description` — `Description of the documentation project.`
+- `mori.namespace` — `Namespace of this documentation project.`
+- `mori.source-namespace` — `Namespace of the already registered project being documented.`
+- `mori.source-project` — `Name of the already registered project being documented.`
 
 ## Generation steps
 
-- `Copy` `bootstrap-docs.py` → `.seihou/docs-mori-bootstrap/bootstrap-docs.py`
-- `Template` `project.name.conf.tpl` → `.seihou/docs-mori-bootstrap/project.name.conf`
-- `Template` `project.description.conf.tpl` → `.seihou/docs-mori-bootstrap/project.description.conf`
-- `Template` `mori.namespace.conf.tpl` → `.seihou/docs-mori-bootstrap/mori.namespace.conf`
-- `Template` `mori.source-namespace.conf.tpl` → `.seihou/docs-mori-bootstrap/mori.source-namespace.conf`
-- `Template` `mori.source-project.conf.tpl` → `.seihou/docs-mori-bootstrap/mori.source-project.conf`
+- `Copy` `bootstrap-docs.py` → `.seihou/docs-mori-bootstrap/bootstrap-docs.py` — Managed: owned and reconciled by Seihou updates
+- `Template` `project.name.conf.tpl` → `.seihou/docs-mori-bootstrap/project.name.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `project.description.conf.tpl` → `.seihou/docs-mori-bootstrap/project.description.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `mori.namespace.conf.tpl` → `.seihou/docs-mori-bootstrap/mori.namespace.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `mori.source-namespace.conf.tpl` → `.seihou/docs-mori-bootstrap/mori.source-namespace.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `mori.source-project.conf.tpl` → `.seihou/docs-mori-bootstrap/mori.source-project.conf` — Managed: owned and reconciled by Seihou updates
 
 ## Commands
 
-- `python3 .seihou/docs-mori-bootstrap/bootstrap-docs.py`
+- `python3 .seihou/docs-mori-bootstrap/bootstrap-docs.py` (application command)
 
 ## Removal
 

@@ -21,7 +21,7 @@ tags:
 - devshell
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.2.0
 ---
 
@@ -31,15 +31,17 @@ Agent-driven, in-place remediation of a repo that already consumes the nix-haske
 
 **Version:** 0.2.0
 
+## Declaration metadata
+
+- description: `Agent-driven, in-place remediation of a repo that already consumes the nix-haskell-flake seihou module: upgrades the module to its latest version (seihou migrate + seihou run --force) and relocates every local edit made directly to a seihou-managed file into its unmanaged, upgrade-safe home — extra dev-shell tools in nix/haskell.nix move to flake.module.nix via haskellProject.extraDevPackages, custom .envrc exports move to .envrc.local, and extra process-compose processes move to process-compose.override.yaml — git-tracking the files Nix needs to see and proving dev-shell parity with nix print-dev-env. Reviews and verifies but never commits.`
+
 ## Base modules
 
 This blueprint declares no base modules.
 
 ## Agent prompt
 
-# Fix this repo's nix-haskell-flake customizations and upgrade the module
-
-```text
+````text
 # Fix this repo's nix-haskell-flake customizations and upgrade the module
 
 You are remediating **this** repository, which already consumes the
@@ -329,7 +331,7 @@ baseline, summarize for the human reviewer:
 
 Do **not** commit or push. The human reviews the diff and commits. Leave
 `flake.module.nix` staged so their `nix build`/review sees it.
-```
+````
 
 ## Reference files
 
@@ -356,3 +358,6 @@ Do **not** commit or push. The human reviews the diff and commits. Leave
 - `Bash(git log*)`
 - `Bash(git add*)`
 - `Bash(git rev-parse*)`
+
+
+Blueprint runs also pre-approve Seihou setup tools.

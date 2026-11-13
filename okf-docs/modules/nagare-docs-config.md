@@ -10,7 +10,7 @@ tags:
 - deployment
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.1.0
 ---
 
@@ -19,6 +19,10 @@ version: 0.1.0
 Project-owned protected Nagare Application config with independent service, hostname and image values
 
 **Version:** 0.1.0
+
+## Declaration metadata
+
+- description: `Project-owned protected Nagare Application config for an immutable documentation image; independent full domain and service name (Nagare 0.16.2)`
 
 ## Dependencies
 
@@ -37,5 +41,5 @@ No exports declared.
 
 ## Generation steps
 
-- `Template` `nagare/Config.hs.tpl` → `nagare/Config.hs`
-- `Template` `nagare/README.md.tpl` → `nagare/README.md`
+- `Template` `nagare/Config.hs.tpl` → `nagare/Config.hs` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `nagare/README.md.tpl` → `nagare/README.md` — Seed: created once when absent, then project owned; updates and removal preserve it

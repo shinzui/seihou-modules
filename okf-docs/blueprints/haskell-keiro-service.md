@@ -16,7 +16,7 @@ tags:
 - bootstrap
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.4.0
 ---
 
@@ -28,11 +28,9 @@ Agent-driven scaffold for an event-sourced Haskell service on the released Keiro
 
 ## Base modules
 
-- [haskell-keiro-project](/modules/haskell-keiro-project.md)
+- [haskell-keiro-project](/modules/haskell-keiro-project.md) (declaring registry)
 
 ## Agent prompt
-
-# Implement {{project.name}} as a Keiro service
 
 ```text
 # Implement {{project.name}} as a Keiro service
@@ -75,15 +73,15 @@ configuration and runtime checks, and any remaining failures.
 
 ## Prompts
 
-- `project.name` — What is your project name? (lowercase, hyphenated; cabal packages will be <name>-core, -api, -migrations, -workers, -server, and -client)
-- `project.description` — One-line project synopsis (used as cabal `synopsis:` and the flake description):
-- `project.namespace` — Top-level Haskell module namespace? (single PascalCase segment, e.g. Rei)
-- `project.author` — Author name?
-- `project.maintainer` — Maintainer email?
-- `project.copyright-year` — Copyright year?
-- `mori.generate` — Generate an initial mori.dhall with packages, dependencies, and the OpenAPI schema reference? (true/false; empty skips)
-- `mori.namespace` — Mori organization/user namespace? (separate from the PascalCase Haskell namespace) — when `Eq mori.generate true`
-- `haskell.index-state` — Hackage index-state for this bootstrap? (UTC timestamp)
+- `project.name` — `What is your project name? (lowercase, hyphenated; cabal packages will be <name>-core, -api, -migrations, -workers, -server, and -client)`
+- `project.description` — ``One-line project synopsis (used as cabal `synopsis:` and the flake description):``
+- `project.namespace` — `Top-level Haskell module namespace? (single PascalCase segment, e.g. Rei)`
+- `project.author` — `Author name?`
+- `project.maintainer` — `Maintainer email?`
+- `project.copyright-year` — `Copyright year?`
+- `mori.generate` — `Generate an initial mori.dhall with packages, dependencies, and the OpenAPI schema reference? (true/false; empty skips)`
+- `mori.namespace` — `Mori organization/user namespace? (separate from the PascalCase Haskell namespace)` — when `Eq mori.generate true`
+- `haskell.index-state` — `Hackage index-state for this bootstrap? (UTC timestamp)`
 
 ## Reference files
 
@@ -123,3 +121,6 @@ configuration and runtime checks, and any remaining failures.
 - `Bash(git diff*)`
 - `Bash(git log*)`
 - `Bash(git rev-parse*)`
+
+
+Blueprint runs also pre-approve Seihou setup tools.

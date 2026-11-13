@@ -13,7 +13,7 @@ tags:
 - gitignore
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.2.0
 ---
 
@@ -22,6 +22,10 @@ version: 0.2.0
 Initialize a local git repo (default branch master), seed .gitignore with .claude/, .agents/, and .seihou/manifest.json.tmp, and optionally create a private GitHub repo via `gh` under a configured org or username, optionally granting an organization team access
 
 **Version:** 0.2.0
+
+## Declaration metadata
+
+- description: ``Initialize a local git repository (default branch master), append .claude/, .agents/, and .seihou/manifest.json.tmp to .gitignore, and optionally create a GitHub repo via `gh repo create` (defaults to private) under a configured org or username, optionally granting an organization team access to the new repo. The owner and team are read from the `git.githubOwner` and `git.githubTeam` variables, which are most useful when set per context or globally, e.g. `seihou config set git.githubOwner <org-or-user> --context <ctx>`.``
 
 ## Dependencies
 
@@ -44,24 +48,24 @@ No exports declared.
 
 ## Prompts
 
-- `git.defaultBranch` — Initial git branch name?
-- `git.initialCommit` — Create an initial commit after `git init`?
-- `git.createGithub` — Create a GitHub repo with `gh repo create`?
-- `git.githubOwner` — GitHub org or username? (tip: set globally with `seihou config set git.githubOwner <value> --global`) — when `Eq git.createGithub true`
-- `git.repoName` — GitHub repo name? — when `Eq git.createGithub true`
-- `git.githubVisibility` — GitHub repo visibility? (choices: `private`, `public`, `internal`) — when `Eq git.createGithub true`
-- `git.githubTeam` — Organization team to grant access? (slug; tip: set per context with `seihou config set git.githubTeam <slug> --context <ctx>`) — when `Eq git.createGithub true`
-- `git.githubTeamPermission` — Team permission? (choices: `pull`, `triage`, `push`, `maintain`, `admin`) — when `Eq git.createGithub true && IsSet git.githubTeam`
+- `git.defaultBranch` — `Initial git branch name?`
+- `git.initialCommit` — ``Create an initial commit after `git init`?``
+- `git.createGithub` — ``Create a GitHub repo with `gh repo create`?``
+- `git.githubOwner` — ``GitHub org or username? (tip: set globally with `seihou config set git.githubOwner <value> --global`)`` — when `Eq git.createGithub true`
+- `git.repoName` — `GitHub repo name?` — when `Eq git.createGithub true`
+- `git.githubVisibility` — `GitHub repo visibility?` (choices: `private`, `public`, `internal`) — when `Eq git.createGithub true`
+- `git.githubTeam` — ``Organization team to grant access? (slug; tip: set per context with `seihou config set git.githubTeam <slug> --context <ctx>`)`` — when `Eq git.createGithub true`
+- `git.githubTeamPermission` — `Team permission?` (choices: `pull`, `triage`, `push`, `maintain`, `admin`) — when `Eq git.createGithub true && IsSet git.githubTeam`
 
 ## Generation steps
 
-- `Template` `gitignore.tpl` → `.gitignore` (appends one line to a file another module owns, if absent)
+- `Template` `gitignore.tpl` → `.gitignore` (appends one line to a file another module owns, if absent) — Managed: owned and reconciled by Seihou updates
 
 ## Commands
 
-- `git init -b {{git.defaultBranch}}`
-- `git add -A && (git diff --cached --quiet || git -c commit.gpgsign=false commit -m 'Initial commit')` — when `Eq git.initialCommit true`
-- `gh repo create {{git.githubOwner}}/{{git.repoName}} --private --source=. --remote=origin --push` — when `Eq git.createGithub true && Eq git.githubVisibility "private"`
-- `gh repo create {{git.githubOwner}}/{{git.repoName}} --public --source=. --remote=origin --push` — when `Eq git.createGithub true && Eq git.githubVisibility "public"`
-- `gh repo create {{git.githubOwner}}/{{git.repoName}} --internal --source=. --remote=origin --push` — when `Eq git.createGithub true && Eq git.githubVisibility "internal"`
-- `gh api -X PUT /orgs/{{git.githubOwner}}/teams/{{git.githubTeam}}/repos/{{git.githubOwner}}/{{git.repoName}} -f permission={{git.githubTeamPermission}} --silent` — when `Eq git.createGithub true && IsSet git.githubTeam`
+- `git init -b {{git.defaultBranch}}` (application command)
+- `git add -A && (git diff --cached --quiet || git -c commit.gpgsign=false commit -m 'Initial commit')` — when `Eq git.initialCommit true` (application command)
+- `gh repo create {{git.githubOwner}}/{{git.repoName}} --private --source=. --remote=origin --push` — when `Eq git.createGithub true && Eq git.githubVisibility "private"` (application command)
+- `gh repo create {{git.githubOwner}}/{{git.repoName}} --public --source=. --remote=origin --push` — when `Eq git.createGithub true && Eq git.githubVisibility "public"` (application command)
+- `gh repo create {{git.githubOwner}}/{{git.repoName}} --internal --source=. --remote=origin --push` — when `Eq git.createGithub true && Eq git.githubVisibility "internal"` (application command)
+- `gh api -X PUT /orgs/{{git.githubOwner}}/teams/{{git.githubTeam}}/repos/{{git.githubOwner}}/{{git.repoName}} -f permission={{git.githubTeamPermission}} --silent` — when `Eq git.createGithub true && IsSet git.githubTeam` (application command)

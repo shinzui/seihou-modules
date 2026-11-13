@@ -11,7 +11,7 @@ tags:
 - ghc2024
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.3.0
 ---
 
@@ -21,9 +21,13 @@ Single-package Haskell library with project-owned starters (Seihou 0.11.0.0+), o
 
 **Version:** 0.3.0
 
+## Declaration metadata
+
+- description: `Bootstrap a single-package Haskell library under GHC 9.12.4 / GHC2024, with lens + generic-lens, a BSD-3 license, the project author's standard warning set, and an optional tasty test-suite. Depends on nix-haskell-flake for the dev shell.`
+
 ## Dependencies
 
-- [nix-haskell-flake](/modules/nix-haskell-flake.md)
+- [nix-haskell-flake](/modules/nix-haskell-flake.md) (declaring registry)
 
 ## Variables
 
@@ -44,23 +48,23 @@ Single-package Haskell library with project-owned starters (Seihou 0.11.0.0+), o
 
 ## Prompts
 
-- `project.name` — What is your project name? (lowercase, hyphenated; the cabal package and library will both be named <name>)
-- `project.description` — One-line project synopsis (used as cabal `synopsis:` and the flake description):
-- `project.description-long` — Longer project description (optional; press Enter to reuse the one-line synopsis):
-- `project.namespace` — Top-level Haskell module namespace? (single PascalCase segment, e.g. Rei)
-- `project.author` — Author name?
-- `project.maintainer` — Maintainer email?
-- `project.copyright-year` — Copyright year?
-- `project.tests` — Generate a tasty test-suite scaffold? (yes/no)
+- `project.name` — `What is your project name? (lowercase, hyphenated; the cabal package and library will both be named <name>)`
+- `project.description` — ``One-line project synopsis (used as cabal `synopsis:` and the flake description):``
+- `project.description-long` — `Longer project description (optional; press Enter to reuse the one-line synopsis):`
+- `project.namespace` — `Top-level Haskell module namespace? (single PascalCase segment, e.g. Rei)`
+- `project.author` — `Author name?`
+- `project.maintainer` — `Maintainer email?`
+- `project.copyright-year` — `Copyright year?`
+- `project.tests` — `Generate a tasty test-suite scaffold? (yes/no)`
 
 ## Generation steps
 
-- `Template` `cabal.project.tpl` → `cabal.project`
-- `Template` `library.cabal.tpl` → `{{project.name}}/{{project.name}}.cabal`
-- `Template` `src/Prelude.hs.tpl` → `{{project.name}}/src/{{project.namespace}}/Prelude.hs`
-- `Template` `src/Lib.hs.tpl` → `{{project.name}}/src/{{project.namespace}}.hs`
-- `Template` `test/Spec.hs.tpl` → `{{project.name}}/test/Spec.hs` — when `Eq project.tests true`
-- `Template` `LICENSE.tpl` → `LICENSE`
-- `Copy` `fourmolu.yaml` → `fourmolu.yaml`
-- `Template` `CHANGELOG.md.tpl` → `CHANGELOG.md`
-- `Template` `README.md.tpl` → `README.md`
+- `Template` `cabal.project.tpl` → `cabal.project` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `library.cabal.tpl` → `{{project.name}}/{{project.name}}.cabal` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `src/Prelude.hs.tpl` → `{{project.name}}/src/{{project.namespace}}/Prelude.hs` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `src/Lib.hs.tpl` → `{{project.name}}/src/{{project.namespace}}.hs` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `test/Spec.hs.tpl` → `{{project.name}}/test/Spec.hs` — when `Eq project.tests true` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `LICENSE.tpl` → `LICENSE` — Managed: owned and reconciled by Seihou updates
+- `Copy` `fourmolu.yaml` → `fourmolu.yaml` — Managed: owned and reconciled by Seihou updates
+- `Template` `CHANGELOG.md.tpl` → `CHANGELOG.md` — Seed: created once when absent, then project owned; updates and removal preserve it
+- `Template` `README.md.tpl` → `README.md` — Seed: created once when absent, then project owned; updates and removal preserve it

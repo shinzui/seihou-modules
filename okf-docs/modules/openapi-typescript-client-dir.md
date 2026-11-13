@@ -13,7 +13,7 @@ tags:
 - bootstrap
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.1.1
 ---
 
@@ -22,6 +22,10 @@ version: 0.1.1
 Create a new client directory and compose openapi-typescript-client with git-init inside it, including GitHub creation under a configurable owner
 
 **Version:** 0.1.1
+
+## Declaration metadata
+
+- description: `Create a new client folder and run openapi-typescript-client with git-init inside it, including GitHub creation under a configurable owner.`
 
 ## Dependencies
 
@@ -50,35 +54,35 @@ No exports declared.
 
 ## Prompts
 
-- `repo.parentDir` — Directory to create the client repo in?
-- `project.name` — Client project name?
-- `project.description` — Describe the client in one line:
-- `git.githubOwner` — GitHub user or organization?
-- `git.githubVisibility` — GitHub repo visibility?
-- `git.githubTeam` — Organization team to grant access? (leave empty to skip)
-- `git.githubTeamPermission` — Team permission? — when `IsSet git.githubTeam`
-- `mori.namespace` — Mori namespace for this client? — when `Eq mori.generate true`
-- `mori.source-namespace` — Mori namespace of the OpenAPI provider? — when `Eq mori.generate true`
-- `mori.source-project` — Mori project name of the OpenAPI provider? — when `Eq mori.generate true`
+- `repo.parentDir` — `Directory to create the client repo in?`
+- `project.name` — `Client project name?`
+- `project.description` — `Describe the client in one line:`
+- `git.githubOwner` — `GitHub user or organization?`
+- `git.githubVisibility` — `GitHub repo visibility?`
+- `git.githubTeam` — `Organization team to grant access? (leave empty to skip)`
+- `git.githubTeamPermission` — `Team permission?` — when `IsSet git.githubTeam`
+- `mori.namespace` — `Mori namespace for this client?` — when `Eq mori.generate true`
+- `mori.source-namespace` — `Mori namespace of the OpenAPI provider?` — when `Eq mori.generate true`
+- `mori.source-project` — `Mori project name of the OpenAPI provider?` — when `Eq mori.generate true`
 
 ## Generation steps
 
-- `Copy` `create-client-repo.py` → `.seihou/openapi-typescript-client-dir/create-client-repo.py`
-- `Template` `repo.postCreateScript.conf.tpl` → `.seihou/openapi-typescript-client-dir/repo.postCreateScript.conf`
-- `Template` `repo.parentDir.conf.tpl` → `.seihou/openapi-typescript-client-dir/repo.parentDir.conf`
-- `Template` `project.name.conf.tpl` → `.seihou/openapi-typescript-client-dir/project.name.conf`
-- `Template` `project.description.conf.tpl` → `.seihou/openapi-typescript-client-dir/project.description.conf`
-- `Template` `git.githubOwner.conf.tpl` → `.seihou/openapi-typescript-client-dir/git.githubOwner.conf`
-- `Template` `git.githubVisibility.conf.tpl` → `.seihou/openapi-typescript-client-dir/git.githubVisibility.conf`
-- `Template` `git.defaultBranch.conf.tpl` → `.seihou/openapi-typescript-client-dir/git.defaultBranch.conf`
-- `Template` `git.githubTeam.conf.tpl` → `.seihou/openapi-typescript-client-dir/git.githubTeam.conf`
-- `Template` `git.githubTeamPermission.conf.tpl` → `.seihou/openapi-typescript-client-dir/git.githubTeamPermission.conf`
-- `Template` `nix.bun2nix.conf.tpl` → `.seihou/openapi-typescript-client-dir/nix.bun2nix.conf`
-- `Template` `mori.generate.conf.tpl` → `.seihou/openapi-typescript-client-dir/mori.generate.conf`
-- `Template` `mori.namespace.conf.tpl` → `.seihou/openapi-typescript-client-dir/mori.namespace.conf`
-- `Template` `mori.source-namespace.conf.tpl` → `.seihou/openapi-typescript-client-dir/mori.source-namespace.conf`
-- `Template` `mori.source-project.conf.tpl` → `.seihou/openapi-typescript-client-dir/mori.source-project.conf`
+- `Copy` `create-client-repo.py` → `.seihou/openapi-typescript-client-dir/create-client-repo.py` — Managed: owned and reconciled by Seihou updates
+- `Template` `repo.postCreateScript.conf.tpl` → `.seihou/openapi-typescript-client-dir/repo.postCreateScript.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `repo.parentDir.conf.tpl` → `.seihou/openapi-typescript-client-dir/repo.parentDir.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `project.name.conf.tpl` → `.seihou/openapi-typescript-client-dir/project.name.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `project.description.conf.tpl` → `.seihou/openapi-typescript-client-dir/project.description.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `git.githubOwner.conf.tpl` → `.seihou/openapi-typescript-client-dir/git.githubOwner.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `git.githubVisibility.conf.tpl` → `.seihou/openapi-typescript-client-dir/git.githubVisibility.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `git.defaultBranch.conf.tpl` → `.seihou/openapi-typescript-client-dir/git.defaultBranch.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `git.githubTeam.conf.tpl` → `.seihou/openapi-typescript-client-dir/git.githubTeam.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `git.githubTeamPermission.conf.tpl` → `.seihou/openapi-typescript-client-dir/git.githubTeamPermission.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `nix.bun2nix.conf.tpl` → `.seihou/openapi-typescript-client-dir/nix.bun2nix.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `mori.generate.conf.tpl` → `.seihou/openapi-typescript-client-dir/mori.generate.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `mori.namespace.conf.tpl` → `.seihou/openapi-typescript-client-dir/mori.namespace.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `mori.source-namespace.conf.tpl` → `.seihou/openapi-typescript-client-dir/mori.source-namespace.conf` — Managed: owned and reconciled by Seihou updates
+- `Template` `mori.source-project.conf.tpl` → `.seihou/openapi-typescript-client-dir/mori.source-project.conf` — Managed: owned and reconciled by Seihou updates
 
 ## Commands
 
-- `python3 .seihou/openapi-typescript-client-dir/create-client-repo.py`
+- `python3 .seihou/openapi-typescript-client-dir/create-client-repo.py` (application command)

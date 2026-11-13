@@ -14,7 +14,7 @@ tags:
 - context
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.1.1
 ---
 
@@ -24,6 +24,10 @@ Create a folder, scaffold an OpenAPI TypeScript client, and push its initial com
 
 **Version:** 0.1.1
 
+## Declaration metadata
+
+- description: `Create <repo.parentDir>/<project.name>, generate an OpenAPI TypeScript client there, and initialize and push a matching GitHub repository under git.githubOwner. The initial commit includes the client and Nix scaffold.`
+
 ## Composes
 
-- [openapi-typescript-client-dir](/modules/openapi-typescript-client-dir.md)
+- [openapi-typescript-client-dir](/modules/openapi-typescript-client-dir.md) (declaring registry)

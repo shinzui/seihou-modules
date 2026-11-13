@@ -11,7 +11,7 @@ tags:
 - environment
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.2.0
 ---
 
@@ -20,6 +20,10 @@ version: 0.2.0
 Checkout-local GCP project and Kubernetes context through direnv, with a private kubeconfig and a configurable env filename defaulting to .envrc.local
 
 **Version:** 0.2.0
+
+## Declaration metadata
+
+- description: `Configure a checkout-local GCP project and Kubernetes context through direnv, with a private kubeconfig and a configurable env filename (default .envrc.local), preserving existing settings and global CLI configuration.`
 
 ## Dependencies
 
@@ -37,18 +41,18 @@ No exports declared.
 
 ## Prompts
 
-- `gcp.project` — Google Cloud project ID?
-- `k8s.context` — Existing Kubernetes context?
-- `env.file` — Local env filename?
+- `gcp.project` — `Google Cloud project ID?`
+- `k8s.context` — `Existing Kubernetes context?`
+- `env.file` — `Local env filename?`
 
 ## Generation steps
 
-- `Copy` `setup-gcp-kube-env.py` → `scripts/setup-gcp-kube-env.py`
-- `Template` `gcp-kube-env.conf.tpl` → `.seihou/gcp-kube-env/settings.conf`
+- `Copy` `setup-gcp-kube-env.py` → `scripts/setup-gcp-kube-env.py` — Managed: owned and reconciled by Seihou updates
+- `Template` `gcp-kube-env.conf.tpl` → `.seihou/gcp-kube-env/settings.conf` — Managed: owned and reconciled by Seihou updates
 
 ## Commands
 
-- `python3 scripts/setup-gcp-kube-env.py`
+- `python3 scripts/setup-gcp-kube-env.py` (application command)
 
 ## Migrations
 

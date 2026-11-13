@@ -16,7 +16,7 @@ tags:
 - openapi
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.6.2
 ---
 
@@ -28,7 +28,7 @@ Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's
 
 ## Dependencies
 
-- [nix-bun-flake](/modules/nix-bun-flake.md) (with `nix.pre-commit` = `false`)
+- [nix-bun-flake](/modules/nix-bun-flake.md) (declaring registry) (with `nix.pre-commit` = `false`)
 
 ## Variables
 
@@ -46,7 +46,7 @@ Fumadocs documentation site on TanStack Start + Vite, layered on nix-bun-flake's
 - `docs.github-branch` — text, required, default `master`. Branch used in per-page "edit on GitHub" links.
 - `docs.font-family` — text, required, default `PragmataPro Mono`. CSS font-family name for the self-hosted monospace/code font (routed at --fd-font-mono and every code surface).
 - `docs.font-basename` — text, required, default `PragmataProMono`. Stable file-name prefix the font copy step writes into public/fonts/ (e.g. <basename>-Regular.otf), referenced by @font-face in app.css. Version-independent so the CSS URLs never change.
-- `docs.font-flake` — text, required, default ``. Nix flake path the font copy step builds to source licensed OTFs; DOCS_FONT_FLAKE overrides it. Leave empty in public repositories and set DOCS_FONT_FLAKE locally instead. Tolerant: if unavailable, the build still proceeds and code falls back to system monospace.
+- `docs.font-flake` — text, required, default `""` (JSON string). Nix flake path the font copy step builds to source licensed OTFs; DOCS_FONT_FLAKE overrides it. Leave empty in public repositories and set DOCS_FONT_FLAKE locally instead. Tolerant: if unavailable, the build still proceeds and code falls back to system monospace.
 - `docs.font-package` — text, required, default `pragmataPro`. Package attribute built from docs.font-flake (path:<flake>#<package>).
 
 ## Exports
@@ -55,56 +55,56 @@ No exports declared.
 
 ## Prompts
 
-- `docs.site-name` — Site title? (shown in the navbar and browser tab, e.g. "acme docs")
-- `docs.github-user` — GitHub owner for the repo link and edit-on-GitHub links?
-- `docs.font-family` — Custom code/monospace font-family name? (self-hosted via @font-face; default PragmataPro Mono)
+- `docs.site-name` — `Site title? (shown in the navbar and browser tab, e.g. "acme docs")`
+- `docs.github-user` — `GitHub owner for the repo link and edit-on-GitHub links?`
+- `docs.font-family` — `Custom code/monospace font-family name? (self-hosted via @font-face; default PragmataPro Mono)`
 
 ## Generation steps
 
-- `Template` `package.json.tpl` → `package.json`
-- `Copy` `tsconfig.json` → `tsconfig.json`
-- `Copy` `justfile` → `justfile`
-- `Copy` `oxlintrc.json` → `.oxlintrc.json`
-- `Copy` `oxfmtrc.json` → `.oxfmtrc.json`
-- `Copy` `vite.config.ts` → `vite.config.ts`
-- `Copy` `source.config.ts` → `source.config.ts`
-- `Copy` `linkinator.config.json` → `linkinator.config.json`
-- `Copy` `serve.json` → `serve.json`
-- `Template` `nix/fumadocs-container.nix.tpl` → `nix/fumadocs-container.nix` — when `Eq docs.container true`
-- `Copy` `nix/fumadocs-site.nix` → `nix/fumadocs-site.nix` — when `Eq docs.container true`
-- `Copy` `nix/caddy-config.nix` → `nix/caddy-config.nix` — when `Eq docs.container true`
-- `Copy` `nix/container.nix` → `nix/container.nix` — when `Eq docs.container true`
-- `Template` `scripts/copy-fonts.mjs.tpl` → `scripts/copy-fonts.mjs`
-- `Copy` `src/router.tsx` → `src/router.tsx`
-- `Copy` `src/routeTree.gen.ts` → `src/routeTree.gen.ts`
-- `Copy` `src/lib/cn.ts` → `src/lib/cn.ts`
-- `Template` `src/lib/source.ts.tpl` → `src/lib/source.ts`
-- `Template` `src/lib/openapi.ts.tpl` → `src/lib/openapi.ts` — when `Eq docs.openapi true`
-- `Template` `src/lib/shared.ts.tpl` → `src/lib/shared.ts`
-- `Copy` `src/lib/layout.shared.tsx` → `src/lib/layout.shared.tsx`
-- `Copy` `src/lib/rehype-mermaid.ts` → `src/lib/rehype-mermaid.ts`
-- `Template` `src/components/mdx.tsx.tpl` → `src/components/mdx.tsx`
-- `Copy` `src/components/diagram.tsx` → `src/components/diagram.tsx` — when `Eq docs.svg-diagrams true`
-- `Copy` `src/lib/diagram-svg.mjs` → `src/lib/diagram-svg.mjs` — when `Eq docs.svg-diagrams true`
-- `Copy` `src/styles/diagrams.css` → `src/styles/diagrams.css` — when `Eq docs.svg-diagrams true`
-- `Copy` `scripts/check-doc-diagrams.mjs` → `scripts/check-doc-diagrams.mjs` — when `Eq docs.svg-diagrams true`
-- `Copy` `scripts/render-diagram.mjs` → `scripts/render-diagram.mjs` — when `Eq docs.svg-diagrams true`
-- `Copy` `content/diagrams/README.md` → `content/diagrams/README.md` — when `Eq docs.svg-diagrams true`
-- `Copy` `src/components/mermaid.tsx` → `src/components/mermaid.tsx`
-- `Copy` `src/components/search.tsx` → `src/components/search.tsx`
-- `Copy` `src/components/not-found.tsx` → `src/components/not-found.tsx`
-- `Copy` `src/components/api-page.tsx` → `src/components/api-page.tsx` — when `Eq docs.openapi true`
-- `Template` `src/styles/app.css.tpl` → `src/styles/app.css`
-- `Copy` `src/routes/__root.tsx` → `src/routes/__root.tsx`
-- `Copy` `src/routes/index.tsx` → `src/routes/index.tsx`
-- `Template` `src/routes/docs/splat.tsx.tpl` → `src/routes/docs/$.tsx`
-- `Copy` `src/routes/docs/md-route.ts` → `src/routes/docs/{$}[.]md.ts`
-- `Copy` `src/routes/api/search.ts` → `src/routes/api/search.ts`
-- `Template` `content/index.mdx.tpl` → `content/docs/index.mdx` — when `Eq docs.starter-content true`
-- `Copy` `content/diagram-demo.mdx` → `content/docs/diagram-demo.mdx` — when `Eq docs.starter-content true`
-- `Template` `content/meta.json.tpl` → `content/docs/meta.json` — when `Eq docs.starter-content true`
-- `Copy` `content/openapi.yaml` → `openapi.yaml` — when `Eq docs.openapi true && Eq docs.starter-content true && Eq docs.openapi-spec "openapi.yaml"`
-- `Template` `gitignore-fumadocs.tpl` → `.gitignore` (appends one line to a file another module owns, if absent)
+- `Template` `package.json.tpl` → `package.json` — Managed: owned and reconciled by Seihou updates
+- `Copy` `tsconfig.json` → `tsconfig.json` — Managed: owned and reconciled by Seihou updates
+- `Copy` `justfile` → `justfile` — Managed: owned and reconciled by Seihou updates
+- `Copy` `oxlintrc.json` → `.oxlintrc.json` — Managed: owned and reconciled by Seihou updates
+- `Copy` `oxfmtrc.json` → `.oxfmtrc.json` — Managed: owned and reconciled by Seihou updates
+- `Copy` `vite.config.ts` → `vite.config.ts` — Managed: owned and reconciled by Seihou updates
+- `Copy` `source.config.ts` → `source.config.ts` — Managed: owned and reconciled by Seihou updates
+- `Copy` `linkinator.config.json` → `linkinator.config.json` — Managed: owned and reconciled by Seihou updates
+- `Copy` `serve.json` → `serve.json` — Managed: owned and reconciled by Seihou updates
+- `Template` `nix/fumadocs-container.nix.tpl` → `nix/fumadocs-container.nix` — when `Eq docs.container true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `nix/fumadocs-site.nix` → `nix/fumadocs-site.nix` — when `Eq docs.container true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `nix/caddy-config.nix` → `nix/caddy-config.nix` — when `Eq docs.container true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `nix/container.nix` → `nix/container.nix` — when `Eq docs.container true` — Managed: owned and reconciled by Seihou updates
+- `Template` `scripts/copy-fonts.mjs.tpl` → `scripts/copy-fonts.mjs` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/router.tsx` → `src/router.tsx` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/routeTree.gen.ts` → `src/routeTree.gen.ts` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/lib/cn.ts` → `src/lib/cn.ts` — Managed: owned and reconciled by Seihou updates
+- `Template` `src/lib/source.ts.tpl` → `src/lib/source.ts` — Managed: owned and reconciled by Seihou updates
+- `Template` `src/lib/openapi.ts.tpl` → `src/lib/openapi.ts` — when `Eq docs.openapi true` — Managed: owned and reconciled by Seihou updates
+- `Template` `src/lib/shared.ts.tpl` → `src/lib/shared.ts` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/lib/layout.shared.tsx` → `src/lib/layout.shared.tsx` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/lib/rehype-mermaid.ts` → `src/lib/rehype-mermaid.ts` — Managed: owned and reconciled by Seihou updates
+- `Template` `src/components/mdx.tsx.tpl` → `src/components/mdx.tsx` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/components/diagram.tsx` → `src/components/diagram.tsx` — when `Eq docs.svg-diagrams true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/lib/diagram-svg.mjs` → `src/lib/diagram-svg.mjs` — when `Eq docs.svg-diagrams true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/styles/diagrams.css` → `src/styles/diagrams.css` — when `Eq docs.svg-diagrams true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `scripts/check-doc-diagrams.mjs` → `scripts/check-doc-diagrams.mjs` — when `Eq docs.svg-diagrams true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `scripts/render-diagram.mjs` → `scripts/render-diagram.mjs` — when `Eq docs.svg-diagrams true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `content/diagrams/README.md` → `content/diagrams/README.md` — when `Eq docs.svg-diagrams true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/components/mermaid.tsx` → `src/components/mermaid.tsx` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/components/search.tsx` → `src/components/search.tsx` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/components/not-found.tsx` → `src/components/not-found.tsx` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/components/api-page.tsx` → `src/components/api-page.tsx` — when `Eq docs.openapi true` — Managed: owned and reconciled by Seihou updates
+- `Template` `src/styles/app.css.tpl` → `src/styles/app.css` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/routes/__root.tsx` → `src/routes/__root.tsx` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/routes/index.tsx` → `src/routes/index.tsx` — Managed: owned and reconciled by Seihou updates
+- `Template` `src/routes/docs/splat.tsx.tpl` → `src/routes/docs/$.tsx` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/routes/docs/md-route.ts` → `src/routes/docs/{$}[.]md.ts` — Managed: owned and reconciled by Seihou updates
+- `Copy` `src/routes/api/search.ts` → `src/routes/api/search.ts` — Managed: owned and reconciled by Seihou updates
+- `Template` `content/index.mdx.tpl` → `content/docs/index.mdx` — when `Eq docs.starter-content true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `content/diagram-demo.mdx` → `content/docs/diagram-demo.mdx` — when `Eq docs.starter-content true` — Managed: owned and reconciled by Seihou updates
+- `Template` `content/meta.json.tpl` → `content/docs/meta.json` — when `Eq docs.starter-content true` — Managed: owned and reconciled by Seihou updates
+- `Copy` `content/openapi.yaml` → `openapi.yaml` — when `Eq docs.openapi true && Eq docs.starter-content true && Eq docs.openapi-spec "openapi.yaml"` — Managed: owned and reconciled by Seihou updates
+- `Template` `gitignore-fumadocs.tpl` → `.gitignore` (appends one line to a file another module owns, if absent) — Managed: owned and reconciled by Seihou updates
 
 ## Removal
 

@@ -12,7 +12,7 @@ tags:
 - migration
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.1.0
 ---
 
@@ -22,15 +22,18 @@ Migrate Haskell service images to pinned nix2container with preserved image conf
 
 **Version:** 0.1.0
 
+## Declaration metadata
+
+- description: `Migrate existing nix-haskell-flake service images from dockerTools to pinned nix2container, preserving configuration, runtime files, inputs and Seihou ownership`
+- tags: `haskell`, `nix`, `docker`, `nix2container`, `migration`, `seihou`
+
 ## Base modules
 
 This blueprint declares no base modules.
 
 ## Agent prompt
 
-# Upgrade Haskell service images to nix2container
-
-```text
+````text
 # Upgrade Haskell service images to nix2container
 
 Upgrade an existing consumer of nix-haskell-flake to 0.37.0 and replace its
@@ -178,11 +181,17 @@ validation remains unverified; never claim those checks passed from evaluation a
 Finish with changed files, preservation evidence, exact commands/results and remaining
 limitations. If interrupted, restore only affected paths and their consistent metadata
 from backup, preserve unrelated work and rerun checks before resuming.
-```
+````
 
 ## Reference files
 
 - `flake.module.nix` - Unmanaged Linux-only nix2container service image reference; merge with the consumer's existing outputs, never overwrite its extension
+
+## Tools
+
+No additional tools declared.
+
+Blueprint runs also pre-approve Seihou setup tools.
 
 ## Migrations
 

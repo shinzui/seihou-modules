@@ -11,7 +11,7 @@ tags:
 - recipe
 status: stable
 generated:
-  by: seihou-okf-extension/0.15.0.0
+  by: seihou-okf-extension/0.16.0.0
 version: 0.1.0
 ---
 
@@ -21,7 +21,11 @@ Documentation reader and protected Nagare configuration with a native image and 
 
 **Version:** 0.1.0
 
+## Declaration metadata
+
+- description: `Documentation reader and protected Nagare configuration, without GitHub creation or live deployment`
+
 ## Composes
 
-- [docs-microapp](/modules/docs-microapp.md)
-- [nagare-docs-config](/modules/nagare-docs-config.md)
+- [docs-microapp](/modules/docs-microapp.md) (declaring registry)
+- [nagare-docs-config](/modules/nagare-docs-config.md) (declaring registry)
