@@ -2,7 +2,7 @@
 
 > Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects on the `haskell-nix-dev` base flake (prebuilt GHC/HLS/cabal toolchains). Module-owned inputs are rev-pinned or follow that base, producing one exact lock across feature combinations. Base wiring and dependent scaffold package outputs live in managed `nix/*.nix` modules, while user customizations stay in an unmanaged `flake.module.nix`. Includes toggleable local services, treefmt-nix, and pre-commit hooks.
 
-**Version:** `0.39.0`
+**Version:** `0.40.0`
 
 ## Overview
 
@@ -422,6 +422,7 @@ that the socket path is too long.
 
 | From | To | Effect |
 |------|----|--------|
+| `0.39.0` | `0.40.0` | Moves the rev-pinned `redpanda-container` input from `c2ccecf` to `2107c2856a19e586a8c65d0280bb54f221678b6f` and makes generated `nix/redpanda.nix` set `package = null`, so `redpanda-local-*` run the host's `container` CLI from PATH instead of this flake's nixpkgs `container` (1.1.0), which did not match a 1.5.0 apiserver and made `redpanda-local-up` hang on `container start`. The scripts now refuse a CLI/server version mismatch up front and bound `container start`/`network create` with a diagnosis. Toolchain, nixpkgs, `haskell-nix`, `nix2container` and `okf` pins stay fixed. No migration operations; regenerate managed files through Seihou. |
 | `0.38.0` | `0.39.0` | Adds the always-locked, rev-pinned `okf` input (okf-cli 0.13.0.0, `e0dd9e3047285caff6c4c4d9c6aee06e6ebb31b7`) and the optional `nix.okf` toggle that puts its CLI in the dev shell. Its `haskell-nix-dev`, `nix2container` and `redpanda-container` follow this flake; its own `haskell-nix` node stays separate because okf overrides `baikai-src`. Toolchain, nixpkgs and `haskell-nix` pins stay fixed. No migration operations; regenerate managed files through Seihou. Projects that pinned okf in `flake.module.nix` can delete that wrapper and enable `nix.okf`. |
 | `0.35.0` | `0.36.0` | Moves the shared `mori://shinzui/haskell-nix` channel pin to `dedd4d81589e99d97137eb36f88423c70c7d69f5`, making retained runtime generation 6 available with the latest release cohort and inspection packages. Toolchain and Nixpkgs pins stay fixed. Existing explicit runtime and complementary selections are preserved; adopting generation 6 requires an explicit selection with `kioku = 9` and the matching Cabal imports. No migration operations; regenerate managed files through Seihou. |
 | `0.36.0` | `0.37.0` | Pins nix2container v1.1.0 with application nixpkgs follows and replaces the Linux-only service image example. Build results are image descriptions; use copy helpers for Docker, registries or explicit archive export. Existing unmanaged images require the upgrade-haskell-nix2container blueprint. Haskell toolchain/runtime pins stay fixed; no automatic migration operations. |

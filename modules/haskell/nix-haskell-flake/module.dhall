@@ -10,7 +10,7 @@ let MigrationOp =
 
 in      S.Module::{
         , name = "nix-haskell-flake"
-        , version = Some "0.39.0"
+        , version = Some "0.40.0"
         , description = Some
             "Optional explicit retained-runtime configuration shares one checked scope between production packages and the primary shell. Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is rev-pinned or follows that base, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules, dependent Seihou modules can add managed package wiring through nix.package-module, and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, and pre-commit-hooks with a commit-message newline-escape guard; the always-locked shared haskell-nix patch registry is available to custom wiring. The always-locked nix2container input follows the application nixpkgs. The generated flake.module.nix.example includes a ready-to-uncomment, Linux-guarded nix2container.buildImage block with Docker load, registry copy and explicit archive export helpers for building an OCI image of the project's executable. Optional nix.redpanda adds macOS-only redpanda-local-* scripts for a private, non-colliding Redpanda cluster on Apple Container (reusing the always-locked redpanda-container input), for tests that need a broker of their own instead of the shared machine-wide one. Optional nix.okf adds the module-pinned okf CLI to the dev shell from the always-locked okf input, so projects validating OKF documentation bundles move okf versions together by moving the module."
         , vars =
@@ -109,7 +109,7 @@ in      S.Module::{
             , type = "bool"
             , default = Some "false"
             , description = Some
-                "Generate nix/redpanda.nix: opt-in, macOS-only lifecycle scripts (redpanda-local-{up,down,status,logs,purge}) for a PRIVATE Redpanda cluster on Apple Container, whose names and host ports do not collide with the shared machine-wide cluster or other projects' private clusters. The default dev flow still targets the shared cluster; use this only when a test needs its own broker. Reuses the always-locked redpanda-container input — on non-Darwin systems the generated module contributes nothing and the input is never built. Independent of nix.kafka (which only adds the librdkafka client library)."
+                "Generate nix/redpanda.nix: opt-in, macOS-only lifecycle scripts (redpanda-local-{up,down,status,logs,purge}) for a PRIVATE Redpanda cluster on Apple Container, whose names and host ports do not collide with the shared machine-wide cluster or other projects' private clusters. The default dev flow still targets the shared cluster; use this only when a test needs its own broker. Reuses the always-locked redpanda-container input and runs the host's own `container` CLI from PATH, so the client always matches the installed Apple Container service — on non-Darwin systems the generated module contributes nothing and the input is never built. Independent of nix.kafka (which only adds the librdkafka client library)."
             , required = True
             }
           , S.VarDecl::{

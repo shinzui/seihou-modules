@@ -692,17 +692,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1789429337,
-        "narHash": "sha256-OkG7kcZ02xD1xSJU2vPbTQn4HwUMYRl1RMi5pXyMC04=",
+        "lastModified": 1794592826,
+        "narHash": "sha256-VBwsVfjHtD+CsLQEJbkQH8sSXOMEpFJxCGlKEi9naaI=",
         "owner": "shinzui",
         "repo": "redpanda-container",
-        "rev": "c2ccecf589b93e3430b758165de7d2a2bb92f328",
+        "rev": "2107c2856a19e586a8c65d0280bb54f221678b6f",
         "type": "github"
       },
       "original": {
         "owner": "shinzui",
         "repo": "redpanda-container",
-        "rev": "c2ccecf589b93e3430b758165de7d2a2bb92f328",
+        "rev": "2107c2856a19e586a8c65d0280bb54f221678b6f",
         "type": "github"
       }
     },

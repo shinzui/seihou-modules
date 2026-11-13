@@ -15,14 +15,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.15.0.0
-version: 0.39.0
+version: 0.40.0
 ---
 
 # nix-haskell-flake
 
 Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, pinned nix2container service image support, an optional module-pinned okf CLI, local services, treefmt, and pre-commit hooks
 
-**Version:** 0.39.0
+**Version:** 0.40.0
 
 ## Dependencies
 
@@ -42,7 +42,7 @@ This module has no dependencies.
 - `nix.redis` — boolean, required, default `false`. Include Redis in the dev shell. The shellHook exports REDIS_SOCKET and REDIS_LOG beneath the project's local redis/ directory and, when nix.process-compose is enabled, process-compose.yaml gains a socket-only `redis` process with TCP disabled.
 - `nix.clickhouse` — boolean, required, default `false`. Include clickhouse in the dev shell with a local, rootless server. The shellHook exports CLICKHOUSE_HOME (a per-project data dir) plus CLICKHOUSE_TCP_PORT/CLICKHOUSE_HTTP_PORT, and — when nix.process-compose is enabled — process-compose.yaml gains a `clickhouse` process that runs `clickhouse-server` against that data dir with a `SELECT 1` readiness probe. The server uses clickhouse's embedded default config; override ports via the env vars if two projects clash.
 - `nix.kafka` — boolean, required, default `false`. Include librdkafka (rdkafka + rdkafka.dev) in the dev shell for hw-kafka-client-based projects. The shellHook exports CPATH, LIBRARY_PATH, and PKG_CONFIG_PATH so GHC's linker, the C preprocessor, and pkg-config resolve `-lrdkafka`. This adds the client library only; run your own Kafka-compatible broker (e.g. redpanda) as needed.
-- `nix.redpanda` — boolean, required, default `false`. Generate nix/redpanda.nix: opt-in, macOS-only lifecycle scripts (redpanda-local-{up,down,status,logs,purge}) for a PRIVATE Redpanda cluster on Apple Container, whose names and host ports do not collide with the shared machine-wide cluster or other projects' private clusters. The default dev flow still targets the shared cluster; use this only when a test needs its own broker. Reuses the always-locked redpanda-container input — on non-Darwin systems the generated module contributes nothing and the input is never built. Independent of nix.kafka (which only adds the librdkafka client library).
+- `nix.redpanda` — boolean, required, default `false`. Generate nix/redpanda.nix: opt-in, macOS-only lifecycle scripts (redpanda-local-{up,down,status,logs,purge}) for a PRIVATE Redpanda cluster on Apple Container, whose names and host ports do not collide with the shared machine-wide cluster or other projects' private clusters. The default dev flow still targets the shared cluster; use this only when a test needs its own broker. Reuses the always-locked redpanda-container input and runs the host's own `container` CLI from PATH, so the client always matches the installed Apple Container service — on non-Darwin systems the generated module contributes nothing and the input is never built. Independent of nix.kafka (which only adds the librdkafka client library).
 - `nix.redpanda-console` — boolean, required, default `false`. Also run Redpanda Console for the project-local cluster (adds a second container, bound to redpanda.console-port). Only used when nix.redpanda is enabled.
 - `redpanda.kafka-port` — integer, optional, default `39092`. Host port for the project-local Redpanda Kafka API. Defaults to a high block (39092) distinct from the shared cluster's 9092. Change it when running two private clusters at once, or when it clashes with something else on the host. Only used when nix.redpanda is enabled.
 - `redpanda.admin-port` — integer, optional, default `39644`. Host port for the project-local Redpanda Admin API (readiness probe). Defaults to 39644 (vs the shared cluster's 9644). Only used when nix.redpanda is enabled.

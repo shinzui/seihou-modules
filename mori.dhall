@@ -85,7 +85,7 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "nix-haskell-flake"
-        , version = Some "0.37.1"
+        , version = Some "0.40.0"
         , description = Some
             "Nix flake for Haskell projects with optional explicit checked runtime scopes, exact managed locks, a managed package-module seam for composed scaffolds, an unmanaged user extension point, pinned nix2container service image support, and toggleable local services, treefmt-nix, and pre-commit hooks"
         , modulePath = "modules/haskell/nix-haskell-flake"
