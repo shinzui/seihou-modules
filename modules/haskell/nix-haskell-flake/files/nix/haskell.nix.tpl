@@ -137,6 +137,10 @@
         {{#if Eq nix.process-compose true}}
         pkgs.process-compose
         {{/if}}
+        {{#if Eq nix.okf true}}
+        # okf CLI for the project's OKF documentation bundles, pinned by the module.
+        inputs.okf.packages.${system}.okf-cli
+        {{/if}}
       ];
 
       shellHook = ''

@@ -2,7 +2,7 @@
 
 > Modular [flake-parts](https://flake.parts) Nix flake for Haskell projects on the `haskell-nix-dev` base flake (prebuilt GHC/HLS/cabal toolchains). Module-owned inputs are rev-pinned or follow that base, producing one exact lock across feature combinations. Base wiring and dependent scaffold package outputs live in managed `nix/*.nix` modules, while user customizations stay in an unmanaged `flake.module.nix`. Includes toggleable local services, treefmt-nix, and pre-commit hooks.
 
-**Version:** `0.37.1`
+**Version:** `0.39.0`
 
 ## Overview
 
@@ -15,8 +15,8 @@ The generated `flake.nix` is a thin, stable **stub**: it declares inputs, calls
 `nix/*.nix` modules, and the toolchain itself lives in the `haskell-nix-dev` base flake
 (`github:shinzui/haskell-nix-dev`) — so:
 
-- Toolchain inputs follow one rev-pinned `haskell-nix-dev`; the shared `haskell-nix` registry
-  and `redpanda-container` are also rev-pinned by the module. Every module-owned input is always
+- Toolchain inputs follow one rev-pinned `haskell-nix-dev`; the shared `haskell-nix` registry,
+  `redpanda-container`, `nix2container` and the `okf` CLI are also rev-pinned by the module. Every module-owned input is always
   declared, while feature toggles control imports and generated files. Two projects on the same
   module version therefore get **byte-identical locks and one shared store closure** without a
   first-run lock rewrite. See [Reproducible locks](#reproducible-locks).
@@ -126,6 +126,24 @@ A normal module update refreshes managed inputs and the example; it cannot rewri
 existing unmanaged image automatically. Back up and inventory before updating. The blueprint
 includes a 0.36.0 → 0.37.0 edge and a run workflow for earlier recorded consumers.
 
+## The okf CLI
+
+Version 0.39.0 adds `nix.okf`. When enabled, the dev shell gains the `okf` command from the
+always-locked `okf` input, which the module pins to a released okf tag
+(`mori://shinzui/okf/packages/okf-cli` 0.13.0.0 at `e0dd9e3047285caff6c4c4d9c6aee06e6ebb31b7`).
+Every project on the same module version therefore validates its OKF bundles
+(`okf validate docs/adr …`) with the same okf, locally and in CI's `nix develop`.
+
+The input's `haskell-nix-dev`, `nix2container` and `redpanda-container` follow this flake, so
+the CLI builds on the shared GHC and nixpkgs and is the same store path okf's own release
+builds. Its `haskell-nix` is deliberately not followed: okf overrides that registry's
+`baikai-src`, so it keeps its own node in the lock.
+
+To move every project to a newer okf, release a new module version with
+`update-nix-haskell-flake-lock.sh --okf-rev <full rev of the okf release tag>` and run
+`seihou update nix-haskell-flake` in each project. Do not pin okf separately in
+`flake.module.nix`; a project-local wrapper shadows the module's CLI on `PATH`.
+
 ## Reproducible locks
 
 The point of this module is that every project it generates resolves to the **same** GHC,
@@ -145,6 +163,8 @@ inputs = {
   redpanda-container.url = "github:shinzui/redpanda-container/<rev>";
   nix2container.url = "github:nlewo/nix2container/<rev>";
   nix2container.inputs.nixpkgs.follows = "nixpkgs";
+  okf.url = "github:shinzui/okf/<released rev>";               # (nix.okf)
+  okf.inputs.haskell-nix-dev.follows = "haskell-nix-dev";
 };
 ```
 
@@ -157,7 +177,7 @@ Two properties fall out of this, and together they are the whole guarantee:
   `master` is that day, silently moving one project off the shared toolchain.
 - **Toolchain inputs follow the base.** `nixpkgs`, flake-parts, treefmt-nix, and
   pre-commit-hooks read their revisions from the pinned base flake. The separately pinned
-  `haskell-nix`, `redpanda-container` and `nix2container` revisions move only with a module release.
+  `haskell-nix`, `redpanda-container`, `nix2container` and `okf` revisions move only with a module release.
 
 The shipped `flake.lock` is therefore a **seed, not the source of truth**: it saves the first
 `nix flake lock` a network round trip, and `nix flake lock` would reproduce it from `flake.nix`
@@ -313,6 +333,7 @@ your input line. Everything else stays clean.
 | `nix.postgresql` | `bool` | — | yes | — | Include postgresql (and `jq`) in the dev shell with local DB setup in the shellHook |
 | `nix.redis` | `bool` | `false` | yes | — | Include `redis-server` and `redis-cli` in the dev shell. The shellHook exports `REDIS_SOCKET` and `REDIS_LOG` beneath the project-local `redis/` directory; when `nix.process-compose` is on, `process-compose.yaml` gains a socket-only `redis` process with TCP disabled. |
 | `nix.clickhouse` | `bool` | `false` | yes | — | Include `clickhouse` in the dev shell with a local, rootless server. The shellHook exports `CLICKHOUSE_HOME` (per-project data dir) and `CLICKHOUSE_TCP_PORT`/`CLICKHOUSE_HTTP_PORT`; when `nix.process-compose` is on, `process-compose.yaml` gains a `clickhouse` process running `clickhouse-server` with a `SELECT 1` readiness probe. Uses clickhouse's embedded default config; override the ports if two projects clash. |
+| `nix.okf` | `bool` | `false` | yes | — | Add the module-pinned `okf` CLI to the dev shell for the project's OKF documentation bundles. The always-locked `okf` input follows this flake's toolchain; when disabled it stays locked but is never built. See [The okf CLI](#the-okf-cli). |
 | `nix.haskell-nix` | `bool` | `false` | no | — | Deprecated compatibility input; `inputs.haskell-nix` is always locked and available, so this value no longer changes output. |
 | `nix.treefmt` | `bool` | `true` | yes | — | Generate/import `nix/treefmt.nix`. The input stays locked when disabled but is not evaluated or built. |
 | `nix.pre-commit` | `bool` | `true` | yes | — | Generate/import `nix/pre-commit.nix`. The input stays locked when disabled but is not evaluated or built. |
@@ -331,6 +352,7 @@ The following values are asked interactively (unless supplied via `--var`):
 - **`nix.postgresql`** — Include PostgreSQL with local database setup?
 - **`nix.redis`** — Include Redis with a local socket-only server?
 - **`nix.clickhouse`** — Include ClickHouse with a local server?
+- **`nix.okf`** — Include the okf CLI for OKF documentation bundles?
 - **`nix.treefmt`** — Include treefmt-nix for code formatting (fourmolu, nixpkgs-fmt, cabal-gild)?
 - **`nix.pre-commit`** — Include pre-commit hooks via git-hooks.nix?
 
@@ -400,6 +422,7 @@ that the socket path is too long.
 
 | From | To | Effect |
 |------|----|--------|
+| `0.38.0` | `0.39.0` | Adds the always-locked, rev-pinned `okf` input (okf-cli 0.13.0.0, `e0dd9e3047285caff6c4c4d9c6aee06e6ebb31b7`) and the optional `nix.okf` toggle that puts its CLI in the dev shell. Its `haskell-nix-dev`, `nix2container` and `redpanda-container` follow this flake; its own `haskell-nix` node stays separate because okf overrides `baikai-src`. Toolchain, nixpkgs and `haskell-nix` pins stay fixed. No migration operations; regenerate managed files through Seihou. Projects that pinned okf in `flake.module.nix` can delete that wrapper and enable `nix.okf`. |
 | `0.35.0` | `0.36.0` | Moves the shared `mori://shinzui/haskell-nix` channel pin to `dedd4d81589e99d97137eb36f88423c70c7d69f5`, making retained runtime generation 6 available with the latest release cohort and inspection packages. Toolchain and Nixpkgs pins stay fixed. Existing explicit runtime and complementary selections are preserved; adopting generation 6 requires an explicit selection with `kioku = 9` and the matching Cabal imports. No migration operations; regenerate managed files through Seihou. |
 | `0.36.0` | `0.37.0` | Pins nix2container v1.1.0 with application nixpkgs follows and replaces the Linux-only service image example. Build results are image descriptions; use copy helpers for Docker, registries or explicit archive export. Existing unmanaged images require the upgrade-haskell-nix2container blueprint. Haskell toolchain/runtime pins stay fixed; no automatic migration operations. |
 | `0.37.0` | `0.37.1` | Anchors the `nix build` ignore rules to the root, so source files named `result-*` stay tracked. An ordinary update fixes existing projects: the appended `!result` and `!result-*` override the old lines, which remain and are safe to delete. |
@@ -495,11 +518,12 @@ move them:
 ./scripts/update-nix-haskell-flake-lock.sh --rev <rev>  # or pin a specific haskell-nix-dev rev
 ./scripts/update-nix-haskell-flake-lock.sh --haskell-nix-rev <rev>  # …or haskell-nix rev
 ./scripts/update-nix-haskell-flake-lock.sh --nix2container-rev <rev> # explicitly move the released image builder
+./scripts/update-nix-haskell-flake-lock.sh --okf-rev <rev>           # move the okf CLI to a released tag's rev
 ./scripts/update-nix-haskell-flake-lock.sh --check      # CI: is the shipped pair current?
 ```
 
 It rewrites the selected revisions in the template, preserving the released nix2container
-pin unless explicitly overridden, renders the canonical inputs graph, locks it, and only
+and okf pins unless explicitly overridden, renders the canonical inputs graph, locks it, and only
 then writes both files — after asserting two things that the whole
 guarantee rests on:
 

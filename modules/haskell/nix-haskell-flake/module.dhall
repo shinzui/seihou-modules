@@ -10,9 +10,9 @@ let MigrationOp =
 
 in      S.Module::{
         , name = "nix-haskell-flake"
-        , version = Some "0.38.0"
+        , version = Some "0.39.0"
         , description = Some
-            "Optional explicit retained-runtime configuration shares one checked scope between production packages and the primary shell. Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is rev-pinned or follows that base, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules, dependent Seihou modules can add managed package wiring through nix.package-module, and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, and pre-commit-hooks with a commit-message newline-escape guard; the always-locked shared haskell-nix patch registry is available to custom wiring. The always-locked nix2container input follows the application nixpkgs. The generated flake.module.nix.example includes a ready-to-uncomment, Linux-guarded nix2container.buildImage block with Docker load, registry copy and explicit archive export helpers for building an OCI image of the project's executable. Optional nix.redpanda adds macOS-only redpanda-local-* scripts for a private, non-colliding Redpanda cluster on Apple Container (reusing the always-locked redpanda-container input), for tests that need a broker of their own instead of the shared machine-wide one."
+            "Optional explicit retained-runtime configuration shares one checked scope between production packages and the primary shell. Modular flake-parts Nix flake for Haskell projects, consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal toolchains). Every module-owned input is rev-pinned or follows that base, so each module version locks to byte-identical pins across projects and `nix flake update` cannot drift them. Project wiring lives in imported nix/*.nix modules, dependent Seihou modules can add managed package wiring through nix.package-module, and user customizations go in an unmanaged flake.module.nix, so template upgrades migrate without conflict. Toggleable process-compose, PostgreSQL, Redis, ClickHouse, treefmt-nix, and pre-commit-hooks with a commit-message newline-escape guard; the always-locked shared haskell-nix patch registry is available to custom wiring. The always-locked nix2container input follows the application nixpkgs. The generated flake.module.nix.example includes a ready-to-uncomment, Linux-guarded nix2container.buildImage block with Docker load, registry copy and explicit archive export helpers for building an OCI image of the project's executable. Optional nix.redpanda adds macOS-only redpanda-local-* scripts for a private, non-colliding Redpanda cluster on Apple Container (reusing the always-locked redpanda-container input), for tests that need a broker of their own instead of the shared machine-wide one. Optional nix.okf adds the module-pinned okf CLI to the dev shell from the always-locked okf input, so projects validating OKF documentation bundles move okf versions together by moving the module."
         , vars =
           [ S.VarDecl::{
             , name = "project.name"
@@ -161,6 +161,14 @@ in      S.Module::{
             , required = False
             }
           , S.VarDecl::{
+            , name = "nix.okf"
+            , type = "bool"
+            , default = Some "false"
+            , description = Some
+                "Add the okf CLI to the dev shell for validating and editing the project's OKF documentation bundles (e.g. `okf validate docs/adr`). The CLI comes from the always-locked, module-pinned okf input, whose toolchain inputs follow this flake's, so every project on the same module version runs the same released okf and takes a new one by moving to a newer module version. When disabled the input stays locked but is never built."
+            , required = True
+            }
+          , S.VarDecl::{
             , name = "nix.treefmt"
             , type = "bool"
             , default = Some "true"
@@ -257,6 +265,11 @@ in      S.Module::{
             , var = "nix.redpanda-console"
             , text = "Also run Redpanda Console for the project-local cluster?"
             , when = Some "Eq nix.redpanda true"
+            }
+          , S.Prompt::{
+            , var = "nix.okf"
+            , text =
+                "Include the okf CLI for OKF documentation bundles?"
             }
           , S.Prompt::{
             , var = "nix.treefmt"

@@ -4,8 +4,8 @@ title: nix-haskell-flake
 description: Nix flake for Haskell projects consuming the haskell-nix-dev base flake
   (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an
   optional managed package-module import for composed scaffolds, an unmanaged user
-  extension point, pinned nix2container service image support, local services, treefmt,
-  and pre-commit hooks
+  extension point, pinned nix2container service image support, an optional module-pinned
+  okf CLI, local services, treefmt, and pre-commit hooks
 resource: seihou://seihou-modules/modules/haskell/nix-haskell-flake
 tags:
 - haskell
@@ -15,14 +15,14 @@ tags:
 status: stable
 generated:
   by: seihou-okf-extension/0.15.0.0
-version: 0.38.0
+version: 0.39.0
 ---
 
 # nix-haskell-flake
 
-Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, pinned nix2container service image support, local services, treefmt, and pre-commit hooks
+Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, pinned nix2container service image support, an optional module-pinned okf CLI, local services, treefmt, and pre-commit hooks
 
-**Version:** 0.38.0
+**Version:** 0.39.0
 
 ## Dependencies
 
@@ -49,6 +49,7 @@ This module has no dependencies.
 - `redpanda.schema-registry-port` — integer, optional, default `38081`. Host port for the project-local Redpanda Schema Registry. Defaults to 38081 (vs the shared cluster's 8081). Only used when nix.redpanda is enabled.
 - `redpanda.proxy-port` — integer, optional, default `38082`. Host port for the project-local Redpanda HTTP (pandaproxy) endpoint. Defaults to 38082 (vs the shared cluster's 8082). Only used when nix.redpanda is enabled.
 - `redpanda.console-port` — integer, optional, default `38080`. Host port for the project-local Redpanda Console. Defaults to 38080 (vs the shared cluster's 8080). Only used when nix.redpanda and nix.redpanda-console are enabled.
+- `nix.okf` — boolean, required, default `false`. Add the okf CLI to the dev shell for validating and editing the project's OKF documentation bundles (e.g. `okf validate docs/adr`). The CLI comes from the always-locked, module-pinned okf input, whose toolchain inputs follow this flake's, so every project on the same module version runs the same released okf and takes a new one by moving to a newer module version. When disabled the input stays locked but is never built.
 - `nix.treefmt` — boolean, required, default `true`. Generate and import the nix/treefmt.nix flake-parts module (wires `nix fmt` and a formatting check). The treefmt-nix input remains in the canonical lock when disabled but is not evaluated or built.
 - `nix.pre-commit` — boolean, required, default `true`. Generate and import the nix/pre-commit.nix flake-parts module. The pre-commit-hooks input remains in the canonical lock when disabled but is not evaluated or built.
 - `nix.haskell-nix` — boolean, optional, default `false`. Deprecated compatibility input. The shared haskell-nix patch registry is now always present in the canonical lock and available as inputs.haskell-nix, so this Boolean no longer changes generated output. Existing saved configurations may retain it; new projects should leave it unset and consume the input from flake.module.nix when needed.
@@ -73,6 +74,7 @@ This module has no dependencies.
 - `nix.kafka` — Include Kafka client support (librdkafka for hw-kafka-client)?
 - `nix.redpanda` — Add project-local Redpanda scripts on Apple Container (macOS only)?
 - `nix.redpanda-console` — Also run Redpanda Console for the project-local cluster? — when `Eq nix.redpanda true`
+- `nix.okf` — Include the okf CLI for OKF documentation bundles?
 - `nix.treefmt` — Include treefmt-nix for code formatting (fourmolu, nixpkgs-fmt, cabal-gild)?
 - `nix.pre-commit` — Include pre-commit hooks via git-hooks.nix?
 

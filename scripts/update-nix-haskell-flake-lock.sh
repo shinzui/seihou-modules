@@ -5,7 +5,7 @@
 # every project generated from a given module version locks to byte-identical
 # inputs and shares one nix store closure.
 #
-# The generated flake pins haskell-nix-dev, haskell-nix, redpanda-container and nix2container;
+# The generated flake pins haskell-nix-dev, haskell-nix, redpanda-container, nix2container and okf;
 # other module-owned inputs follow those pins. The locked graph is a pure function
 # of those immutable selections, and the
 # shipped flake.lock is a cache-warming convenience rather than the source of
@@ -24,13 +24,17 @@
 #   6. writes files/flake.lock.
 #
 # Usage:
-#   update-nix-haskell-flake-lock.sh [--rev REV] [--haskell-nix-rev REV] [--nix2container-rev REV] [--check]
+#   update-nix-haskell-flake-lock.sh [--rev REV] [--haskell-nix-rev REV] [--nix2container-rev REV]
+#                                    [--okf-rev REV] [--check]
 #
 #   --rev REV   Pin to a specific haskell-nix-dev revision (default: latest master).
 #   --haskell-nix-rev REV
 #               Pin to a specific haskell-nix revision (default: latest master).
 #   --nix2container-rev REV
 #               Pin nix2container (default: preserve the template's released pin).
+#   --okf-rev REV
+#               Pin the okf CLI to a released okf tag's full revision (default:
+#               preserve the template's released pin).
 #   --check     Verify the shipped tpl/lock against its current pins (unless
 #               explicitly overridden). Writes nothing. For CI.
 #
@@ -47,14 +51,16 @@ HN_FLAKE_REF="github:shinzui/haskell-nix"
 REV=""
 HN_REV=""
 N2C_REV=""
+OKF_REV=""
 CHECK=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --rev) REV="$2"; shift 2 ;;
     --haskell-nix-rev) HN_REV="$2"; shift 2 ;;
     --nix2container-rev) N2C_REV="$2"; shift 2 ;;
+    --okf-rev) OKF_REV="$2"; shift 2 ;;
     --check) CHECK=1; shift ;;
-    -h|--help) sed -n '2,36p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,40p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
 done
@@ -139,10 +145,12 @@ if [ "$CHECK" -eq 1 ]; then
   [ -n "$HN_REV" ] || HN_REV="$(template_revision shinzui/haskell-nix)"
 fi
 [ -n "$N2C_REV" ] || N2C_REV="$(template_revision nlewo/nix2container)"
-for pin in "$REV" "$HN_REV" "$N2C_REV"; do
+[ -n "$OKF_REV" ] || OKF_REV="$(template_revision shinzui/okf)"
+for pin in "$REV" "$HN_REV" "$N2C_REV" "$OKF_REV"; do
   [ -z "$pin" ] || [[ "$pin" =~ ^[0-9a-f]{40}$ ]] || { echo "expected a full immutable revision: $pin" >&2; exit 2; }
 done
 echo "target nix2container rev: $N2C_REV"
+echo "target okf rev: $OKF_REV"
 if [ -z "$REV" ]; then
   echo "resolving latest $FLAKE_REF …"
   REV="$(nix flake metadata "$FLAKE_REF" --refresh --json \
@@ -157,7 +165,7 @@ fi
 echo "target haskell-nix rev: $HN_REV"
 
 # --- 2. rewrite the pin in the template --------------------------------------
-python3 - "$TPL" "$REV" "$HN_REV" "$WORK/flake.nix.tpl" "$N2C_REV" <<'PY'
+python3 - "$TPL" "$REV" "$HN_REV" "$WORK/flake.nix.tpl" "$N2C_REV" "$OKF_REV" <<'PY'
 import re, sys
 src = open(sys.argv[1]).read()
 out = re.sub(r'(github:shinzui/haskell-nix-dev)(/[^"?]*)?', r'\1/' + sys.argv[2], src)
@@ -168,6 +176,8 @@ assert out.count("github:shinzui/haskell-nix/" + sys.argv[3]) == 1, \
     "expected exactly one haskell-nix pin in the template"
 out, count = re.subn(r'github:nlewo/nix2container/[^"?]*', 'github:nlewo/nix2container/' + sys.argv[5], out)
 assert count == 1, "expected exactly one nix2container pin in the template"
+out, count = re.subn(r'github:shinzui/okf/[^"?]*', 'github:shinzui/okf/' + sys.argv[6], out)
+assert count == 1, "expected exactly one okf pin in the template"
 open(sys.argv[4], "w").write(out)
 PY
 
@@ -179,7 +189,7 @@ git -C "$WORK/superset" add flake.nix
 echo "locking the canonical flake …"
 nix flake lock "$WORK/superset" >/dev/null
 
-for node in haskell-nix-dev nixpkgs flake-parts treefmt-nix pre-commit-hooks haskell-nix nix2container; do
+for node in haskell-nix-dev nixpkgs flake-parts treefmt-nix pre-commit-hooks haskell-nix nix2container okf; do
   python3 -c "
 import json,sys
 nodes = json.load(open('$WORK/superset/flake.lock'))['nodes']
