@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "dependencies": {
-    "zod": "4.6.7"
-  },
   "devDependencies": {
     "orval": "8.46.0",
     "@redocly/cli": "2.72.1",
@@ -28,9 +25,9 @@
     "typecheck": "bun scripts/compiler.ts --noEmit",
     "test": "bun test",
     "build": "bun scripts/compiler.ts -p tsconfig.build.json",
-    "lint": "oxlint src/client.ts src/index.ts src/transport.ts scripts tests",
-    "format": "oxfmt src/client.ts src/index.ts src/transport.ts scripts tests orval.config.ts",
-    "format-check": "oxfmt --check src/client.ts src/index.ts src/transport.ts scripts tests orval.config.ts",
+    "lint": "oxlint src/client.ts src/index.ts scripts tests",
+    "format": "oxfmt src/client.ts src/index.ts scripts tests orval.config.ts",
+    "format-check": "oxfmt --check src/client.ts src/index.ts scripts tests orval.config.ts",
     "check": "bun run generated-check && bun run typecheck && bun run test && bun run lint && bun run format-check && bun run build"
   },
   "description": "{{project.description}}"

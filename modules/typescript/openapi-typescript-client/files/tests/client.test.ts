@@ -2,7 +2,7 @@ import { expect, test } from "bun:test"
 
 import { make } from "../src/index.js"
 
-test("generated operations validate both success and declared errors", async () => {
+test("generated operations return success and declared HTTP errors", async () => {
   const server = Bun.serve({
     hostname: "127.0.0.1",
     port: 0,
@@ -22,7 +22,6 @@ test("generated operations validate both success and declared errors", async () 
     const missing = await api.getWidget("missing")
     if (missing.status === 404) expect(missing.data.message).toBe("Not found")
     else throw new Error("Expected 404")
-    await expect(api.getWidget("invalid")).rejects.toMatchObject({ code: "invalid-payload" })
     expect((await api.createWidget({ name: "One" })).status).toBe(201)
   } finally {
     await server.stop(true)

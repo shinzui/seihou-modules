@@ -56,10 +56,10 @@
     , tags = [ "typescript", "bun", "nix", "flake", "oxc", "devshell" ]
     }
   , { name = "openapi-typescript-client"
-    , version = Some "0.2.2"
+    , version = Some "0.3.0"
     , path = "modules/typescript/openapi-typescript-client"
-    , description = Some "Reusable ESM TypeScript 7 client with Orval generation, status-specific Zod validation, and project-owned Bun workflows on nix-bun-flake"
-    , tags = [ "typescript", "bun", "openapi", "orval", "zod", "client", "nix" ]
+    , description = Some "Reusable ESM TypeScript 7 client with Orval generation, standard typed fetch output, and project-owned Bun workflows on nix-bun-flake"
+    , tags = [ "typescript", "bun", "openapi", "orval", "client", "nix" ]
     }
   , { name = "fumadocs"
     , version = Some "0.6.2"
@@ -175,5 +175,7 @@
     }
   ]
 , prompts =
+  [] : List { name : Text, version : Optional Text, path : Text, description : Optional Text, tags : List Text }
+, judgements =
   [] : List { name : Text, version : Optional Text, path : Text, description : Optional Text, tags : List Text }
 }

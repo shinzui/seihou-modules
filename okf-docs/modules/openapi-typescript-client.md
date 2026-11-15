@@ -1,32 +1,31 @@
 ---
 type: SeihouModule
 title: openapi-typescript-client
-description: Reusable ESM TypeScript 7 client with Orval generation, status-specific
-  Zod validation, and project-owned Bun workflows on nix-bun-flake
+description: Reusable ESM TypeScript 7 client with Orval generation, standard typed
+  fetch output, and project-owned Bun workflows on nix-bun-flake
 resource: seihou://seihou-modules/modules/typescript/openapi-typescript-client
 tags:
 - typescript
 - bun
 - openapi
 - orval
-- zod
 - client
 - nix
 status: stable
 generated:
   by: seihou-okf-extension/0.16.0.0
-version: 0.2.2
+version: 0.3.0
 ---
 
 # openapi-typescript-client
 
-Reusable ESM TypeScript 7 client with Orval generation, status-specific Zod validation, and project-owned Bun workflows on nix-bun-flake
+Reusable ESM TypeScript 7 client with Orval generation, standard typed fetch output, and project-owned Bun workflows on nix-bun-flake
 
-**Version:** 0.2.2
+**Version:** 0.3.0
 
 ## Declaration metadata
 
-- description: `Generate a reusable ESM TypeScript 7 client with Orval, status-specific Zod response validation, strict schema qualification, and project-owned Bun workflows`
+- description: `Generate a standard typed Orval fetch client with ESM TypeScript 7 builds and project-owned Bun workflows`
 
 ## Dependencies
 
@@ -64,9 +63,7 @@ No exports declared.
 - `Copy` `redocly.yaml` → `redocly.yaml` — Seed: created once when absent, then project owned; updates and removal preserve it
 - `Copy` `src/index.ts` → `src/index.ts` — Seed: created once when absent, then project owned; updates and removal preserve it
 - `Copy` `src/client.ts` → `src/client.ts` — Seed: created once when absent, then project owned; updates and removal preserve it
-- `Copy` `src/transport.ts` → `src/transport.ts` — Seed: created once when absent, then project owned; updates and removal preserve it
 - `Copy` `scripts/compiler.ts` → `scripts/compiler.ts` — Seed: created once when absent, then project owned; updates and removal preserve it
-- `Copy` `scripts/schema.ts` → `scripts/schema.ts` — Seed: created once when absent, then project owned; updates and removal preserve it
 - `Template` `scripts/generate.ts.tpl` → `scripts/generate.ts` — Seed: created once when absent, then project owned; updates and removal preserve it
 - `Copy` `tests/client.test.ts` → `tests/client.test.ts` — when `Eq openapi.schema "openapi.yaml"` — Seed: created once when absent, then project owned; updates and removal preserve it
 - `Copy` `tests/types.ts` → `tests/types.ts` — when `Eq openapi.schema "openapi.yaml"` — Seed: created once when absent, then project owned; updates and removal preserve it

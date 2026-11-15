@@ -20,7 +20,6 @@ in Schema.Project::{
     , type = Schema.PackageType.Client, language = Schema.Language.TypeScript
     , visibility = Schema.Visibility.Private
     , runtime = { deployable = False, exposesApi = False }
-    , dependencies = [ Schema.Dependency.ByName "zod" ]
     , apiSource = Some Schema.ApiSource::{
       , project = "{{mori.source-namespace}}/{{mori.source-project}}"
       , projectRef = Some source

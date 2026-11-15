@@ -4,8 +4,8 @@ let S =
 
 in S.Module::{
     , name = "openapi-typescript-client"
-    , version = Some "0.2.2"
-    , description = Some "Generate a reusable ESM TypeScript 7 client with Orval, status-specific Zod response validation, strict schema qualification, and project-owned Bun workflows"
+    , version = Some "0.3.0"
+    , description = Some "Generate a standard typed Orval fetch client with ESM TypeScript 7 builds and project-owned Bun workflows"
     , vars =
       [ S.VarDecl::{ name = "project.name", type = "text", required = True, validation = Some "[a-z][a-z0-9-]*" }
       , S.VarDecl::{ name = "project.description", type = "text", required = True }
@@ -59,9 +59,7 @@ in S.Module::{
       , S.Step::{ strategy = "copy", src = "redocly.yaml", dest = "redocly.yaml", lifecycle = Some "seed" }
       , S.Step::{ strategy = "copy", src = "src/index.ts", dest = "src/index.ts", lifecycle = Some "seed" }
       , S.Step::{ strategy = "copy", src = "src/client.ts", dest = "src/client.ts", lifecycle = Some "seed" }
-      , S.Step::{ strategy = "copy", src = "src/transport.ts", dest = "src/transport.ts", lifecycle = Some "seed" }
       , S.Step::{ strategy = "copy", src = "scripts/compiler.ts", dest = "scripts/compiler.ts", lifecycle = Some "seed" }
-      , S.Step::{ strategy = "copy", src = "scripts/schema.ts", dest = "scripts/schema.ts", lifecycle = Some "seed" }
       , S.Step::{ strategy = "template", src = "scripts/generate.ts.tpl", dest = "scripts/generate.ts", lifecycle = Some "seed" }
       , S.Step::{ strategy = "copy", src = "tests/client.test.ts", dest = "tests/client.test.ts", lifecycle = Some "seed", when = Some "Eq openapi.schema openapi.yaml" }
       , S.Step::{ strategy = "copy", src = "tests/types.ts", dest = "tests/types.ts", lifecycle = Some "seed", when = Some "Eq openapi.schema openapi.yaml" }

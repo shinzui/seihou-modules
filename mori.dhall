@@ -145,10 +145,10 @@ in  Schema.Project::{
         }
       , Schema.SeihouTemplate::{
         , name = "openapi-typescript-client"
-        , version = Some "0.2.2"
-        , description = Some "Reusable ESM TypeScript 7 client with Orval generation, status-specific Zod validation, and project-owned Bun workflows"
+        , version = Some "0.3.0"
+        , description = Some "Reusable ESM TypeScript 7 client with Orval generation, standard typed fetch output, and project-owned Bun workflows"
         , modulePath = "modules/typescript/openapi-typescript-client"
-        , tags = [ "typescript", "bun", "openapi", "orval", "zod", "client" ]
+        , tags = [ "typescript", "bun", "openapi", "orval", "client" ]
         , dependencies = [ "nix-bun-flake" ]
         , requiredVars = [ "project.name", "project.description", "openapi.schema" ]
         }

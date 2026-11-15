@@ -2,77 +2,37 @@
 
 {{project.description}}
 
-This private ESM client package uses a local OpenAPI document at `{{openapi.schema}}`.
-Enter `nix develop`, then run `just install`, `just generate`, and `just check`.
-Commit the resulting `bun.lock`; subsequent installs can use `bun install --frozen-lockfile`.
-Generation is explicit. No dependencies or schemas are downloaded by entering the shell.
-Custom schema paths must exist before `just generate`; only the default path gets an example.
-
-If this project includes a seeded `mori.dhall`, it records the client package and its
-OpenAPI source project using `apiSource`. Declare the API and its spec path in the
-provider's Mori descriptor. Set `apiSource.api` to its declared API name if needed;
-an omitted name selects the provider's single API. The local generator input is
-configured separately through `{{openapi.schema}}`.
-Keep that project-owned inventory aligned with the client and run `mori validate`
-after editing it. Register the project with Mori separately when ready.
+Run `just install`, `just generate`, and `just check` inside `nix develop`.
+The input is `{{openapi.schema}}`; commit the resulting `bun.lock`.
+Generation uses Orval 8.46.0 directly and writes `src/generated/api.ts`.
+Redocly checks the source document. There is no custom schema subset or output rewriting.
 
 ```typescript
 import { make } from '{{project.name}}'
 
-const api = make({ baseUrl: 'https://api.example.com', headers: { Authorization: 'Bearer token' } })
+const api = make({ baseUrl: 'https://api.example.com' })
 const response = await api.getWidget('one')
 if (response.status === 200) console.log(response.data.name)
 else console.log(response.data.message)
 ```
 
-Replace the example operations and tests as you evolve the schema. Each instance has its own
-base URL, default headers, and optional `fetch` implementation; injected transports still validate.
-JSON responses return `{ status, data, headers }`; narrow the literal status before reading data.
-Declared HTTP errors are ordinary validated results. `ClientError.code` distinguishes `transport`,
-`invalid-json`, `invalid-payload`, `unsupported-status`, `unsupported-media`, and `unexpected-body`.
-Declared empty responses have `data: undefined`. Dates stay wire strings.
+`make` only supplies a per-instance base URL, default headers and optional fetch implementation.
+Generated operations and models are also exported directly. Declared HTTP errors are returned as
+status-discriminated results. The client uses standard Orval behavior; TypeScript types do not
+validate server payloads at runtime. There is no runtime validation dependency.
 
-`just validate-schema` checks OpenAPI structure and references using Redocly. Generation also
-checks the supported schema subset; runtime Zod validation checks each server payload against
-its actual declared status. These are separate guarantees. Runtime validation is never bypassed
-by a custom fetch function. Request types are checked by TypeScript; requests are not runtime-validated.
+`just generated-check` runs Orval's native `--outdated` check without rewriting output.
+`just check` runs freshness, typechecking, tests, lint, formatting checks and build.
+`just build` emits ESM and declarations to `dist/`, suitable for Node or Bun consumers.
+The shared shell supplies TypeScript 7+, selected by `scripts/compiler.ts`.
+The generator's private compiler dependencies do not select the project compiler.
 
-`just generated-check` never rewrites source: it invokes Orval `--outdated`, computes expected
-output in a temporary directory, then compares every path and byte in raw and derived trees.
-`just check` runs freshness first, followed by typecheck, tests, lint, format-check, and build.
-`just format` only formats authored code. `just build` emits ESM and declarations into `dist/`;
-`npm pack --ignore-scripts` packages those files for another Node >=22.18 or Bun project.
-Zod is the only runtime dependency. The public declarations require no Bun or generator types.
+Replace the example tests and usage with operations from your schema. A custom schema must already
+exist; only the default `openapi.yaml` receives example content. Inspect Orval diagnostics directly.
 
-The shared shell supplies TypeScript 7.0.2. Typecheck/build print the selected compiler and reject
-versions below 7 without downloading a compiler. Orval has private TypeScript 6 tooling dependencies;
-these are permitted and are excluded when selecting the project compiler. Future compiler versions
-need qualification. Do not add a local compiler that bypasses `scripts/compiler.ts`.
+If seeded, `mori.dhall` records the client and its source project. Set `apiSource.api` to the
+provider's declared API name as needed; it defaults to the provider's single API. The local
+input path is independent of the provider's spec path. Run `mori validate` and register separately.
 
-Supported OpenAPI 3.0/3.1 schema features include JSON objects (closed, explicitly open, or implicitly
-open), required/optional/nullable fields, primitive types, arrays, enum/literal values, local recursive
-references, tagged/exclusive `oneOf`, inclusive `anyOf`, and `allOf` of open object branches with disjoint
-properties. Requests exclude read-only fields; responses exclude write-only fields. Basic bounds,
-string patterns, and date/date-time/uuid/email/uri formats are generated by Orval. Optional fields reject
-explicit `undefined`. Object properties allowed by the schema are retained; forbidden properties fail.
-
-Only explicit response status codes and `application/json` (or no content) are supported. Remote
-references, ranges/default responses, other media, boolean schemas, overlapping/closed `allOf`, `$ref`
-validation siblings, defaults/transforms, unrecognized validation keywords and formats fail generation
-with a schema pointer before old output is replaced. Staged validator/model contracts must pass the shared compiler before replacement. Local YAML/JSON references remain inside the project
-and use paths without traversal. Component keys accept OpenAPI's letters, digits, dots,
-hyphens, and underscores, including leading digits. Source keys and references are preserved;
-Orval handles TypeScript identifier naming and collisions. Operation IDs must be camelCase.
-Path parameters are encoded strings; query parameters use scalar form style, repeated scalar arrays, or closed flat deepObject values. Other parameter styles and ambiguous method/path routes are diagnosed. Pass request headers through client/operation options. This is a bounded schema subset, not arbitrary JSON Schema equivalence. Inspect diagnostics instead of
-removing source constraints to get usable but weaker validators.
-
-`src/generated/raw/` preserves Orval output. `src/generated/client/` contains Node-compatible copies,
-per-status registry entries, and compile-time input/output contracts. The compatibility stage corrects
-Orval 8.46.0's nullable optionals, recursive input annotations, platform fetch signature, and empty response
-decoding. Requalify it whenever generator/runtime pins move. Both trees are command products.
-
-Package metadata, configs, recipes, source, helpers, schema and example tests are Seihou seeds: after
-creation they belong to this project, including intentional deletion. Managed Nix files can update;
-put Nix additions in the unmanaged `flake.module.nix`. Generated sources, `dist/`, and `bun.lock` are
-project artifacts. Removing the client module preserves seeds and command products. Seihou >=0.15.0.0
-is required for composed seed ownership and conditional removal.
+Configs, source, helpers and tests are project-owned seeds. Seihou updates preserve your edits.
+Generated output, `dist/` and `bun.lock` are command products. Put Nix extensions in `flake.module.nix`.

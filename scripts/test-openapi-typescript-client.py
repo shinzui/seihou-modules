@@ -5,8 +5,6 @@ Uses temporary project-local module copies; never changes the personal module ca
 The compiler is the shared shell's TypeScript 7+, with no compiler downloaded by this test.
 """
 import argparse
-import copy
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -28,12 +26,6 @@ def run(args, cwd, succeeds=True, env=None, input=None):
     if (result.returncode == 0) != succeeds:
         raise AssertionError(f'{args}: exit {result.returncode}\n{result.stdout}\n{result.stderr}')
     return result.stdout + result.stderr
-
-
-def snapshot(project):
-    root = project / 'src/generated'
-    return {str(p.relative_to(root)): hashlib.sha256(p.read_bytes()).hexdigest()
-            for p in root.rglob('*') if p.is_file()}
 
 
 def task(project, name, succeeds=True):
@@ -108,190 +100,43 @@ try {{
     assert all(p == 'package/package.json' or p.startswith('package/dist/') or p in ['package/README.md', 'package/LICENSE'] for p in contents), contents
 
 
-def component_names(project, work, original):
-    document = json.loads(original)
-    names = ['Connection_EnabledAction', 'Connection-EnabledAction',
-             'Connection.EnabledAction', 'ConnectionEnabledAction',
-             'connectionEnabledAction', '123Action', '_Action', '---',
-             'constructor', '__proto__', 'widget']
-    checks = ["import { expect, test } from 'bun:test'", "import { make } from '../src/index.js'"]
-    types = ["import { make } from '../src/index.js'",
-             "const api = make({ baseUrl: 'http://localhost' })"]
-    for index, name in enumerate(names):
-        field = f'field{index}'
-        value = f'value{index}'
-        reference = {'$ref': f'#/components/schemas/{name}'}
-        shape = {'type': 'object', 'additionalProperties': False,
-                 'required': [field], 'properties': {field: {'type': 'string', 'enum': [value]}}}
-        payload = {field: value}
-        invalid = {field: 42}
-        if index == 0:
-            shape['properties']['children'] = {'type': 'array', 'items': reference}
-            payload['children'] = [{field: value}]
-            invalid = {field: value, 'children': [{field: 42}]}
-        document['components']['schemas'][name] = shape
-        operation = f'getNamed{index}'
-        document['paths'][f'/named-components/n{index}'] = {'get': {
-            'operationId': operation, 'responses': {'200': {
-                'description': name, 'content': {'application/json': {'schema': reference}}}}}}
-        checks.append(f'''test({json.dumps(name)}, async () => {{
-  const payload = {json.dumps(payload)}
-  const api = make({{ baseUrl: 'http://localhost', fetch: async () => Response.json(payload) }})
-  expect((await api.{operation}()).data).toEqual({json.dumps(payload)})
-  const invalid = make({{ baseUrl: 'http://localhost', fetch: async () => Response.json({json.dumps(invalid)}) }})
-  await expect(invalid.{operation}()).rejects.toMatchObject({{ code: 'invalid-payload' }})
-}})''')
-        types.append(f'''async function named{index}() {{
-  const result = await api.{operation}()
-  const value: {json.dumps(value)} = result.data.{field}
-  // @ts-expect-error each colliding component retains its own response shape
-  const wrong: number = result.data.{field}
-  return value
-}}
-void named{index}''')
-    source = json.dumps(document)
-    (project / 'openapi.json').write_text(source)
-    script = project / 'scripts/generate.ts'
-    script.write_text(script.read_text().replace('const schema = "spec/api.json"', 'const schema = "openapi.json"'))
-    (project / 'tests/component-names.test.ts').write_text('\n'.join(checks) + '\n')
-    (project / 'tests/component-names.ts').write_text('\n'.join(types) + '\n')
-    task(project, 'generate')
-    assert (project / 'openapi.json').read_text() == source, 'Generation rewrote source component keys'
-    task(project, 'typecheck')
-    task(project, 'test')
-    task(project, 'build')
-    task(project, 'generated-check')
-    consumer(project, work / 'named-components')
-    print('OpenAPI component-name qualification passed.', flush=True)
-
-
 def qualify(work):
-    # The shipped starter and the qualified fixture must share the same implementation.
-    for name in ['orval.config.ts', 'scripts/compiler.ts', 'scripts/schema.ts', 'src/client.ts', 'src/index.ts', 'src/transport.ts', 'redocly.yaml', 'tsconfig.json', 'tsconfig.build.json']:
-        assert (FIXTURE / name).read_bytes() == (MODULE / 'files' / name).read_bytes(), f'Fixture/template drift: {name}'
+    for name in ['orval.config.ts', 'scripts/compiler.ts', 'src/client.ts', 'src/index.ts',
+                 'redocly.yaml', 'tsconfig.json', 'tsconfig.build.json']:
+        assert (FIXTURE / name).read_bytes() == (MODULE / 'files' / name).read_bytes(), name
     assert (FIXTURE / 'scripts/generate.ts').read_text().replace('const schema = "openapi.json"', 'const schema = "{{openapi.schema}}"') == (MODULE / 'files/scripts/generate.ts.tpl').read_text()
     project = work / 'toolchain'
     shutil.copytree(FIXTURE, project)
     run(['bun', 'install', '--frozen-lockfile', '--minimum-release-age', '0'], project)
-    # Keep the observed built-in valid-error failure executable.
-    probe_schema = json.loads((project / 'openapi.json').read_text())
-    probe_schema['paths'] = {'/widgets/{id}': probe_schema['paths']['/widgets/{id}']}
-    del probe_schema['paths']['/widgets/{id}']['get']['responses']['204']
-    (project / 'probe.json').write_text(json.dumps(probe_schema))
-    (project / 'probe.config.ts').write_text("""import {defineConfig} from 'orval'
-export default defineConfig({probe:{input:'probe.json',output:{target:'probe/api.ts',schemas:{path:'probe/models',type:'zod'},client:'fetch',override:{fetch:{runtimeValidation:true,includeHttpResponseReturnType:true,forceSuccessResponse:false,useRuntimeFetcher:true,httpClientInjection:'factory'}}}}})
-""")
-    run(['bun', 'run', '--no-install', 'orval', '--config', 'probe.config.ts'], project)
-    (project / 'probe.ts').write_text("""import {getWidgets} from './probe/api.ts'
-try {
- await getWidgets(async () => Response.json({message:'Not found'}, {status:404})).getWidget('missing')
- throw new Error('Built-in behavior changed; requalify the adapter')
-} catch (error) { if (error.name !== 'ZodError') throw error }
-console.log('Reproduced built-in valid-404 ZodError.')
-""")
-    print(run(['bun', 'probe.ts'], project).strip(), flush=True)
     task(project, 'generate')
-    print(task(project, 'typecheck').strip(), flush=True)
+    task(project, 'typecheck')
     task(project, 'test')
     task(project, 'build')
     task(project, 'generated-check')
     consumer(project, work)
-    # Both expected TypeScript failures and a rejected older compiler are observable.
+    assert not json.loads((project / 'package.json').read_text()).get('dependencies'), 'Client has no runtime dependencies'
+    generated = project / 'src/generated/api.ts'
+    original = generated.read_bytes()
+    generated.write_bytes(original + b'\n// stale\n')
+    task(project, 'generated-check', False)
+    assert generated.read_bytes() == original + b'\n// stale\n', 'Native outdated check must not repair output'
+    task(project, 'generate')
+    assert generated.read_bytes() == original
+    generated.unlink()
+    task(project, 'generated-check', False)
+    task(project, 'generate')
+    schema = project / 'openapi.json'
+    original_schema = schema.read_bytes()
+    schema.write_text('{"openapi":"invalid"}')
+    task(project, 'generate', False)
+    assert generated.read_bytes() == original, 'Invalid document replaced the client'
+    schema.write_bytes(original_schema)
     old = work / 'old-compiler'
     old.mkdir()
     (old / 'tsc').write_text('#!/bin/sh\necho "Version 6.0.3"\n')
     (old / 'tsc').chmod(0o755)
     env = {**os.environ, 'PATH': str(old) + os.pathsep + os.environ['PATH']}
-    output = run(['bun', 'scripts/compiler.ts', '--noEmit'], project, False, env)
-    assert 'TypeScript 7+ is required' in output
-    original = (project / 'openapi.json').read_bytes()
-    baseline = snapshot(project)
-    for relative in ['raw/api.ts', 'client/registry.ts', 'client/contracts.ts']:
-        target = project / 'src/generated' / relative
-        saved = target.read_bytes()
-        target.unlink()
-        before = snapshot(project)
-        task(project, 'generated-check', False)
-        assert snapshot(project) == before, 'Freshness repaired missing output'
-        target.write_bytes(saved)
-    for relative in ['raw/obsolete.ts', 'client/obsolete.ts']:
-        target = project / 'src/generated' / relative
-        target.write_text('// obsolete\n')
-        before = snapshot(project)
-        task(project, 'generated-check', False)
-        assert snapshot(project) == before
-        target.unlink()
-    changed = json.loads(original)
-    changed['info']['title'] = 'Changed widgets'
-    changed['components']['schemas']['Widget']['properties']['revision'] = {'type': 'integer'}
-    (project / 'openapi.json').write_text(json.dumps(changed))
-    task(project, 'generated-check', False)
-    assert snapshot(project) == baseline
-    task(project, 'generate')
-    task(project, 'generated-check')
-    once = snapshot(project)
-    task(project, 'generate')
-    assert snapshot(project) == once
-    task(project, 'build')
-    consumer(project, work / 'second', revision=True)
-    (project / 'openapi.json').write_bytes(original)
-    # Invalid documents and unqualified semantics leave BOTH generated trees alone.
-    def invalid_document(change, label):
-        document = json.loads(original)
-        change(document)
-        (project / 'openapi.json').write_text(json.dumps(document))
-        before = snapshot(project)
-        output = task(project, 'generate', False)
-        assert snapshot(project) == before, label
-        task(project, 'generated-check', False)
-        assert snapshot(project) == before
-        return output
-    mutations = [
-        (lambda d: d.update(openapi='no'), 'structure'),
-        (lambda d: d['components']['schemas']['Widget'].update(properties={'id': {'$ref': '#/components/schemas/Missing'}}), 'unresolved ref'),
-        (lambda d: d['paths']['/widgets/{id}']['get'].update(parameters=[]), 'missing path declaration'),
-        (lambda d: d['paths']['/widgets']['post'].update(operationId='getWidget'), 'duplicate operation'),
-        (lambda d: d['paths']['/widgets/{id}']['get']['parameters'].append(copy.deepcopy(d['paths']['/widgets/{id}']['get']['parameters'][0])), 'duplicate parameter'),
-        (lambda d: d['components']['schemas']['Widget'].update(unevaluatedProperties=False), 'unsupported keyword'),
-        (lambda d: d['components']['schemas'].update({'invalid name': {'type': 'string'}}), 'invalid component name'),
-        (lambda d: d['components']['schemas']['Widget']['properties']['id'].update({'$ref':'https://example.invalid/schema.json'}), 'remote ref'),
-        (lambda d: d['paths']['/widgets/{id}']['get']['parameters'][1].update(explode=False), 'unsupported query serialization'),
-        (lambda d: d['paths']['/widgets/{id}']['get']['responses'].update(default={'description':'Default'}), 'default status'),
-        (lambda d: d['paths']['/widgets/{id}']['get']['responses'].update({'4XX':{'description':'Range'}}), 'range status'),
-        (lambda d: d['paths']['/widgets/{id}']['get']['responses']['200'].update(content={'text/plain':{'schema':{'type':'string'}}}), 'non-JSON media'),
-    ]
-    for change, label in mutations:
-        invalid_document(change, label)
-    # Repeat the semantic and type checks for OpenAPI 3.0's nullable spelling.
-    document = json.loads(original)
-    def nullable(value):
-        if isinstance(value, dict):
-            if isinstance(value.get('type'), list) and 'null' in value['type']:
-                value['type'] = next(x for x in value['type'] if x != 'null')
-                value['nullable'] = True
-            for child in value.values(): nullable(child)
-        elif isinstance(value, list):
-            for child in value: nullable(child)
-    nullable(document)
-    document['openapi'] = '3.0.3'
-    (project / 'openapi.json').write_text(json.dumps(document))
-    task(project, 'generate')
-    task(project, 'typecheck')
-    task(project, 'test')
-    # JSON document in a nested directory with a local external component.
-    document = json.loads(original)
-    spec = project / 'spec'
-    (spec / 'schemas').mkdir(parents=True)
-    (spec / 'schemas/widget.json').write_text(json.dumps(document['components']['schemas']['Widget']))
-    document['components']['schemas']['Widget'] = {'$ref': './schemas/widget.json'}
-    (spec / 'api.json').write_text(json.dumps(document))
-    script = project / 'scripts/generate.ts'
-    script.write_text(script.read_text().replace('const schema = "openapi.json"', 'const schema = "spec/api.json"'))
-    task(project, 'generate')
-    task(project, 'typecheck')
-    task(project, 'test')
-    task(project, 'generated-check')
-    component_names(project, work, original)
+    assert 'TypeScript 7+ is required' in run(['bun', 'scripts/compiler.ts', '--noEmit'], project, False, env)
     print('OpenAPI client toolchain qualification passed.', flush=True)
 
 
@@ -419,7 +264,7 @@ def render(work, bootstrap=False):
         consumer(project, work / 'scaffold-package')
     # Edit every base-overlapping seed and delete both an overlapping and a client-only seed.
     seeds = ['package.json', 'tsconfig.json', '.oxlintrc.json', '.oxfmtrc.json', 'justfile',
-             'tsconfig.build.json', 'src/client.ts', 'README.md', 'scripts/schema.ts']
+             'tsconfig.build.json', 'src/client.ts', 'README.md', 'scripts/generate.ts']
     for path in seeds:
         file = project / path
         if path in ['tsconfig.json', 'tsconfig.build.json']:
