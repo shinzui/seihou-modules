@@ -25,6 +25,13 @@ in  Schema.Project::{
         , profile = Some "docs/friction-log/profile.dhall"
         , description = Some "Friction met while implementing plans, before triage into bug reports and requests"
         }
+      , Schema.OkfBundle::{
+        , name = "improvement-requests"
+        , path = "docs/improvement-requests"
+        , okfVersion = "0.2"
+        , profile = Some "docs/improvement-requests/profile.dhall"
+        , description = Some "Improvement requests raised against the shared modules, recipes and blueprints"
+        }
       ]
     , templates =
       [ Schema.SeihouTemplate::{ name = "fumadocs-project", version = Some "0.2.0", description = Some "Create a directory and Git/GitHub repository with container-enabled Fumadocs, writing skills and local Mori registration", modulePath = "recipes/fumadocs-project", tags = [ "docs", "fumadocs", "container", "mori", "recipe" ], requiredVars = [ "repo.parentDir", "repo.name", "git.githubOwner", "project.name", "project.description", "docs.site-name", "mori.namespace", "mori.source-namespace", "mori.source-project" ], dependencies = [ "repo-dir", "fumadocs-site", "git-init" ] }
