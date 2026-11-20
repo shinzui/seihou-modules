@@ -26,7 +26,7 @@
     , tags = [ "haskell", "keiro", "service", "bootstrap" ]
     }
   , { name = "haskell-cli-app"
-    , version = Some "0.5.0"
+    , version = Some "0.6.0"
     , path = "modules/haskell/haskell-cli-app"
     , description = Some "Tested two-package Haskell CLI with project-owned source/Cabal/changelog starters (Seihou 0.11.0.0+), current GHC shells and managed Nix package/check outputs"
     , tags = [ "haskell", "cli", "bootstrap", "ghc2024" ]

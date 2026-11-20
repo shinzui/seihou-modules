@@ -11,20 +11,24 @@
     in
     {
       haskellProject.ownPackages = [ "{{project.name}}-core" "{{project.name}}-cli" ];
-      haskellProject.applicationOverlays = [ (hself: _hsuper: {
-        "{{project.name}}-core" =
-          hself.callCabal2nix "{{project.name}}-core"
-            (builtins.path {
-              path = inputs.self + "/{{project.name}}-core";
-              name = "{{project.name}}-core-source";
-            }) { };
-        "{{project.name}}-cli" =
-          hself.callCabal2nix "{{project.name}}-cli"
-            (builtins.path {
-              path = inputs.self + "/{{project.name}}-cli";
-              name = "{{project.name}}-cli-source";
-            }) { };
-      }) ];
+      haskellProject.applicationOverlays = [
+        (hself: _hsuper: {
+          "{{project.name}}-core" =
+            hself.callCabal2nix "{{project.name}}-core"
+              (builtins.path {
+                path = inputs.self + "/{{project.name}}-core";
+                name = "{{project.name}}-core-source";
+              })
+              { };
+          "{{project.name}}-cli" =
+            hself.callCabal2nix "{{project.name}}-cli"
+              (builtins.path {
+                path = inputs.self + "/{{project.name}}-cli";
+                name = "{{project.name}}-cli-source";
+              })
+              { };
+        })
+      ];
       packages."{{project.name}}-core" = corePackage;
       packages."{{project.name}}-cli" = cliPackage;
       packages.default = cliPackage;

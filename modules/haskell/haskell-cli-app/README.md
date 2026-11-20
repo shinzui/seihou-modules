@@ -77,7 +77,9 @@ When run, this module writes:
 - `{{project.name}}-cli/src/{{project.namespace}}/Cli.hs` — strategy: `template`
 - `{{project.name}}-cli/test/Spec.hs` — strategy: `template` when `project.tests=true`
 - `nix/haskell-cli-app.nix` — strategy: `template`; builds both local packages and exposes the
-  CLI as `packages.default`, plus a test check when enabled
+  CLI as `packages.default`, plus a test check when enabled. With
+  `project.managed-package-module=false` it is an empty flake-parts module instead, since
+  `nix-haskell-flake` always imports it; package wiring then lives in `flake.module.nix`
 - `LICENSE`, `{{project.name}}-core/LICENSE`, `{{project.name}}-cli/LICENSE` — strategy: `template`
 - `CHANGELOG.md`, `{{project.name}}-core/CHANGELOG.md`,
   `{{project.name}}-cli/CHANGELOG.md` — strategy: `template`

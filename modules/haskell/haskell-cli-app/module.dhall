@@ -4,7 +4,7 @@ let S =
 
 in  S.Module::{
     , name = "haskell-cli-app"
-    , version = Some "0.5.0"
+    , version = Some "0.6.0"
     , description = Some
         "Bootstrap a tested two-package Haskell CLI app (reusable core library + CLI executable) under GHC2024, with GHC 9.12.4 as the HLS-backed default and GHC 9.14.1 as a secondary build shell. Generates valid package-local distribution metadata and workspace-aware Nix package/check outputs on the latest nix-haskell-flake."
     , vars =
@@ -81,7 +81,7 @@ in  S.Module::{
         , type = "bool"
         , default = Some "true"
         , description = Some
-            "Whether this module generates the managed nix/haskell-cli-app.nix flake-parts package module. Set false when you supply package/build wiring yourself in the unmanaged flake.module.nix; nix-haskell-flake only imports nix/haskell-cli-app.nix when nix.package-module is set, so disabling generation here is safe for that setup."
+            "Whether the managed nix/haskell-cli-app.nix flake-parts module defines the workspace packages, packages.default and the test check. Set false when you supply package/build wiring yourself in the unmanaged flake.module.nix; the file is then generated as an empty flake-parts module, because the nix.package-module binding makes nix-haskell-flake import it unconditionally."
         , required = True
         }
       ]
@@ -184,6 +184,12 @@ in  S.Module::{
         , src = "nix/haskell-cli-app.nix.tpl"
         , dest = "nix/haskell-cli-app.nix"
         , when = Some "Eq project.managed-package-module true"
+        }
+      , S.Step::{
+        , strategy = "template"
+        , src = "nix/haskell-cli-app-disabled.nix.tpl"
+        , dest = "nix/haskell-cli-app.nix"
+        , when = Some "Eq project.managed-package-module false"
         }
       , S.Step::{ strategy = "template", src = "LICENSE.tpl", dest = "LICENSE" }
       , S.Step::{
