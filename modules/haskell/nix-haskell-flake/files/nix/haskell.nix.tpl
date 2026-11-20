@@ -196,14 +196,14 @@
         {{/if}}
       '';
 
-      runtimeLibraries = [ pkgs.zlib ]
+      runtimeLibraries = [ pkgs.zlib ]{{#if Eq nix.postgresql true || Eq nix.kafka true}}
         {{#if Eq nix.postgresql true}}
         ++ [ pkgs.{{nix.pg-package}}.dev pkgs.openssl.dev ]
         {{/if}}
         {{#if Eq nix.kafka true}}
         ++ [ pkgs.rdkafka pkgs.rdkafka.dev ]
         {{/if}}
-      ;
+      {{/if}};
       runtimeShell =
         assert lib.assertMsg (inputs.haskell-nix.lib ? mkProjectDevShell && hsdev ? mkProjectShell)
           "haskellProject.runtime requires the published retained-runtime shell APIs";
@@ -253,10 +253,13 @@
         packageSetIdentity = if runtimeEnabled then runtimeShell.packageSetIdentity else null;
         {{#if Eq nix.builtin-package true}}
         ownPackages = [ "{{project.name}}" ];
-        applicationOverlays = [ (final: _prev: {
-          "{{project.name}}" = final.callCabal2nix "{{project.name}}"
-            (if project.packageSource == null then inputs.self else project.packageSource) { };
-        }) ];
+        applicationOverlays = [
+          (final: _prev: {
+            "{{project.name}}" = final.callCabal2nix "{{project.name}}"
+              (if project.packageSource == null then inputs.self else project.packageSource)
+              { };
+          })
+        ];
         {{/if}}
       };
       {{#if Eq nix.builtin-package true}}

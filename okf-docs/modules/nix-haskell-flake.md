@@ -14,15 +14,15 @@ tags:
 - devshell
 status: stable
 generated:
-  by: seihou-okf-extension/0.16.0.0
-version: 0.40.0
+  by: seihou-okf-extension/0.16.0.1
+version: 0.40.1
 ---
 
 # nix-haskell-flake
 
 Nix flake for Haskell projects consuming the haskell-nix-dev base flake (prebuilt GHC/HLS/cabal), with an exact canonical lock across feature toggles, an optional managed package-module import for composed scaffolds, an unmanaged user extension point, pinned nix2container service image support, an optional module-pinned okf CLI, local services, treefmt, and pre-commit hooks
 
-**Version:** 0.40.0
+**Version:** 0.40.1
 
 ## Declaration metadata
 
